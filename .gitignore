@@ -1,0 +1,36 @@
+# --- Dependencies & Packages ---
+node_modules/
+jspm_packages/
+lib/
+
+# --- VS Code Local Settings ---
+.vscode/
+.history/
+*.code-workspace
+
+# --- OS-generated Temporary Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# --- Build Outputs & Temporary Files ---
+dist/
+build/
+out/
+.cache/
+.temp/
+
+# --- Log Files ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Environment Variables & Secrets (e.g., API Keys) ---
+.env
+.env.local
