@@ -27,12 +27,16 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 
 GROUP PHOTO. Add a group photo here.
 
-- Group member 1, name, email, role
-- Group member 2, name, email, role
-- Group member 3, name, email, role
-- Group member 4, name, email, role
-- Group member 5, name, email, role
-- Group member 6, name, email, role
+| MEMBER | NAME        | EMAIl                 | ROLE |
+| ------ | ----------- | --------------------- | ---- |
+| 1      |             |                       |      |
+| 2      |             |                       |      |
+| 3      |             |                       |      |
+| 4      | Yujing Shen | pf25516@bristol.ac.uk |      |
+| 5      |             |                       |      |
+| 6      |             |                       |      |
+
+
 
 ## Project Report
 
