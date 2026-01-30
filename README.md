@@ -25,11 +25,11 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 
 ## Your Group
 
-GROUP PHOTO. Add a group photo here.
+<img src="weekly-homeworks/assets/week-01-photo.jpeg" width="500" alt="Group phote">
 
 | MEMBER | NAME        | EMAIl                 | ROLE |
 | ------ | ----------- | --------------------- | ---- |
-| 1      |             |                       |      |
+| 1      | Xian Li     | yd25988@bristol.ac.uk |      |
 | 2      |             |                       |      |
 | 3      |             |                       |      |
 | 4      | Yujing Shen | pf25516@bristol.ac.uk |      |
