@@ -33,8 +33,8 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 | 2      |             |                       |      |
 | 3      |             |                       |      |
 | 4      | Yujing Shen | pf25516@bristol.ac.uk |      |
-| 5      |             |                       |      |
-| 6      |             |                       |      |
+| 5      | Panarin Thipboonthong | uk25559@bristol.ac.uk |      |
+| 6      | Koki Fushiya            | bz25385@bristol.ac.uk                      |      |
 
 
 
