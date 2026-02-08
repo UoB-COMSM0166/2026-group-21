@@ -23,7 +23,7 @@ A top-down "reverse bullet hell" survival game. The player controls a single cha
 ## Option B: Shuttle Smash (2D Racket Sports)
 ![Shuttle Smash Gameplay](./assets/week-02-sport.gif)
 ### Game Description
-A high-paced 2D sports game that blends the physics of badminton and tennis with a strategic "Action-RPG" twist. Players compete in a 1v1 arena (Local Multiplayer or AI), aiming to outmaneuver their opponent through precise timing and the tactical use of specialized shot types.
+A high-paced 2D sports game that blends the physics of badminton and tennis with a strategic twist. Players compete in a 1v1 arena (Local Multiplayer or AI), aiming to outmaneuver their opponent through precise timing and the tactical use of specialized shot types.
 
 ### Mechanics
 + **Physics-Driven Movement:** Includes 2D lateral movement and jumping. The shuttlecock/ball utilizes a custom physics engine to simulate Gravity, Air Resistance (Drag), and Net Collisions.
