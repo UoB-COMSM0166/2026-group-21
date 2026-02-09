@@ -42,8 +42,11 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 
 ### Introduction
 
-- 5% ~250 words 
-- Describe your game, what is based on, what makes it novel? (what's the "twist"?) 
+**Shuttle Smash** is a high-paced 2D **combat-style sports game** that hybridizes the physics of badminton and tennis with strategic, arcade-inspired mechanics. Developed using the **p5.js** library, the game draws aesthetic and gameplay inspiration from classics like **Mario Tennis** and the accessibility of **Wii Sports**, but distinguishes itself by grounding its "supernatural" elements in a custom-built, rigorous physics engine.
+
+The core gameplay features a 1v1 arena where success depends not only on reflexes but also on mastering a **Dynamic Hitting System**. A custom physics engine simulates complex environmental forces—including gravity, air resistance (drag), and net collisions—ensuring that the projectile's trajectory is dictated by the precise timing of the player's input (Early, Late, or Perfect). To add a layer of tactical realism, players must manage a stamina gauge, balancing aggressive maneuvers with defensive positioning.
+
+**The Novelty: "Tactical Environmental Combat"** The primary "twist" of the project lies in its integration of **unique environmental hazards** and **modular abilities**, elevating the game from a standard sports simulation to a strategic combat experience. Unlike traditional tennis games, our arenas actively influence gameplay: an **Ice Stage** may reduce friction or freeze players, while a **Desert Stage** introduces strong wind vectors that alter ball trajectory. Additionally, players can trigger manual special moves—such as "Time-Slow" or "Mirror Image"—to counter opponents. From a technical perspective, this required a highly **modular software architecture**, allowing these distinct shot behaviors and environmental variables to be implemented as independent classes without disrupting the core physics consistency.
 
 ### Requirements 
 
