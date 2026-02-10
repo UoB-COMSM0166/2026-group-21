@@ -1,6 +1,6 @@
 let player, opponent, ball;
 let playerImg, opponentImg, courtImg;
-let COURT_LEFT, COURT_RIGHT, COURT_TOP, COURT_BOTTOM, NET_Y;
+let COURT_LEFT, COURT_RIGHT, COURT_TOP, COURT_BOTTOM, CENTER_X, NET_Y;
 let SIDE_LEFT, SIDE_RIGHT;
 let currentServer = 'PLAYER';
 let currentSide = 'RIGHT';
@@ -77,9 +77,20 @@ function updateDimensions() {
     // center the court horizontally
     COURT_LEFT = (width - FIXED_COURT_W) / 2;
     COURT_RIGHT = (width + FIXED_COURT_W) / 2;
-    //put the court near the bottom of the window
-    COURT_BOTTOM = height - 150;
-    COURT_TOP = COURT_BOTTOM - FIXED_COURT_H;
+    CENTER_X = (COURT_LEFT + COURT_RIGHT) / 2;
+    //layout optimization for different size of screen
+    let extraHeight = height - FIXED_COURT_H;
+    if (height > 775) {
+        COURT_TOP = 150;
+        COURT_BOTTOM = COURT_TOP + FIXED_COURT_H;
+    } else {
+        COURT_TOP = extraHeight / 2;
+        COURT_BOTTOM = COURT_TOP + FIXED_COURT_H;
+        if (COURT_TOP < 20) {
+            COURT_TOP = 20;
+            COURT_BOTTOM = COURT_TOP + FIXED_COURT_H;
+        }
+    }
     //net is in the middle of the court
     NET_Y = (COURT_TOP + COURT_BOTTOM) / 2;
     //serve positions relative to the court boundaries

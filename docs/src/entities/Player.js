@@ -42,7 +42,7 @@ class Player {
     // reset player's position
     resetPosition(newX) {
         this.x = newX;
-        let serveBackDistance = 30;
+        let serveBackDistance = 5;
         if (this.isBottom) {
             this.y = COURT_BOTTOM + serveBackDistance - this.h / 2;
         } else {
@@ -68,28 +68,41 @@ class Player {
     updateTimers() {
         if (this.swingTimer > 0) { this.swingTimer--; }
     }
-
+    //constraint player's position based on current state
     applyConstraints() {
-        // keep player within horizontal canvas limits
-        this.x = constrain(
-            this.x,
-            COURT_LEFT - MOVE_PADDING_X,
-            COURT_RIGHT + MOVE_PADDING_X
-        );
-
-        // vertical limits, bottom player restriced to the bottom half and vice vesa
-        if (this.isBottom) {
-            this.y = constrain(
-                this.y,
-                NET_Y + 10 + this.h / 2,
-                COURT_BOTTOM + MOVE_PADDING_Y
-            );
+        let minX = max(this.w / 2, COURT_LEFT - MOVE_PADDING_X);
+        let maxX = min(width - this.w / 2, COURT_RIGHT + MOVE_PADDING_X);
+        let minY, maxY;
+        const isServingNow = 
+            (ball.isWaiting || ball.isTossing) &&
+            ((this.isBottom && currentServer === 'PLAYER') ||
+            (!this.isBottom && currentServer === 'OPPONENT'));
+        //serve mode boundaries
+        if (isServingNow) {
+            if (currentSide === 'RIGHT') {
+                minX = CENTER_X + this.w / 2;
+            } else {
+                maxX = CENTER_X - this.w / 2;
+            }
+            if (this.isBottom) {
+                minY = COURT_BOTTOM - this.h / 2;
+                maxY = min(height - this.h / 2, minY + 50);
+            } else {
+                maxY = COURT_TOP - this.h / 2;
+                minY = max(this.h / 2, maxY - 50);
+            }
+        //standard mode boundaries
         } else {
-            this.y = constrain(
-                this.y,
-                COURT_TOP - MOVE_PADDING_Y,
-                NET_Y - 10 - this.h / 2
-            );
+            if (this.isBottom) {
+                minY = NET_Y + 10 + this.h / 2;
+                maxY = min(height - this.h / 2, COURT_BOTTOM + MOVE_PADDING_Y);
+            } else {
+                minY = max(this.h / 2, COURT_TOP - MOVE_PADDING_Y);
+                maxY = NET_Y - 10 - this.h / 2;
+            }
         }
+        //update position based on calculation
+        this.x = constrain(this.x, minX, maxX);
+        this.y = constrain(this.y, minY, maxY);
     }
 }
