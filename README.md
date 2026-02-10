@@ -27,14 +27,14 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 
 <img src="weekly-homeworks/assets/week-01-photo.jpeg" width="500" alt="Group phote">
 
-| MEMBER | NAME        | EMAIl                 | ROLE |
-| ------ | ----------- | --------------------- | ---- |
-| 1      | Xian Li     | yd25988@bristol.ac.uk |      |
-| 2      |             |                       |      |
-| 3      |             |                       |      |
-| 4      | Yujing Shen | pf25516@bristol.ac.uk |      |
+| MEMBER | NAME                  | EMAIl                 | ROLE |
+| ------ | --------------------- | --------------------- | ---- |
+| 1      | Xian Li               | yd25988@bristol.ac.uk |      |
+| 2      | Yu-Han Sun            | qv25088@bristol.ac.uk |      |
+| 3      | Yu-Chun Chen          | df25142@bristol.ac.uk |      |
+| 4      | Yujing Shen           | pf25516@bristol.ac.uk |      |
 | 5      | Panarin Thipboonthong | uk25559@bristol.ac.uk |      |
-| 6      | Koki Fushiya            | bz25385@bristol.ac.uk                      |      |
+| 6      | Koki Fushiya          | bz25385@bristol.ac.uk |      |
 
 
 
