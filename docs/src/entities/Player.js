@@ -2,9 +2,9 @@ class Player {
     constructor(x, img, isBottom) {
         this.x = x;
         this.img = img;
-        this.w = 64;
-        this.h = 64;
-        this.speed = 5;
+        this.w = GAME_CONFIG.PLAYER.WIDTH;
+        this.h = GAME_CONFIG.PLAYER.HEIGHT;
+        this.speed = GAME_CONFIG.PLAYER.SPEED;
         this.isBottom = isBottom; //true for bottom player, false for opponent
         this.score = 0;
         this.swingTimer = 0; //duration of the hit active window
@@ -23,45 +23,47 @@ class Player {
         translate(this.x, this.y);
         // visual feedback when swinging
         if (this.swingTimer > 0) {
-            tint(255, 200, 200);
-            scale(1.1);
+            tint(GAME_CONFIG.COLORS.PLAYER_SWING);
+            scale(GAME_CONFIG.PLAYER.SWING_SCALE);
         }
         if (this.img) {
             image(this.img, 0, 0, this.w, this.h);
         } else {
             //fallback if image fails to load
-            fill(this.isBottom ? 100 : 200);
+            fill(GAME_CONFIG.COLORS.FALLBACK);
             rect(0, 0, this.w, this.h);
         }
         pop();
     }
 
     //enable the hit detection for a short period
-    swing() { this.swingTimer = 10; }
+    swing() { this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; }
 
     // reset player's position
     resetPosition(newX) {
         this.x = newX;
-        let serveBackDistance = 5;
+        let serveBackDistance = GAME_CONFIG.PLAYER.SERVE_OFFSET;
         if (this.isBottom) {
-            this.y = COURT_BOTTOM + serveBackDistance - this.h / 2;
+            this.y = layout.courtBottom + serveBackDistance - this.h / 2;
         } else {
-            this.y = COURT_TOP - serveBackDistance - this.h / 2;
+            this.y = layout.courtTop - serveBackDistance - this.h / 2;
         }
     }
 
     handleInput() {
         // handle keyboard inputs based on player role
+        // left, right, up, down arrows
         if (this.isBottom) {
-            if (keyIsDown(LEFT_ARROW)) this.x -= this.speed;
-            if (keyIsDown(RIGHT_ARROW)) this.x += this.speed;
-            if (keyIsDown(UP_ARROW)) this.y -= this.speed;
-            if (keyIsDown(DOWN_ARROW)) this.y += this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_LEFT)) this.x -= this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_RIGHT)) this.x += this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_UP)) this.y -= this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_DOWN)) this.y += this.speed;
         } else {
-            if (keyIsDown(65)) this.x -= this.speed; // 'A'
-            if (keyIsDown(68)) this.x += this.speed; // 'D'
-            if (keyIsDown(87)) this.y -= this.speed; // 'W'
-            if (keyIsDown(83)) this.y += this.speed; // 'S'
+            // WASD
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.x -= this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.x += this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.y -= this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.y += this.speed;
         }
     }
     // decrement hit window timer
@@ -70,39 +72,58 @@ class Player {
     }
     //constraint player's position based on current state
     applyConstraints() {
-        let minX = max(this.w / 2, COURT_LEFT - MOVE_PADDING_X);
-        let maxX = min(width - this.w / 2, COURT_RIGHT + MOVE_PADDING_X);
-        let minY, maxY;
-        const isServingNow = 
-            (ball.isWaiting || ball.isTossing) &&
-            ((this.isBottom && currentServer === 'PLAYER') ||
-            (!this.isBottom && currentServer === 'OPPONENT'));
+        const { COURT, PLAYER } = GAME_CONFIG;
+        const { courtLeft, courtRight, courtTop, courtBottom, centerX, netY } = layout;
+        const hw = this.w / 2;
+        const hh = this.h / 2;
+        let minX, maxX, minY, maxY;
+        if (this.isBottom) {
+            maxY = min(height - hh, courtBottom + COURT.MOVE_PADDING_Y);
+        } else {
+            minY = max(hh, courtTop - COURT.MOVE_PADDING_Y);
+        }
+        const isServer = (this.isBottom && currentServer === 'PLAYER') ||
+                         (!this.isBottom && currentServer === 'OPPONENT');
+        const isServingNow = (ball.isWaiting || ball.isTossing) && isServer;
         //serve mode boundaries
         if (isServingNow) {
             if (currentSide === 'RIGHT') {
-                minX = CENTER_X + this.w / 2;
+                minX = centerX + hw;
+                maxX = courtRight - hw;
             } else {
-                maxX = CENTER_X - this.w / 2;
+                minX = courtLeft + hw;
+                maxX = centerX - hw;
             }
             if (this.isBottom) {
-                minY = COURT_BOTTOM - this.h / 2;
-                maxY = min(height - this.h / 2, minY + 50);
+                minY = courtBottom - hh;
             } else {
-                maxY = COURT_TOP - this.h / 2;
-                minY = max(this.h / 2, maxY - 50);
+                maxY = courtTop - hh;
             }
         //standard mode boundaries
         } else {
+            minX = max(hw, courtLeft - COURT.MOVE_PADDING_X);
+            maxX = min(width - hw, courtRight + COURT.MOVE_PADDING_X);
             if (this.isBottom) {
-                minY = NET_Y + 10 + this.h / 2;
-                maxY = min(height - this.h / 2, COURT_BOTTOM + MOVE_PADDING_Y);
+                minY = netY + PLAYER.NET_MARGIN + hh;
             } else {
-                minY = max(this.h / 2, COURT_TOP - MOVE_PADDING_Y);
-                maxY = NET_Y - 10 - this.h / 2;
+                maxY = netY - PLAYER.NET_MARGIN - hh;
             }
         }
         //update position based on calculation
         this.x = constrain(this.x, minX, maxX);
         this.y = constrain(this.y, minY, maxY);
+    }
+    //normalizes position to a 0-1 scale to maintain alignment during resizing
+    getRelativePos(layout) {
+        return {
+            x: (this.x - layout.courtLeft) / layout.COURT_W,
+            y: (this.y - layout.courtTop) / layout.COURT_H
+        };
+    }
+    //re-maps normalized coordinates back to absolute pixels after resizing
+    reposition(rel, layout) {
+        this.x = layout.courtLeft + rel.x * layout.COURT_W;
+        this.y = layout.courtTop + rel.y * layout.COURT_H;
+        this.applyConstraints();
     }
 }
