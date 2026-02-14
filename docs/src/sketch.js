@@ -1,34 +1,27 @@
-let player, opponent, ball;
+let player, opponent, ball, layout;
 let playerImg, opponentImg, courtImg;
-let COURT_LEFT, COURT_RIGHT, COURT_TOP, COURT_BOTTOM, CENTER_X, NET_Y;
-let SIDE_LEFT, SIDE_RIGHT;
-let currentServer = 'PLAYER';
-let currentSide = 'RIGHT';
-const FIXED_COURT_W = 450;
-const FIXED_COURT_H = 575;
-//movement padding to allow players to move beyond the visual court lines
-const MOVE_PADDING_X = 150;
-const MOVE_PADDING_Y = 100;
+let currentServer = GAME_CONFIG.MATCH.DEFAULT_SERVER;
+let currentSide = GAME_CONFIG.MATCH.DEFAULT_SIDE;
 
 function preload() {
-    playerImg = loadImage('assets/images/player_bird_back.png');
-    opponentImg = loadImage('assets/images/player_cat_front.png');
-    courtImg = loadImage('assets/images/stadiumtest.png');
+    playerImg = loadImage(GAME_CONFIG.ASSETS.PLAYER_IMG);
+    opponentImg = loadImage(GAME_CONFIG.ASSETS.OPPONENT_IMG);
+    courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    updateDimensions(); //calculate layout before spawning objects
-    player = new Player(SIDE_RIGHT, playerImg, true);
-    opponent = new Player(SIDE_LEFT, opponentImg, false);
+    layout = new LayoutManager();
+    player = new Player(layout.sideRight, playerImg, true);
+    opponent = new Player(layout.sideLeft, opponentImg, false);
     ball = new Ball();
     ball.reset(player.x, player.y, 'PLAYER');
 }
 
 function draw() {
-    background(255, 255, 255);
+    background(GAME_CONFIG.COLORS.COURT_BG);
     imageMode(CORNER);
-    image(courtImg, COURT_LEFT, COURT_TOP, FIXED_COURT_W, FIXED_COURT_H);
+    image(courtImg, layout.courtLeft, layout.courtTop, layout.COURT_W, layout.COURT_H);
     player.update();
     player.display();
     opponent.update();
@@ -40,14 +33,14 @@ function draw() {
 }
 // handle keyboard triggers for serving and swinging
 function keyPressed() {
-    if (keyCode === ENTER) {
+    if (keyCode === GAME_CONFIG.CONTROLS.PLAYER_ACTION) {
         if (currentServer === 'PLAYER' && ball.isWaiting) {
             ball.toss();
         } else {
             player.swing();
         }
     }
-    if (key === ' ') {
+    if (keyCode === GAME_CONFIG.CONTROLS.OPPONENT_ACTION) {
         if (currentServer === 'OPPONENT' && ball.isWaiting) {
             ball.toss();
         } else {
@@ -59,8 +52,8 @@ function keyPressed() {
 function nextRound() {
     currentServer = (currentServer === 'PLAYER') ? 'OPPONENT' : 'PLAYER';
     currentSide = (currentSide === 'RIGHT') ? 'LEFT' : 'RIGHT';
-    let serverX = (currentSide === 'RIGHT') ? SIDE_RIGHT : SIDE_LEFT;
-    let receiverX = (currentSide === 'RIGHT') ? SIDE_LEFT : SIDE_RIGHT;
+    let serverX = (currentSide === 'RIGHT') ? layout.sideRight : layout.sideLeft;
+    let receiverX = (currentSide === 'RIGHT') ? layout.sideLeft : layout.sideRight;
 
     if (currentServer === 'PLAYER') {
         player.resetPosition(serverX);
@@ -72,54 +65,18 @@ function nextRound() {
         ball.reset(opponent.x, opponent.y, 'OPPONENT');
     }
 }
-//dynamically calculate court boundaries based on current window size
-function updateDimensions() {
-    // center the court horizontally
-    COURT_LEFT = (width - FIXED_COURT_W) / 2;
-    COURT_RIGHT = (width + FIXED_COURT_W) / 2;
-    CENTER_X = (COURT_LEFT + COURT_RIGHT) / 2;
-    //layout optimization for different size of screen
-    let extraHeight = height - FIXED_COURT_H;
-    if (height > 775) {
-        COURT_TOP = 150;
-        COURT_BOTTOM = COURT_TOP + FIXED_COURT_H;
-    } else {
-        COURT_TOP = extraHeight / 2;
-        COURT_BOTTOM = COURT_TOP + FIXED_COURT_H;
-        if (COURT_TOP < 20) {
-            COURT_TOP = 20;
-            COURT_BOTTOM = COURT_TOP + FIXED_COURT_H;
-        }
-    }
-    //net is in the middle of the court
-    NET_Y = (COURT_TOP + COURT_BOTTOM) / 2;
-    //serve positions relative to the court boundaries
-    let outsideOffset = 30;
-    SIDE_LEFT = COURT_LEFT + outsideOffset;
-    SIDE_RIGHT = COURT_RIGHT - outsideOffset;
-}
+
 // handle window resizing
 function windowResized() {
     //calculate relative positions before resizing
-    let relPX = (player.x - COURT_LEFT) / FIXED_COURT_W;
-    let relPY = (player.y - COURT_TOP) / FIXED_COURT_H;
-    let relOX = (opponent.x - COURT_LEFT) / FIXED_COURT_W;
-    let relOY = (opponent.y - COURT_TOP) / FIXED_COURT_H;
-    let relBX = (ball.x - COURT_LEFT) / FIXED_COURT_W;
-    let relBY = (ball.y - COURT_TOP) / FIXED_COURT_H;
+    let relP = player.getRelativePos(layout);
+    let relO = opponent.getRelativePos(layout);
+    let relB = ball.getRelativePos(layout);
     //resize canvas and caculate layout boundaries
     resizeCanvas(windowWidth, windowHeight);
-    updateDimensions();
+    layout.update();
     //remap objects positions to the new position
-    player.x = COURT_LEFT + relPX * FIXED_COURT_W;
-    player.y = COURT_TOP + relPY * FIXED_COURT_H;
-    opponent.x = COURT_LEFT + relOX * FIXED_COURT_W;
-    opponent.y = COURT_TOP + relOY * FIXED_COURT_H;
-    ball.x = COURT_LEFT + relBX * FIXED_COURT_W;
-    ball.y = COURT_TOP + relBY * FIXED_COURT_H;
-    //safe check for constrain character to valid movement zones
-    player.x = constrain(player.x, COURT_LEFT - MOVE_PADDING_X, COURT_RIGHT + MOVE_PADDING_X);
-    player.y = constrain(player.y, NET_Y + 20, COURT_BOTTOM + MOVE_PADDING_Y);
-    opponent.x = constrain(opponent.x, COURT_LEFT - MOVE_PADDING_X, COURT_RIGHT + MOVE_PADDING_X);
-    opponent.y = constrain(opponent.y, COURT_TOP - MOVE_PADDING_Y, NET_Y - 20);
+    player.reposition(relP, layout);
+    opponent.reposition(relO, layout);
+    ball.reposition(relB, layout);
 }
