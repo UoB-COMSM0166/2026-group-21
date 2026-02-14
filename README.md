@@ -42,8 +42,11 @@ VIDEO. Include a demo video of your game here (you don't have to wait until the 
 
 ### Introduction
 
-- 5% ~250 words 
-- Describe your game, what is based on, what makes it novel? (what's the "twist"?) 
+**Shuttle Smash** is a 2D physics-based sports game developed in p5.js. It combines the rules of badminton and tennis with Action-RPG combat elements. The project focuses on two key technical pillars: a custom physics simulation and a modular ability system.
+
+**Core Mechanics:** The gameplay is driven by a rigorous physics engine that handles gravity, drag, and collision detection. We designed a "Dynamic Hitting System" where input timing determines the shot's outcome, moving away from random chance. Players must also manage stamina, adding a layer of resource management to the twitch-based gameplay.
+
+**The Novelty:** What distinguishes this project is the integration of "Modular Supernatural Combat." Unlike standard sports games, our architecture supports dynamic environmental modifiers (e.g., wind vectors, friction changes) and active player skills like "Time-Slow." We achieved this through a modular class structure, ensuring that adding new environmental effects or special moves does not disrupt the core physics loop.
 
 ### Requirements 
 
