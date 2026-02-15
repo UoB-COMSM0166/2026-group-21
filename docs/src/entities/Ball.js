@@ -38,7 +38,7 @@ class Ball {
         let shadowSize = max(baseSize - zShrink, VISUALS.SHADOW_MIN_SIZE);
         ellipse(this.x, this.y, shadowSize, shadowSize * VISUALS.SHADOW_ELLIPSE_H);
         // draw ball
-        fill(COLORS.BALL);
+        fill(COLORS.YELLOW);
         stroke(0);
         ellipse(this.x, this.y - visualZ - this.r, this.r * 2);
     }
@@ -53,7 +53,7 @@ class Ball {
     // locks the ball position to the serve during serve preparation
     handleServeState() {
         if (this.isWaiting || this.isTossing) {
-            let server = (this.serveSide === 'PLAYER') ? player : opponent;
+            let server = (scoreManager.currentServer === 'PLAYER') ? player : opponent;
             this.x = server.x;
             this.y = server.y;
 
@@ -81,7 +81,8 @@ class Ball {
             this.z = 0;
             // fail if ball is tossed but never hit
             if (this.isTossing) {
-                this.terminateRound();
+                const winner = (this.serveSide === 'PLAYER') ? 'OPPONENT' : 'PLAYER';
+                this.terminateRound(winner);
                 return;
             }
             this.bounceCount++;
@@ -92,7 +93,8 @@ class Ball {
             if (this.bounceCount === 1) {
                 this.handleFirstBounce(isInside);
             } else if (this.bounceCount === 2) {
-                this.terminateRound();
+                const winner = this.lastHitter.isBottom ? 'PLAYER' : 'OPPONENT';
+                this.terminateRound(winner);
             }
         }
     }
@@ -103,7 +105,8 @@ class Ball {
         const isCorrectSide = hitterIsBottom ? (this.y < layout.netY) : (this.y > layout.netY);
 
         if (!isInside || !isCorrectSide) {
-            this.terminateRound();
+            const winner = hitterIsBottom ? 'OPPONENT' : 'PLAYER';
+            this.terminateRound(winner);
         } else {
             // reduce velocity and bounce upward
             this.vz = GAME_CONFIG.BALL.BOUNCE_Z;
@@ -112,12 +115,16 @@ class Ball {
         }
     }
     //ends the round with slight delay
-    terminateRound() {
+    terminateRound(winner) {
         this.vz = 0; this.vx = 0; this.vy = 0;
         if (!this.roundEnding) {
             this.roundEnding = true;
+            if (scoreManager) {
+                scoreManager.recordPoint(winner);
+            }
             setTimeout(() => {
                 this.roundEnding = false;
+                if (scoreManager) scoreManager.prepareNextPoint();
                 nextRound();
             }, GAME_CONFIG.MATCH.ROUND_END_DELAY);
         }
@@ -125,9 +132,14 @@ class Ball {
     // safe mechanism to reset game if ball is outside the playable area
     checkSafetyBounds() {
         const limit = GAME_CONFIG.MATCH.SAFETY_LIMIT;
-        if (this.y < -limit || this.y > height + limit ||
-            this.x < -limit || this.x > width + limit) {
-            nextRound();
+        const isOut = (this.y < -limit || this.y > height + limit ||
+            this.x < -limit || this.x > width + limit);
+        if (isOut && !this.roundEnding) {
+            const hitter = this.lastHitter;
+            const winner = hitter
+                ? (hitter.isBottom ? 'OPPONENT' : 'PLAYER')
+                : (this.serveSide === 'PLAYER' ? 'OPPONENT' : 'PLAYER');
+            this.terminateRound(winner);
         }
     }
     // collision detection with player's racket during swing
@@ -147,7 +159,7 @@ class Ball {
             this.vx = (this.x - p.x) * DIRECTION_MULT;
             // forces the ball to fly diagonally to the opposite side during a serve
             if (this.isTossing) {
-                if (currentSide === 'RIGHT') {
+                if (scoreManager.currentSide === 'RIGHT') {
                     this.vx = constrain(this.vx, -SERVE_MAX_VX, -SERVE_MIN_VX);
                 } else {
                     this.vx = constrain(this.vx, SERVE_MIN_VX, SERVE_MAX_VX);

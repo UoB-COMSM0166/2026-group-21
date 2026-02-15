@@ -7,6 +7,7 @@ class LayoutManager {
         this.courtTop = 0;
         this.courtBottom = 0;
         this.centerX = 0;
+        this.centerY = 0;
         this.netY = 0;
         this.update();
     }
@@ -26,6 +27,7 @@ class LayoutManager {
         this.courtBottom = this.courtTop + this.COURT_H;
         //net is in the middle of the court
         this.netY = (this.courtTop + this.courtBottom) / 2;
+        this.centerY = this.netY;
         //serve positions relative to the court boundaries
         this.sideLeft = this.courtLeft + GAME_CONFIG.COURT.SERVE_OUTSIDE_OFFSET;
         this.sideRight = this.courtRight - GAME_CONFIG.COURT.SERVE_OUTSIDE_OFFSET;
