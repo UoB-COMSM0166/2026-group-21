@@ -155,3 +155,5 @@ A 2D puzzle-platformer where players act as a technician inside a failing comput
 2. **Managing Dynamic Physics in Locally Flipped Gravity** 
     + **Description:** Handling collision detection when different objects (player, blocks, enemies) are subject to different gravity vectors in the same scene is technically complex in p5.js.
     + **Software Engineering Method:** We will design a **Physics Manager** using Composition. Instead of global gravity, each entity will hold a Gravity Component. The manager will calculate collisions based on the entity's local orientation, ensuring "Logic Blocks" fall correctly even when the player is on a ceiling.
+
+[Original Game Ideas Collection](https://docs.google.com/document/d/1nrocSGf6uqzb97ttsJxpVtYdhJrd-7BKs9r7RD0a1_Y/edit?usp=sharing)

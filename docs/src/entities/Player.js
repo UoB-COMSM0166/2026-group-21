@@ -23,7 +23,7 @@ class Player {
         translate(this.x, this.y);
         // visual feedback when swinging
         if (this.swingTimer > 0) {
-            tint(GAME_CONFIG.COLORS.PLAYER_SWING);
+            tint(GAME_CONFIG.COLORS.PINK);
             scale(GAME_CONFIG.PLAYER.SWING_SCALE);
         }
         if (this.img) {
@@ -82,12 +82,12 @@ class Player {
         } else {
             minY = max(hh, courtTop - COURT.MOVE_PADDING_Y);
         }
-        const isServer = (this.isBottom && currentServer === 'PLAYER') ||
-                         (!this.isBottom && currentServer === 'OPPONENT');
+        const isServer = (this.isBottom && scoreManager.currentServer === 'PLAYER') ||
+                         (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
         const isServingNow = (ball.isWaiting || ball.isTossing) && isServer;
         //serve mode boundaries
         if (isServingNow) {
-            if (currentSide === 'RIGHT') {
+            if (scoreManager.currentSide === 'RIGHT') {
                 minX = centerX + hw;
                 maxX = courtRight - hw;
             } else {
