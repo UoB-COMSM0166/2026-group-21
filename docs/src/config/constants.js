@@ -1,4 +1,13 @@
 const GAME_CONFIG = {
+    STATES: {
+        MENU: 'MENU',
+        CHAR_SELECT: 'CHAR_SELECT',
+        MAP_SELECT: 'MAP_SELECT',
+        PLAYING: 'PLAYING',
+        PAUSED: 'PAUSED',
+        TUTORIAL: 'TUTORIAL'
+    },
+
     COURT: {
         WIDTH: 450,
         HEIGHT: 575,
@@ -71,6 +80,7 @@ const GAME_CONFIG = {
 
     CONTROLS: {
         RESTART: 'r',
+        ESCAPE: 27,        // esc
         PLAYER_ACTION: 13, // Enter
         PLAYER_LEFT: 37,   // LEFT_ARROW
         PLAYER_RIGHT: 39,  // RIGHT_ARROW
@@ -80,7 +90,9 @@ const GAME_CONFIG = {
         OPPONENT_LEFT: 65, // A
         OPPONENT_RIGHT: 68,// D
         OPPONENT_UP: 87,   // W
-        OPPONENT_DOWN: 83  // S
+        OPPONENT_DOWN: 83,  // S
+        PLAYER_SKILL: 191,    // /
+        OPPONENT_SKILL: 81   // Q 
     },
 
     VISUALS: {
@@ -102,5 +114,13 @@ const GAME_CONFIG = {
         WINNER_Y_OFFSET: 50,        // winner text vertical offset from center
         RESTART_Y_OFFSET: 50,       // restart hint vertical offset from center
         SCORE_MARGIN_TOP: 10        // safety margin from top edge
-    }
+    },
+
+    CHARACTERS: [
+        { name: "Cat", speed: 5, skillType: 'SPEED_BURST' },
+        { name: "Dog", speed: 5,  skillType: 'POWER_SHOT' },
+        { name: "Deer", speed: 5,  skillType: 'LONG_REACH' },
+        { name: "Bird", speed: 5, skillType: 'TELEPORT' },
+        { name: "?",    speed: 5,  skillType: 'RANDOM' }
+    ]
 };

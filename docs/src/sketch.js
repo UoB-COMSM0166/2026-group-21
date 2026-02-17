@@ -1,6 +1,14 @@
 let player, opponent, ball, layout;
 let playerImg, opponentImg, courtImg, backgroundImg;
 let scoreManager;
+let currentState = GAME_CONFIG.STATES.MENU;
+let isMultiplayer = false;
+let selectedCharacter = 0;
+let selectedMap = 0;
+let p1CharIndex = -1; 
+let p2CharIndex = -1;
+let opponentAI;
+const STATES = GAME_CONFIG.STATES;
 
 function preload() {
     playerImg = loadImage(GAME_CONFIG.ASSETS.PLAYER_IMG);
@@ -14,76 +22,43 @@ function setup() {
     layout = new LayoutManager();
     player = new Player(layout.sideRight, playerImg, true);
     opponent = new Player(layout.sideLeft, opponentImg, false);
+    opponentAI = new AI(opponent);
     ball = new Ball();
     scoreManager = new ScoreManager();
     ball.reset(player.x, player.y, 'PLAYER');
 }
 
 function draw() {
-    strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT); 
-    stroke(GAME_CONFIG.COLORS.BLACK);
-    background(backgroundImg);
-    imageMode(CORNER);
-    image(courtImg, layout.courtLeft, layout.courtTop, layout.COURT_W, layout.COURT_H);
-    if (scoreManager.isMatchOver) {
-        scoreManager.displayGameOver();
-        return;
+    background(GAME_CONFIG.COLORS.WHITE);
+    switch (currentState) {
+        case STATES.MENU:        Scene_Menu.draw();       break;
+        case STATES.CHAR_SELECT: Scene_CharSelect.draw(); break;
+        case STATES.MAP_SELECT:  Scene_MapSelect.draw();  break;
+        case STATES.PLAYING:     Scene_Game.draw();       break;
+        case STATES.PAUSED:      Scene_Pause.draw();      break;
+        case STATES.TUTORIAL:    Scene_Tutorial.draw();   break;
     }
-    player.update();
-    player.display();
-    opponent.update();
-    opponent.display();
-    ball.update();
-    ball.checkHit(player);
-    ball.checkHit(opponent);
-    ball.display();
-    scoreManager.display();
 }
-// handle keyboard triggers for serving and swinging
+
+function mousePressed() {
+    switch (currentState) {
+        case STATES.MENU:        Scene_Menu.handleMouse();       break;
+        case STATES.CHAR_SELECT: Scene_CharSelect.handleMouse(); break;
+        case STATES.MAP_SELECT:  Scene_MapSelect.handleMouse();  break;
+        case STATES.PAUSED:      Scene_Pause.handleMouse();      break;
+    }
+}
+
 function keyPressed() {
-    const { CONTROLS } = GAME_CONFIG;
-    if (scoreManager.isMatchOver) {
-        if (key.toLowerCase() === CONTROLS.RESTART) {
-            restartGame();
-        }
-        return;
-    }
-    if (keyCode === CONTROLS.PLAYER_ACTION) {
-        if (scoreManager.currentServer === 'PLAYER' && ball.isWaiting) {
-            ball.toss();
-        } else {
-            player.swing();
-        }
-    }
-    if (keyCode === CONTROLS.OPPONENT_ACTION) {
-        if (scoreManager.currentServer === 'OPPONENT' && ball.isWaiting) {
-            ball.toss();
-        } else {
-            opponent.swing();
-        }
+    switch (currentState) {
+        case STATES.MENU:        Scene_Menu.handleInput();       break;
+        case STATES.CHAR_SELECT: Scene_CharSelect.handleInput(); break;
+        case STATES.MAP_SELECT:  Scene_MapSelect.handleInput();  break;
+        case STATES.PLAYING:     Scene_Game.handleInput();       break;
+        case STATES.TUTORIAL:    Scene_Tutorial.handleInput();   break;
+        case STATES.PAUSED:      Scene_Pause.handleInput();      break;
     }
 }
-
-function restartGame() {
-    scoreManager.init();
-    nextRound();
-}
-// transition between rounds and switch service sides
-function nextRound() {
-    let serverX = (scoreManager.currentSide === 'RIGHT') ? layout.sideRight : layout.sideLeft;
-    let receiverX = (scoreManager.currentSide === 'RIGHT') ? layout.sideLeft : layout.sideRight;
-
-    if (scoreManager.currentServer === 'PLAYER') {
-        player.resetPosition(serverX);
-        opponent.resetPosition(receiverX);
-        ball.reset(player.x, player.y, 'PLAYER');
-    } else {
-        opponent.resetPosition(serverX);
-        player.resetPosition(receiverX);
-        ball.reset(opponent.x, opponent.y, 'OPPONENT');
-    }
-}
-
 // handle window resizing
 function windowResized() {
     //calculate relative positions before resizing
