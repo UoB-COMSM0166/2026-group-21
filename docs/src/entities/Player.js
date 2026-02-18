@@ -9,10 +9,14 @@ class Player {
         this.score = 0;
         this.swingTimer = 0; //duration of the hit active window
         this.resetPosition(x); //initialize position to the starting baseline
+        this.skillCooldown = 0;
+        this.maxCooldown = 180;
     }
 
-    update() {
-        this.handleInput();
+    update(isAutoControlled = false) {
+        if (!isAutoControlled) {
+            this.handleInput();
+        }
         this.updateTimers();
         this.applyConstraints();
     }
@@ -50,25 +54,33 @@ class Player {
         }
     }
 
+    moveLeft() { this.x -= this.speed; }
+    moveRight() { this.x += this.speed; }
+    moveUp() { this.y -= this.speed; }
+    moveDown() { this.y += this.speed; }
+
     handleInput() {
         // handle keyboard inputs based on player role
         // left, right, up, down arrows
         if (this.isBottom) {
-            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_LEFT)) this.x -= this.speed;
-            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_RIGHT)) this.x += this.speed;
-            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_UP)) this.y -= this.speed;
-            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_DOWN)) this.y += this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_LEFT)) this.moveLeft();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_RIGHT)) this.moveRight();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_UP)) this.moveUp();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_DOWN)) this.moveDown();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_SKILL)) this.useSkill(ball);
         } else {
             // WASD
-            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.x -= this.speed;
-            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.x += this.speed;
-            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.y -= this.speed;
-            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.y += this.speed;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.moveLeft();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.moveRight();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.moveUp();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.moveDown();
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_SKILL)) this.useSkill(ball);
         }
     }
-    // decrement hit window timer
+    // decrement hit window timer and skill cool down
     updateTimers() {
         if (this.swingTimer > 0) { this.swingTimer--; }
+        if (this.skillCooldown > 0) this.skillCooldown--;
     }
     //constraint player's position based on current state
     applyConstraints() {
@@ -125,5 +137,11 @@ class Player {
         this.x = layout.courtLeft + rel.x * layout.COURT_W;
         this.y = layout.courtTop + rel.y * layout.COURT_H;
         this.applyConstraints();
+    }
+    useSkill(ball) {
+        if (this.skillCooldown === 0) {
+            SkillManager.execute(this, ball);
+            this.skillCooldown = this.maxCooldown;
+        }
     }
 }

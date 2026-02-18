@@ -125,7 +125,7 @@ class Ball {
             setTimeout(() => {
                 this.roundEnding = false;
                 if (scoreManager) scoreManager.prepareNextPoint();
-                nextRound();
+                Scene_Game.nextRound();
             }, GAME_CONFIG.MATCH.ROUND_END_DELAY);
         }
     }
