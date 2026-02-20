@@ -5,7 +5,8 @@ const GAME_CONFIG = {
         MAP_SELECT: 'MAP_SELECT',
         PLAYING: 'PLAYING',
         PAUSED: 'PAUSED',
-        TUTORIAL: 'TUTORIAL'
+        TUTORIAL: 'TUTORIAL',
+        DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
     },
 
     COURT: {
@@ -122,5 +123,28 @@ const GAME_CONFIG = {
         { name: "Deer", speed: 5,  skillType: 'LONG_REACH' },
         { name: "Bird", speed: 5, skillType: 'TELEPORT' },
         { name: "?",    speed: 5,  skillType: 'RANDOM' }
-    ]
+    ],
+
+
+    // select AI's level after character for p2 was chosen.
+    AI_LEVELS: {
+        EASY: {
+            speedMult: 0.7,
+            reactionDelay: 13,
+            errorRange: 45,
+            prediction: 4
+        },
+        NORMAL: {
+            speedMult: 0.8,
+            reactionDelay: 8,
+            errorRange: 25,
+            prediction: 8
+        },
+        HARD: {
+            speedMult: 0.89,
+            reactionDelay: 5,
+            errorRange: 15,
+            prediction: 10
+        }
+    }
 };

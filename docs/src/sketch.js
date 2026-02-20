@@ -37,6 +37,7 @@ function draw() {
         case STATES.PLAYING:     Scene_Game.draw();       break;
         case STATES.PAUSED:      Scene_Pause.draw();      break;
         case STATES.TUTORIAL:    Scene_Tutorial.draw();   break;
+        case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.draw(); break;
     }
 }
 
@@ -46,6 +47,7 @@ function mousePressed() {
         case STATES.CHAR_SELECT: Scene_CharSelect.handleMouse(); break;
         case STATES.MAP_SELECT:  Scene_MapSelect.handleMouse();  break;
         case STATES.PAUSED:      Scene_Pause.handleMouse();      break;
+        case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleMouse(); break;
     }
 }
 
@@ -57,6 +59,8 @@ function keyPressed() {
         case STATES.PLAYING:     Scene_Game.handleInput();       break;
         case STATES.TUTORIAL:    Scene_Tutorial.handleInput();   break;
         case STATES.PAUSED:      Scene_Pause.handleInput();      break;
+        case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleInput(); break;
+
     }
 }
 // handle window resizing
