@@ -9,13 +9,11 @@ const Scene_CharSelect = {
         const { centerX, centerY } = layout;
         textAlign(CENTER, CENTER);
 
-        fill(255);
+        fill(0, 255, 255);
         textSize(32);
         if (p1CharIndex === -1) {
-            fill(0, 255, 255);
             text("Player 1: Select Your Character", centerX, centerY - 150);
         } else {
-            fill(0, 255, 255);
             text("Player 2: Select Your Character", centerX, centerY - 150);
         }
 
@@ -35,12 +33,7 @@ const Scene_CharSelect = {
             rectMode(CENTER);
             noFill();
             strokeWeight(2);
-
-            if (i === this.focusedIndex) {
-                stroke(0);
-            } else {
-                stroke(100);
-            }
+            stroke(i === this.focusedIndex ? 0 : 100);
             rect(x, y, this.iconSize, this.iconSize, 10);
 
             fill(255);
@@ -98,10 +91,9 @@ const Scene_CharSelect = {
             let x = startX + i * (this.iconSize + this.spacing);
             let y = centerY;
 
-            let isOverIcon = (mouseX > x - this.iconSize / 2 && mouseX < x + this.iconSize / 2 &&
-                mouseY > y - this.iconSize / 2 && mouseY < y + this.iconSize / 2);
+            if (mouseX > x - this.iconSize / 2 && mouseX < x + this.iconSize / 2 &&
+                mouseY > y - this.iconSize / 2 && mouseY < y + this.iconSize / 2) {
 
-            if (isOverIcon) {
                 this.focusedIndex = i;
                 this.confirmSelection();
                 return;
@@ -113,11 +105,13 @@ const Scene_CharSelect = {
         if (p1CharIndex === -1) {
             p1CharIndex = this.focusedIndex;
         } else if (p2CharIndex === -1) {
-
             p2CharIndex = this.focusedIndex;
-
             this.applySelections();
-            currentState = GAME_CONFIG.STATES.MAP_SELECT;
+            if (isMultiplayer) {
+                currentState = GAME_CONFIG.STATES.MAP_SELECT;
+            } else {
+                currentState = GAME_CONFIG.STATES.DIFFICULTY_SELECT;
+            }
         }
     },
 
@@ -142,6 +136,7 @@ const Scene_CharSelect = {
         opponent.speed = p2Config.speed;
         opponent.skillType = p2Config.skillType;
         opponent.name = p2Config.name;
+
         if (opponentAI) {
 
         }
