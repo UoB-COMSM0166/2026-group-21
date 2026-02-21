@@ -1,6 +1,7 @@
 const Scene_CharSelect = {
     charNames: ["Cat", "Dog", "Deer", "Bird", "?"],
     focusedIndex: 0,
+
     iconSize: 100,
     spacing: 20,
 
@@ -92,6 +93,7 @@ const Scene_CharSelect = {
 
             if (mouseX > x - this.iconSize / 2 && mouseX < x + this.iconSize / 2 &&
                 mouseY > y - this.iconSize / 2 && mouseY < y + this.iconSize / 2) {
+
                 this.focusedIndex = i;
                 this.confirmSelection();
                 return;
@@ -134,5 +136,9 @@ const Scene_CharSelect = {
         opponent.speed = p2Config.speed;
         opponent.skillType = p2Config.skillType;
         opponent.name = p2Config.name;
+
+        if (opponentAI) {
+
+        }
     }
 };

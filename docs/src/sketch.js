@@ -38,6 +38,7 @@ function draw() {
         case STATES.PAUSED:      Scene_Pause.draw();      break;
         case STATES.TUTORIAL:    Scene_Tutorial.draw();   break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.draw(); break;
+
     }
 }
 
@@ -60,7 +61,6 @@ function keyPressed() {
         case STATES.TUTORIAL:    Scene_Tutorial.handleInput();   break;
         case STATES.PAUSED:      Scene_Pause.handleInput();      break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleInput(); break;
-
     }
 }
 // handle window resizing

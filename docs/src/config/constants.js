@@ -5,6 +5,7 @@ const GAME_CONFIG = {
         MAP_SELECT: 'MAP_SELECT',
         PLAYING: 'PLAYING',
         PAUSED: 'PAUSED',
+
         TUTORIAL: 'TUTORIAL',
         DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
     },
@@ -124,7 +125,6 @@ const GAME_CONFIG = {
         { name: "Bird", speed: 5, skillType: 'TELEPORT' },
         { name: "?",    speed: 5,  skillType: 'RANDOM' }
     ],
-
 
     // select AI's level after character for p2 was chosen.
     AI_LEVELS: {
