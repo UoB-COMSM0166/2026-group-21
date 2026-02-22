@@ -10,7 +10,7 @@ class Player {
         this.swingTimer = 0; //duration of the hit active window
         this.resetPosition(x); //initialize position to the starting baseline
         this.skillCooldown = 0;
-        this.maxCooldown = 180;
+        this.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
     }
 
     update(isAutoControlled = false) {
@@ -95,7 +95,7 @@ class Player {
             minY = max(hh, courtTop - COURT.MOVE_PADDING_Y);
         }
         const isServer = (this.isBottom && scoreManager.currentServer === 'PLAYER') ||
-                         (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
+            (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
         const isServingNow = (ball.isWaiting || ball.isTossing) && isServer;
         //serve mode boundaries
         if (isServingNow) {
@@ -111,7 +111,7 @@ class Player {
             } else {
                 maxY = courtTop - hh;
             }
-        //standard mode boundaries
+            //standard mode boundaries
         } else {
             minX = max(hw, courtLeft - COURT.MOVE_PADDING_X);
             maxX = min(width - hw, courtRight + COURT.MOVE_PADDING_X);
@@ -138,10 +138,35 @@ class Player {
         this.y = layout.courtTop + rel.y * layout.COURT_H;
         this.applyConstraints();
     }
+
     useSkill(ball) {
         if (this.skillCooldown === 0) {
             SkillManager.execute(this, ball);
             this.skillCooldown = this.maxCooldown;
         }
+    }
+    // temporarily skillbar placeholder
+    displaySkillBar(x, y, w, h) {
+        push();
+        let progress = 1 - (this.skillCooldown / this.maxCooldown);
+        progress = constrain(progress, 0, 1);
+
+        noStroke();
+        fill(50, 50, 50, 200);
+        rectMode(CORNER);
+        rect(x, y, w, h, 5);
+
+        if (progress >= 1) {
+            fill(GAME_CONFIG.COLORS.PINK);
+            if (frameCount % 30 < 15) fill(255);
+        } else {
+            fill(100, 200, 255);
+        }
+        rect(x, y, w * progress, h, 5);
+        fill(255);
+        textSize(12);
+        textAlign(LEFT, CENTER);
+        text("SKILL", x + 5, y + h / 2);
+        pop();
     }
 }

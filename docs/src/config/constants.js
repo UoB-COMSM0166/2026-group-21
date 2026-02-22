@@ -70,7 +70,8 @@ const GAME_CONFIG = {
         SWING_DURATION: 10,         // frames: how long the hit window stays active
         SERVE_OFFSET: 5,            // Starting distance behind baseline
         NET_MARGIN: 10,             // Minimum safe distance from net
-        SWING_SCALE: 1.1            // Visual feedback multiplier during swing
+        SWING_SCALE: 1.1,            // Visual feedback multiplier during swing
+        SKILL_COOLDOWN: 180
     },
 
     ASSETS: {
@@ -119,11 +120,11 @@ const GAME_CONFIG = {
     },
 
     CHARACTERS: [
-        { name: "Cat", speed: 5, skillType: 'SPEED_BURST' },
-        { name: "Dog", speed: 5,  skillType: 'POWER_SHOT' },
-        { name: "Deer", speed: 5,  skillType: 'LONG_REACH' },
-        { name: "Bird", speed: 5, skillType: 'TELEPORT' },
-        { name: "?",    speed: 5,  skillType: 'RANDOM' }
+        { name: "Cat", speed: 5, skillType: 'SHADOW_TELEPORT' },
+        { name: "Dog", speed: 5,  skillType: 'GIGA_BALL' },
+        { name: "Deer", speed: 5,  skillType: 'FEATHER_STORM' },
+        { name: "Bird", speed: 5, skillType: 'FOREST_ZEN' },
+        { name: "?",    speed: 5,  skillType: '?' }
     ],
 
     // select AI's level after character for p2 was chosen.

@@ -23,6 +23,24 @@ const Scene_Game = {
         ball.checkHit(opponent);
         ball.display();
         scoreManager.display();
+        // temporarily skillbar placeholder
+        const barWidth = 150;
+        const barHeight = 15;
+        const margin = 20;
+
+        player.displaySkillBar(
+            width - barWidth - margin,
+            height - barHeight - margin,
+            barWidth,
+            barHeight
+        );
+
+        opponent.displaySkillBar(
+            margin,
+            margin,
+            barWidth,
+            barHeight
+        );
     },
     // handle keyboard triggers for serving, swinging, esc and restart
     handleInput: function () {
