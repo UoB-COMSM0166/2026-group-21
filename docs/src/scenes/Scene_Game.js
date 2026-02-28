@@ -42,7 +42,7 @@ const Scene_Game = {
             barHeight
         );
     },
-    // handle keyboard triggers for serving, swinging, esc and restart
+    // handle keyboard triggers for player action, esc and restart
     handleInput: function () {
         const { CONTROLS } = GAME_CONFIG;
         if (keyCode === CONTROLS.ESCAPE) {
@@ -54,15 +54,9 @@ const Scene_Game = {
             if (key.toLowerCase() === CONTROLS.RESTART) this.restartGame();
             return;
         }
-        if (keyCode === CONTROLS.PLAYER_ACTION) {
-            if (scoreManager.currentServer === 'PLAYER' && ball.isWaiting) ball.toss();
-            else player.swing();
-        }
+        player.handleKeyPress(keyCode, ball);
         if (isMultiplayer) {
-            if (keyCode === CONTROLS.OPPONENT_ACTION) {
-                if (scoreManager.currentServer === 'OPPONENT' && ball.isWaiting) ball.toss();
-                else opponent.swing();
-            }
+            opponent.handleKeyPress(keyCode, ball);
         }
     },
 

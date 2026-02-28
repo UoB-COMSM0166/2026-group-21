@@ -62,7 +62,7 @@ class AI {
     calculateServePosition() {
         if (this.serveTargetX !== -1) return this.serveTargetX;
         const { courtLeft, courtRight, centerX } = layout;
-        const padding = 30;
+        const padding = (this.player.w / 2) + 10; 
         if (scoreManager.currentSide === 'RIGHT') {
             this.serveTargetX = random(centerX + padding, courtRight - padding);
         } else {
@@ -86,7 +86,7 @@ class AI {
                     this.serveDelayTimer = int(random(90, 160));
                 }
                 let distToTarget = Math.abs(this.player.x - this.serveTargetX);
-                if (distToTarget < 10 && this.serveDelayTimer > 0) {
+                if (distToTarget < 20 && this.serveDelayTimer > 0) {
                     this.serveDelayTimer--;
                 } else if (this.serveDelayTimer === 0) {
                     ball.toss();

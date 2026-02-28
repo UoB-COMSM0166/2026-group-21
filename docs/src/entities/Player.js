@@ -6,11 +6,22 @@ class Player {
         this.h = GAME_CONFIG.PLAYER.HEIGHT;
         this.speed = GAME_CONFIG.PLAYER.SPEED;
         this.isBottom = isBottom; //true for bottom player, false for opponent
-        this.score = 0;
         this.swingTimer = 0; //duration of the hit active window
         this.resetPosition(x); //initialize position to the starting baseline
         this.skillCooldown = 0;
         this.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
+        this.currentFrame = 0;
+        this.totalFrames = GAME_CONFIG.PLAYER.TOTAL_FRAMES;
+        this.animSpeed = GAME_CONFIG.PLAYER.ANIM_SPEED;
+        this.spriteW = GAME_CONFIG.PLAYER.SPRITE_WIDTH;
+        this.spriteH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
+        this.spriteCols = GAME_CONFIG.PLAYER.SPRITE_COLS;
+        this.hasHit = false;
+    }
+
+    get isServer() {
+        return (this.isBottom && scoreManager.currentServer === 'PLAYER') ||
+               (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
     }
 
     update(isAutoControlled = false) {
@@ -25,23 +36,41 @@ class Player {
         push();
         imageMode(CENTER);
         translate(this.x, this.y);
-        // visual feedback when swinging
-        if (this.swingTimer > 0) {
-            tint(GAME_CONFIG.COLORS.PINK);
-            scale(GAME_CONFIG.PLAYER.SWING_SCALE);
-        }
+        this.drawSprite();
+        pop();
+    }
+    // draw player swing animation sprite
+    drawSprite() {
+        let frameIdx = floor(this.currentFrame);
+        let sx = (frameIdx % this.spriteCols) * this.spriteW;
+        let sy = floor(frameIdx / this.spriteCols) * this.spriteH;
         if (this.img) {
-            image(this.img, 0, 0, this.w, this.h);
+            image(this.img, 0, 0, this.w, this.h, sx, sy, this.spriteW, this.spriteH);
         } else {
             //fallback if image fails to load
             fill(GAME_CONFIG.COLORS.FALLBACK);
             rect(0, 0, this.w, this.h);
         }
-        pop();
     }
 
     //enable the hit detection for a short period
-    swing() { this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; }
+    swing() { 
+        this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
+        this.hasHit = false;
+    }
+    // handle skill and swing button
+    handleKeyPress(keyCode, ball) {
+        const { CONTROLS } = GAME_CONFIG;
+        const actionKey = this.isBottom ? CONTROLS.PLAYER_ACTION : CONTROLS.OPPONENT_ACTION;
+        const skillKey = this.isBottom ? CONTROLS.PLAYER_SKILL : CONTROLS.OPPONENT_SKILL;
+
+        if (keyCode === actionKey) {
+            if (this.isServer && ball.isWaiting) ball.toss();
+            else this.swing();
+        } else if (keyCode === skillKey) {
+            this.useSkill(ball);
+        }
+    }
 
     // reset player's position
     resetPosition(newX) {
@@ -67,19 +96,26 @@ class Player {
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_RIGHT)) this.moveRight();
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_UP)) this.moveUp();
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_DOWN)) this.moveDown();
-            if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_SKILL)) this.useSkill(ball);
         } else {
             // WASD
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.moveLeft();
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.moveRight();
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.moveUp();
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.moveDown();
-            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_SKILL)) this.useSkill(ball);
         }
     }
-    // decrement hit window timer and skill cool down
+    // decrement hit window timer, skill cool down and calcu animation's frame
     updateTimers() {
-        if (this.swingTimer > 0) { this.swingTimer--; }
+        if (this.swingTimer > 0) {
+            this.swingTimer--;
+            this.currentFrame += this.animSpeed;
+
+            if (this.currentFrame >= this.totalFrames) {
+                this.currentFrame = 0;
+            }
+        } else {
+            this.currentFrame = 0;
+        }
         if (this.skillCooldown > 0) this.skillCooldown--;
     }
     //constraint player's position based on current state
@@ -94,9 +130,7 @@ class Player {
         } else {
             minY = max(hh, courtTop - COURT.MOVE_PADDING_Y);
         }
-        const isServer = (this.isBottom && scoreManager.currentServer === 'PLAYER') ||
-            (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
-        const isServingNow = (ball.isWaiting || ball.isTossing) && isServer;
+        const isServingNow = (ball.isWaiting || ball.isTossing) && this.isServer;
         //serve mode boundaries
         if (isServingNow) {
             if (scoreManager.currentSide === 'RIGHT') {
@@ -126,7 +160,7 @@ class Player {
         this.y = constrain(this.y, minY, maxY);
     }
     //normalizes position to a 0-1 scale to maintain alignment during resizing
-    getRelativePos(layout) {
+    get relativePos() {
         return {
             x: (this.x - layout.courtLeft) / layout.COURT_W,
             y: (this.y - layout.courtTop) / layout.COURT_H

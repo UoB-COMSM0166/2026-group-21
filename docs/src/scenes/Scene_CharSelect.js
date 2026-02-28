@@ -136,6 +136,13 @@ const Scene_CharSelect = {
         opponent.speed = p2Config.speed;
         opponent.skillType = p2Config.skillType;
         opponent.name = p2Config.name;
+        //apply selection to character's images
+        if (characterImages[p1CharIndex] && characterImages[p1CharIndex].back) {
+            player.img = characterImages[p1CharIndex].back;
+        }
+        if (characterImages[p2CharIndex] && characterImages[p2CharIndex].front) {
+            opponent.img = characterImages[p2CharIndex].front;
+        }
 
         if (opponentAI) {
 
