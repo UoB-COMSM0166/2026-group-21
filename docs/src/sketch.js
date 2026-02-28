@@ -1,5 +1,5 @@
 let player, opponent, ball, layout;
-let playerImg, opponentImg, courtImg, backgroundImg;
+let courtImg, backgroundImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;
@@ -8,20 +8,27 @@ let selectedMap = 0;
 let p1CharIndex = -1; 
 let p2CharIndex = -1;
 let opponentAI;
+let characterImages = [];
 const STATES = GAME_CONFIG.STATES;
 
 function preload() {
-    playerImg = loadImage(GAME_CONFIG.ASSETS.PLAYER_IMG);
-    opponentImg = loadImage(GAME_CONFIG.ASSETS.OPPONENT_IMG);
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
+    // preload every character's sprite images
+    GAME_CONFIG.CHARACTERS.forEach((char, index) => {
+        characterImages[index] = {};
+        if (char.assets) {
+            if (char.assets.front) characterImages[index].front = loadImage(char.assets.front);
+            if (char.assets.back) characterImages[index].back = loadImage(char.assets.back);
+        }
+    });
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     layout = new LayoutManager();
-    player = new Player(layout.sideRight, playerImg, true);
-    opponent = new Player(layout.sideLeft, opponentImg, false);
+    player = new Player(layout.sideRight, null, true);
+    opponent = new Player(layout.sideLeft, null, false);
     opponentAI = new AI(opponent);
     ball = new Ball();
     scoreManager = new ScoreManager();
@@ -66,9 +73,9 @@ function keyPressed() {
 // handle window resizing
 function windowResized() {
     //calculate relative positions before resizing
-    let relP = player.getRelativePos(layout);
-    let relO = opponent.getRelativePos(layout);
-    let relB = ball.getRelativePos(layout);
+    let relP = player.relativePos;
+    let relO = opponent.relativePos;
+    let relB = ball.relativePos;
     //resize canvas and caculate layout boundaries
     resizeCanvas(windowWidth, windowHeight);
     layout.update();

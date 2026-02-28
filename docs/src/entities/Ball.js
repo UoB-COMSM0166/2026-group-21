@@ -147,7 +147,7 @@ class Ball {
         const { HIT_MIN_Z, HIT_MAX_Z, HIT_Z, HIT_Y, DIRECTION_MULT } = GAME_CONFIG.BALL;
         const { SERVE_MIN_VX, SERVE_MAX_VX } = GAME_CONFIG.BALL;
         // only hit if player is swing and ball is at hittable height
-        const isHittable = p.swingTimer > 0 && this.z > HIT_MIN_Z && this.z < HIT_MAX_Z;
+        const isHittable = p.swingTimer > 0 && !p.hasHit && this.z > HIT_MIN_Z && this.z < HIT_MAX_Z;
         if (!isHittable) return;
         // basic box-to-box collision detection
         const hitX = this.x > p.x - p.w / 2 && this.x < p.x + p.w / 2;
@@ -166,7 +166,7 @@ class Ball {
                 }
             }
             this.recordHit(p);
-            p.swingTimer = 0;
+            p.hasHit = true;
         }
     }
     //transition ball state from serve or idle to active play
@@ -177,7 +177,7 @@ class Ball {
         this.roundEnding = false;
     }
     //normalizes position to a 0-1 scale to maintain alignment during resizing
-    getRelativePos(layout) {
+    get relativePos() {
         return {
             x: (this.x - layout.courtLeft) / layout.COURT_W,
             y: (this.y - layout.courtTop) / layout.COURT_H

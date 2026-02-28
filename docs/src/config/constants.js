@@ -64,20 +64,23 @@ const GAME_CONFIG = {
     },
 
     PLAYER: {
-        WIDTH: 64,
+        WIDTH: 100,
         HEIGHT: 64,
         SPEED: 5,
         SWING_DURATION: 10,         // frames: how long the hit window stays active
         SERVE_OFFSET: 5,            // Starting distance behind baseline
         NET_MARGIN: 10,             // Minimum safe distance from net
         SWING_SCALE: 1.1,            // Visual feedback multiplier during swing
-        SKILL_COOLDOWN: 180
+        SKILL_COOLDOWN: 180,
+        TOTAL_FRAMES: 6,
+        ANIM_SPEED: 0.4,
+        SPRITE_WIDTH: 100,
+        SPRITE_HEIGHT: 64,
+        SPRITE_COLS: 2
     },
 
     ASSETS: {
-        PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
-        OPPONENT_IMG: 'assets/images/player_cat_front.png',
         COURT_IMG: 'assets/images/stadiumtest.png'
     },
 
@@ -120,10 +123,42 @@ const GAME_CONFIG = {
     },
 
     CHARACTERS: [
-        { name: "Cat", speed: 5, skillType: 'SHADOW_TELEPORT' },
-        { name: "Dog", speed: 5,  skillType: 'GIGA_BALL' },
-        { name: "Deer", speed: 5,  skillType: 'FEATHER_STORM' },
-        { name: "Bird", speed: 5, skillType: 'FOREST_ZEN' },
+        { 
+            name: "Cat", 
+            speed: 5, 
+            skillType: 'SHADOW_TELEPORT',
+            assets: {
+                front: 'assets/images/player_cat_swing_front.png',
+                back: 'assets/images/player_cat_swing_back.png'
+            }
+        },
+        { 
+            name: "Dog", 
+            speed: 5,  
+            skillType: 'GIGA_BALL',
+            assets: {
+                front: 'assets/images/player_dog_swing_front.png',
+                back: 'assets/images/player_dog_swing_back.png'
+            }
+        },
+        { 
+            name: "Deer", 
+            speed: 5,  
+            skillType: 'FEATHER_STORM',
+            assets: {
+                front: 'assets/images/player_deer_swing_front.png',
+                back: 'assets/images/player_deer_swing_back.png'
+            }
+        },
+        { 
+            name: "Bird", 
+            speed: 5, 
+            skillType: 'FOREST_ZEN',
+            assets: {
+                front: 'assets/images/player_bird_swing_front.png',
+                back: 'assets/images/player_bird_swing_back.png'
+            }
+        },
         { name: "?",    speed: 5,  skillType: '?' }
     ],
 
