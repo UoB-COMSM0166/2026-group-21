@@ -19,22 +19,25 @@ STRAPLINE. Add an exciting one sentence description of your game here.
 
 IMAGE. Add an image of your game here, keep this updated with a snapshot of your latest development.
 
-LINK. Add a link here to your deployed game, you can also make the image above link to your game if you wish. Your game lives in the [/docs](/docs) folder, and is published using Github pages. 
+[CLICK HERE TO PLAY GAME ](https://uob-comsm0166.github.io/2026-group-21/)
 
 VIDEO. Include a demo video of your game here (you don't have to wait until the end, you can insert a work in progress video)
 
 ## Your Group
 
-<img src="weekly-homeworks/assets/week-01-photo.jpeg" width="500" alt="Group phote">
+  <p align="center">
+    <img src="weekly-homeworks/assets/week-01-photo.jpeg" width="500" alt="Group phote">
+  </p>
 
-| MEMBER | NAME                  | EMAIl                 | ROLE |
-| ------ | --------------------- | --------------------- | ---- |
-| 1      | Xian Li               | yd25988@bristol.ac.uk |      |
-| 2      | Yu-Han Sun            | qv25088@bristol.ac.uk |      |
-| 3      | Yu-Chun Chen          | df25142@bristol.ac.uk |      |
-| 4      | Yujing Shen           | pf25516@bristol.ac.uk |      |
-| 5      | Panarin Thipboonthong | uk25559@bristol.ac.uk |      |
-| 6      | Koki Fushiya          | bz25385@bristol.ac.uk |      |
+
+| NAME                  | EMAIl                 | ROLE |
+| --------------------- | --------------------- | ---- |
+| Xian Li               | yd25988@bristol.ac.uk |      |
+| Yu-Han Sun            | qv25088@bristol.ac.uk |      |
+| Yu-Chun Chen          | df25142@bristol.ac.uk |      |
+| Yujing Shen           | pf25516@bristol.ac.uk |      |
+| Panarin Thipboonthong | uk25559@bristol.ac.uk |      |
+| Koki Fushiya          | bz25385@bristol.ac.uk |      |
 
 
 
@@ -83,14 +86,14 @@ The paper prototyping process also prompted deeper discussions regarding game me
     <p align="center">
       <b>Figure 3:</b>
       <i>Tennis Game Paper Prototype </i><br>
-      <video src="weekly-homeworks/assets/week-03-tennisgame-prototype.mp4" controls width="640" height="360">
-      </video>
+      <a href="YT LINK" target="_blank">Watch it on YT</a><br>
+      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-tennisgame-prototype1.mp4?raw=true" controls width="640" height="360"></video>
     </p>
     <p align="center">
       <b>Figure 4:</b>
       <i>Vampire Survival Paper Prototype </i><br>
-      <video src="weekly-homeworks/assets/week-03-vampiresurvival-prototype.mov" controls width="640" height="360">
-      </video>
+      <a href="YT LINK" target="_blank">Watch it on YT</a><br>
+      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-vampiresurvival-prototype.mp4?raw=true" controls width="640" height="360"></video>
     </p>
 
 #### Stakeholders
@@ -104,7 +107,7 @@ During the current development lifecycle, the Development Team acts as the prima
     </p>
 
 #### User Stories
-We initially generated a wide range of User Story ideas to define our game's features. To manage our project scope effectively, we employed the MoSCoW method to prioritise these requirements and conducted Planning Poker sessions to estimate the development effort for each task. This structured approach enabled us to make critical trade-offs within our limited timeframe. 
+We initially generated a wide range of [User Story ideas](https://docs.google.com/document/d/1LYooThDOOa3G9zB3lg5oMovLOXHKsaj8kRKYu5YS_vA/edit?usp=sharing) to define our game's features. To manage our project scope effectively, we employed the MoSCoW method to prioritise these requirements and conducted Planning Poker sessions to estimate the development effort for each task. This structured approach enabled us to make critical trade-offs within our limited timeframe. 
 
 By focusing on high-value requirements, we finalised the following set of User Stories for implementation:
 <p align="center">
