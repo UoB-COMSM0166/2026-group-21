@@ -45,7 +45,7 @@ const GAME_CONFIG = {
         BOUNCE_Z: 6,                // Upward force after first bounce
         HIT_Y: 13,                  // Forward power imparted by racket
         HIT_Z: 7,                   // Upward lift imparted by racket
-        DIRECTION_MULT: 0.2,        // Sensitivity of horizontal angle deflection
+        DIRECTION_MULT: 0.15,       // Sensitivity of horizontal angle deflection
         HIT_MIN_Z: 5,               // Hit window: minimum height required
         HIT_MAX_Z: 50,              // Hit window: maximum height allowed
         SERVE_MIN_VX: 6,
@@ -66,7 +66,7 @@ const GAME_CONFIG = {
     PLAYER: {
         WIDTH: 100,
         HEIGHT: 64,
-        SPEED: 5,
+        SPEED: 6,
         SWING_DURATION: 10,         // frames: how long the hit window stays active
         SERVE_OFFSET: 5,            // Starting distance behind baseline
         NET_MARGIN: 10,             // Minimum safe distance from net
