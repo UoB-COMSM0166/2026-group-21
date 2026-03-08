@@ -34,22 +34,12 @@ class TutorialManager {
             case 3: return `Press SPACE to return the AI's serve (${this.returnCount}/${this.targetReturns})`;
             case 4: return `When the bar is full, press Q to use SKILL before the ball lands (${this.skillHitCount}/${this.targetSkillHits})`;
             case 5: return `Score 3 points (${this.currentMatchScore}/${this.scoreTarget})`;
-            case 6: return "Amazing! You've mastered all techniques. Press ESC for Menu";
             default: return "";
         }
     }
 
     hasTarget() {
         return this.currentStep === 1;
-    }
-
-    checkProgress(player) {
-        if (this.currentStep === 1) {
-            let d = dist(player.x, player.y, this.targetX, this.targetY);
-            if (d < 40) {
-                this.nextStep();
-            }
-        }
     }
 
     registerServe() {

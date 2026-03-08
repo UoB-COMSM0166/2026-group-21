@@ -119,13 +119,10 @@ class Ball {
         this.vz = 0; this.vx = 0; this.vy = 0;
         if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
             if (scoreManager) {
-                // 關鍵：還是要記錄得分，這樣 TutorialManager 才能監測到分數變化
                 scoreManager.recordPoint(winner); 
             }
             this.roundEnding = false;
             
-            // 讓球進入「等待重置」狀態
-            // 這樣 Scene_Tutorial 裡的 needsReset 就會被觸發並開始倒數
             this.isWaiting = true; 
             return; 
         }
