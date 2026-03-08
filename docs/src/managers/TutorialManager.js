@@ -1,18 +1,13 @@
 class TutorialManager {
     constructor() {
         this.currentStep = 1;
-        this.targetX = layout.courtRight - 100;
-        this.targetY = layout.courtBottom - 100;
-        this.serveCount = 0;
-        this.targetServes = 3;
-        this.returnCount = 0;
-        this.targetReturns = 3;
-        this.skillHitCount = 0;
-        this.targetSkillHits = 3;
-        this.scoreTarget = 3;
-        this.currentMatchScore = 0;
+        this.targetX = layout.courtRight - GAME_CONFIG.TUTORIAL.TARGET_ZONE_OFFSET_X;
+        this.targetY = layout.courtBottom - GAME_CONFIG.TUTORIAL.TARGET_ZONE_OFFSET_Y;
+        this.successCount = 0;
+        this.targetCount = GAME_CONFIG.TUTORIAL.TARGET_SUCCESS_COUNT;
     }
 
+    // Returns the big intro text shown at the start of each stage
     getStepIntro() {
         switch (this.currentStep) {
             case 1: return {
@@ -27,52 +22,28 @@ class TutorialManager {
         }
     }
 
+    // Returns the small looping yellow text at the top of the screen
     getCurrentPrompt() {
         switch (this.currentStep) {
             case 1: return "Use WASD to move to the yellow zone";
-            case 2: return `Press SPACE to toss, then press again to hit at the right height (${this.serveCount}/${this.targetServes})`;
-            case 3: return `Press SPACE to return the AI's serve (${this.returnCount}/${this.targetReturns})`;
-            case 4: return `When the bar is full, press Q to use SKILL before the ball lands (${this.skillHitCount}/${this.targetSkillHits})`;
-            case 5: return `Score 3 points (${this.currentMatchScore}/${this.scoreTarget})`;
+            case 2: return `Press SPACE to toss, then press again to hit at the right height (${this.successCount}/${this.targetCount})`;
+            case 3: return `Press SPACE to return the AI's serve (${this.successCount}/${this.targetCount})`;
+            case 4: return `When the bar is full, press Q to use SKILL before the ball lands (${this.successCount}/${this.targetCount})`;
+            case 5: return `Score 3 points (${this.successCount}/${this.targetCount})`;
             default: return "";
         }
     }
 
+    // Only draw the yellow target zone on the floor during stage 1
     hasTarget() {
         return this.currentStep === 1;
     }
 
-    registerServe() {
-        if (this.currentStep === 2) {
-            this.serveCount++;
-            if (this.serveCount >= this.targetServes) {
-                this.nextStep();
-            }
-        }
-    }
-
-    registerReturn() {
-        if (this.currentStep === 3) {
-            this.returnCount++;
-            if (this.returnCount >= this.targetReturns) {
-                this.nextStep();
-            }
-        }
-    }
-
-    registerSkillHit() {
-        if (this.currentStep === 4) {
-            this.skillHitCount++;
-            if (this.skillHitCount >= this.targetSkillHits) {
-                this.nextStep();
-            }
-        }
-    }
-
-    registerPoint() {
-        if (this.currentStep === 5) {
-            this.currentMatchScore++;
-            if (this.currentMatchScore >= this.scoreTarget) {
+    // Called whenever the player successfully completes the current stage's goal
+    registerSuccess() {
+        if (this.currentStep >= 2 && this.currentStep <= 5) {
+            this.successCount++;
+            if (this.successCount >= this.targetCount) {
                 this.nextStep();
             }
         }
@@ -80,10 +51,7 @@ class TutorialManager {
 
     nextStep() {
         this.currentStep++;
-        if (this.currentStep === 2) this.serveCount = 0;
-        if (this.currentStep === 3) this.returnCount = 0;
-        if (this.currentStep === 4) this.skillHitCount = 0;
-        if (this.currentStep === 5) this.currentMatchScore = 0;
+        this.successCount = 0;
         if (typeof Scene_Tutorial !== 'undefined') {
             Scene_Tutorial.isPausedForIntro = true;
         }

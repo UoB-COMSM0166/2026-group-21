@@ -10,6 +10,25 @@ const GAME_CONFIG = {
         DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
     },
 
+    TUTORIAL: {
+        TARGET_SUCCESS_COUNT: 3,
+
+        TARGET_ZONE_OFFSET_X: 300,
+        TARGET_ZONE_OFFSET_Y: 200,
+        PLAYER_SERVE_Y_OFFSET: 20,
+        OPPONENT_START_Y_OFFSET: 20,
+
+        TARGET_RADIUS: 40,
+        HIT_VY_THRESHOLD: -2,
+        DEAD_BALL_VZ_THRESHOLD: 1.5,
+        OUT_OFFSET_Y: 50,
+        SKILL_TRIGGER_MARGIN: 2,
+
+        PAUSE_MINOR: 60,
+        PAUSE_MAJOR: 90,
+        RESET_WAIT_LIMIT: 60
+    },
+
     COURT: {
         WIDTH: 450,
         HEIGHT: 575,
@@ -123,43 +142,43 @@ const GAME_CONFIG = {
     },
 
     CHARACTERS: [
-        { 
-            name: "Cat", 
-            speed: 6, 
+        {
+            name: "Cat",
+            speed: 6,
             skillType: 'SHADOW_TELEPORT',
             assets: {
                 front: 'assets/images/player_cat_swing_front.png',
                 back: 'assets/images/player_cat_swing_back.png'
             }
         },
-        { 
-            name: "Dog", 
-            speed: 6,  
+        {
+            name: "Dog",
+            speed: 6,
             skillType: 'GIGA_BALL',
             assets: {
                 front: 'assets/images/player_dog_swing_front.png',
                 back: 'assets/images/player_dog_swing_back.png'
             }
         },
-        { 
-            name: "Deer", 
-            speed: 6,  
+        {
+            name: "Deer",
+            speed: 6,
             skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
                 back: 'assets/images/player_deer_swing_back.png'
             }
         },
-        { 
-            name: "Bird", 
-            speed: 6, 
+        {
+            name: "Bird",
+            speed: 6,
             skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
                 back: 'assets/images/player_bird_swing_back.png'
             }
         },
-        { name: "?",    speed: 6,  skillType: '?' }
+        { name: "?", speed: 6, skillType: '?' }
     ],
 
     // select AI's level after character for p2 was chosen.

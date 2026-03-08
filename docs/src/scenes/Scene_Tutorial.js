@@ -24,8 +24,8 @@ const Scene_Tutorial = {
 
         this.resetState(0);
         this.isPausedForIntro = true;
-        player.x = layout.centerX;
-        player.y = layout.courtBottom - 50;
+        player.x = layout.sideRight;
+        player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
 
         this.stepHandlers = {
             1: {
@@ -36,35 +36,35 @@ const Scene_Tutorial = {
                 }
             },
             2: {
-                init: () => this.initStep2(),
+                init: () => this.setupServeState({ role: 'PLAYER', step: 2 }),
                 handle: () => this.handleServeLogic(),
                 onSuccess: () => {
-                    tutorialManager.registerServe();
+                    tutorialManager.registerSuccess();
                     this.resetBallForServe();
                 }
             },
             3: {
-                init: () => this.initStep3(),
+                init: () => this.setupServeState({ role: 'OPPONENT', step: 3 }),
                 handle: () => this.handleReturnLogic(),
                 onSuccess: () => {
-                    tutorialManager.registerReturn();
+                    tutorialManager.registerSuccess();
                     this.resetBallForAIServe();
                 }
             },
             4: {
-                init: () => this.initStep4(),
+                init: () => this.setupServeState({ role: 'OPPONENT', step: 4 }),
                 handle: () => this.handleSkillLogic(),
                 onSuccess: () => {
-                    tutorialManager.registerSkillHit();
+                    tutorialManager.registerSuccess();
                     this.resetBallForAIServe();
                 }
             },
             5: {
-                init: () => this.initStep5(),
+                init: () => this.setupServeState({ role: 'OPPONENT', step: 5 }),
                 handle: () => this.handleScoringLogic(),
                 onSuccess: () => {
                     if (this.scoringMessage === "YOU SCORE!") {
-                        tutorialManager.registerPoint();
+                        tutorialManager.registerSuccess();
                     }
                     this.resetBallForAIServe();
                     this.lastPlayerScore = scoreManager.playerPoints;
@@ -100,43 +100,45 @@ const Scene_Tutorial = {
         this.handleStepInitialization(step);
 
         const handler = this.stepHandlers[step];
-        if (handler) handler.handle();
+        const hasOpponent = (step >= 3);
+        const hasBall = (step >= 2);
+
+        this.updateGameElements(hasOpponent, hasBall);
+        if (this.successPauseTimer === 0) {
+            if (handler) handler.handle();
+        }
 
         this.displayTutorialUI(tutorialManager.getCurrentPrompt());
-        if (tutorialManager.hasTarget()) this.drawTargetZone(tutorialManager.targetX, tutorialManager.targetY);
+        if (tutorialManager.hasTarget()) {
+            this.drawTargetZone(tutorialManager.targetX, tutorialManager.targetY);
+        }
         this.handleSuccessPause();
     },
 
-    initStep2: function () {
-        if (scoreManager) {
-            scoreManager.currentServer = 'PLAYER';
-            scoreManager.currentSide = 'RIGHT';
-        }
+    // Sets up the players, score manager, and ball state for specific tutorial steps
+    setupServeState: function (stepConfig) {
         player.x = layout.sideRight;
-        player.y = layout.courtBottom - 20;
-        this.resetBallForServe();
-    },
+        player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
 
-    initStep3: function () {
-        player.x = layout.centerX;
-        player.y = layout.courtBottom - 100;
-        opponent.x = layout.sideLeft;
-        opponent.y = layout.courtTop + 20;
+        if (stepConfig.role === 'PLAYER') {
+            if (scoreManager) {
+                scoreManager.currentServer = 'PLAYER';
+                scoreManager.currentSide = 'RIGHT';
+            }
+            this.resetBallForServe();
+        } else {
+            opponent.x = layout.sideLeft;
+            opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
 
-        this.resetBallForAIServe();
-    },
-
-    initStep4: function () {
-        player.skillCooldown = player.maxCooldown / 2;
-        player.x = layout.centerX;
-        player.y = layout.courtBottom - 100;
-        this.resetBallForAIServe();
-    },
-
-    initStep5: function () {
-        scoreManager.init();
-        this.lastPlayerScore = 0;
-        this.resetBallForAIServe();
+            if (stepConfig.step === 4) {
+                player.skillCooldown = player.maxCooldown / 2;
+            } else if (stepConfig.step === 5) {
+                if (scoreManager) scoreManager.init();
+                this.lastPlayerScore = 0;
+                this.lastOpponentScore = 0;
+            }
+            this.resetBallForAIServe();
+        }
     },
 
     resetState: function (step) {
@@ -159,26 +161,6 @@ const Scene_Tutorial = {
         if (handler?.init) handler.init();
     },
 
-    handleSuccessPause: function () {
-        if (this.successPauseTimer <= 0) return false;
-        this.successPauseTimer--;
-        push();
-        textAlign(CENTER, CENTER);
-        stroke(0); strokeWeight(6); textSize(50);
-        if (this.scoringMessage.includes("AI")) fill(255, 0, 0);
-        else if (this.scoringMessage.includes("GREAT")) fill(255, 255, 0);
-        else fill(0, 255, 0);
-
-        text(this.scoringMessage, width / 2, height / 2);
-        pop();
-
-        if (this.successPauseTimer === 0) {
-            const handler = this.stepHandlers[tutorialManager.currentStep];
-            if (handler?.onSuccess) handler.onSuccess();
-        }
-        return true;
-    },
-
     updateFrozen: function (entity, updateArgs) {
         const tempX = entity.x;
         const tempY = entity.y;
@@ -187,7 +169,8 @@ const Scene_Tutorial = {
         entity.y = tempY;
     },
 
-    updateGameElements: function (hasOpponent = true) {
+    // Updates positions of players and ball, pausing logic if success message is showing
+    updateGameElements: function (hasOpponent = true, hasBall = true) {
         if (hasOpponent) {
             if (this.successPauseTimer > 0) {
                 this.updateFrozen(opponent, false);
@@ -197,20 +180,26 @@ const Scene_Tutorial = {
             }
             opponent.display();
         }
-        ball.update();
-        if (this.successPauseTimer > 0 && ball.isWaiting) ball.x = -9999;
-        if (!ball.isWaiting) ball.checkHit(player);
-        if (hasOpponent) ball.checkHit(opponent);
-        ball.display();
+        if (hasBall) {
+            ball.update();
+            // Hide the ball far away if waiting to serve after success
+            if (this.successPauseTimer > 0 && ball.isWaiting) ball.x = -9999;
+
+            if (!ball.isWaiting) ball.checkHit(player);
+            if (hasOpponent) ball.checkHit(opponent);
+            ball.display();
+        }
     },
 
+    // Checks if the ball hit the net, went out of bounds, or the toss failed
     getBallStatus: function () {
+        const offset = GAME_CONFIG.TUTORIAL.OUT_OFFSET_Y;
         return {
-            isDead: !ball.isWaiting && ball.z <= 0 && abs(ball.vz) < 1.5,
-            isOut: ball.y > layout.courtBottom + 50 || ball.y < layout.courtTop - 100,
-            isOpponentOut: ball.y < layout.courtTop - 50,
-            isPlayerOut: ball.y > layout.courtBottom + 50,
-            tossMissed: ball.isTossing && ball.vy > 0 && ball.y > layout.courtBottom + 50
+            isDead: !ball.isWaiting && ball.z <= 0 && abs(ball.vz) < GAME_CONFIG.TUTORIAL.DEAD_BALL_VZ_THRESHOLD,
+            isOut: ball.y > layout.courtBottom + offset || ball.y < layout.courtTop - (offset * 2),
+            isOpponentOut: ball.y < layout.courtTop - offset,
+            isPlayerOut: ball.y > layout.courtBottom + offset,
+            tossMissed: ball.isTossing && ball.vy > 0 && ball.y > layout.courtBottom + offset
         };
     },
 
@@ -234,7 +223,8 @@ const Scene_Tutorial = {
     },
 
     resetBallFull: function () {
-        ball.reset(layout.centerX, layout.courtBottom - 50, 'PLAYER');
+        ball.reset(layout.sideRight,
+            layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET, 'PLAYER');
         ball.vx = 0;
         ball.vy = 0;
         ball.vz = 0;
@@ -243,6 +233,9 @@ const Scene_Tutorial = {
     },
 
     resetBallForServe: function () {
+        player.x = layout.sideRight;
+        player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
+
         ball.reset(player.x, player.y, 'PLAYER');
         ball.vx = 0;
         ball.vy = 0;
@@ -256,34 +249,42 @@ const Scene_Tutorial = {
 
     resetBallForAIServe: function () {
         if (scoreManager) {
+            // For tutorial steps 3, 4, 5 AI always serve from left
             scoreManager.currentServer = 'OPPONENT';
             scoreManager.currentSide = 'LEFT';
         }
 
+        let serveConfig = {
+            server: 'OPPONENT', side: 'LEFT', x: layout.sideLeft,
+            y: layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET, role: 'OPPONENT'
+        };
+
+        player.x = layout.sideRight;
+        player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
+
         opponentAI = new AI(opponent);
         opponent.x = layout.sideLeft;
-        opponent.y = layout.courtTop + 20;
+        opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
         opponent.swingTimer = 0;
         opponent.isSwinging = false;
 
-        ball.reset(opponent.x, opponent.y, 'OPPONENT');
+        ball.reset(serveConfig.x, serveConfig.y, serveConfig.role);
         ball.vx = 0; ball.vy = 0; ball.vz = 0;
         ball.isWaiting = true;
         ball.isTossing = false;
 
         this.ballResetTimer = 0;
         this.hasHitBall = false;
-        this.hasHitWithSkill = false;
         this.needsReset = false;
         this.successPauseTimer = 0;
         this.lastPlayerScore = scoreManager.playerPoints;
         this.lastOpponentScore = scoreManager.opponentPoints;
     },
 
-    handleResetTimer: function (resetAction, waitLimit = 60) {
+    handleResetTimer: function (resetAction) {
         if (this.needsReset) {
             this.ballResetTimer++;
-            if (this.ballResetTimer > waitLimit) {
+            if (this.ballResetTimer > GAME_CONFIG.TUTORIAL.RESET_WAIT_LIMIT) {
                 resetAction();
             }
         } else {
@@ -294,117 +295,119 @@ const Scene_Tutorial = {
     handleMoveLogic: function () {
         let d = dist(player.x, player.y, tutorialManager.targetX, tutorialManager.targetY);
 
-        if (d < 40 && this.successPauseTimer === 0) {
+        if (d < GAME_CONFIG.TUTORIAL.TARGET_RADIUS && this.successPauseTimer === 0) {
             this.scoringMessage = "WELL DONE!";
-            this.successPauseTimer = 60;
+            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
         }
         if (this.successPauseTimer > 0) return;
     },
 
+    // Step 2: Hitting a valid serve over the net
     handleServeLogic: function () {
-        if (ball.isWaiting && !this.needsReset && this.successPauseTimer === 0) {
+        if (ball.isWaiting && !this.needsReset) {
             scoreManager.currentServer = 'PLAYER';
             ball.x = player.x;
             ball.y = player.y;
             ball.vz = 0; ball.vx = 0; ball.vy = 0;
         }
 
-        this.updateGameElements(false);
-
-        if (this.hasHitBall && ball.z <= 0 && ball.y < layout.netY && this.successPauseTimer === 0) {
+        // Check if player hit the ball over the net successfully
+        if (this.hasHitBall && ball.z <= 0 && ball.y < layout.netY) {
             this.scoringMessage = "GREAT SERVE!";
-            this.successPauseTimer = 50;
+            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+            return;
         }
 
-        if (this.successPauseTimer > 0) return;
-
         if (!this.needsReset) {
-            if (!ball.isWaiting && !ball.isTossing && ball.vy < -2) {
+            // Player struck the ball
+            if (!ball.isWaiting && !ball.isTossing && ball.vy < GAME_CONFIG.TUTORIAL.HIT_VY_THRESHOLD) {
                 this.hasHitBall = true;
             }
             let status = this.getBallStatus();
+            // Reset if ball hit net or toss was missed
             if (status.isDead || status.tossMissed) {
                 this.needsReset = true;
             }
         }
-
-        this.handleResetTimer(() => this.resetBallForServe(), 60);
+        this.handleResetTimer(() => this.resetBallForServe());
     },
 
+    // Step 3: Returning the opponent's serve successfully
     handleReturnLogic: function () {
-        if (ball.isWaiting && !this.needsReset && this.successPauseTimer === 0) {
+        if (ball.isWaiting && !this.needsReset) {
             scoreManager.currentServer = 'OPPONENT';
             ball.x = opponent.x;
             ball.y = opponent.y;
             ball.vz = 0; ball.vx = 0; ball.vy = 0;
         }
 
-        this.updateGameElements(true);
-
-        if (this.hasHitBall && ball.y < layout.netY && this.successPauseTimer === 0) {
+        // Check if player returned the ball over the net
+        if (this.hasHitBall && ball.y < layout.netY) {
             this.scoringMessage = "GREAT RETURN!";
-            this.successPauseTimer = 60;
+            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+            return;
         }
 
-        if (this.successPauseTimer > 0) return;
-
         if (!this.needsReset) {
-            if (!ball.isWaiting && !ball.isTossing && ball.vy < -2 && !this.hasHitBall) {
+            // Player successfully struck the ball
+            if (!ball.isWaiting && !ball.isTossing
+                && ball.vy < GAME_CONFIG.TUTORIAL.HIT_VY_THRESHOLD && !this.hasHitBall) {
                 this.hasHitBall = true;
             }
             let status = this.getBallStatus();
+            // Reset if ball went out, died, or player missed the hit
             if (status.isOut || status.isDead || (ball.isWaiting && this.hasHitBall)) {
                 this.needsReset = true;
             }
         }
-
-        this.handleResetTimer(() => this.resetBallForAIServe(), 60);
+        this.handleResetTimer(() => this.resetBallForAIServe());
     },
 
+    // Step 4: Successfully using the special skill mechanics
     handleSkillLogic: function () {
-        this.updateGameElements(true);
-
-        if (player.skillCooldown > player.maxCooldown - 2 && this.successPauseTimer === 0) {
+        // Player activated skill when cooldown gauge is completely full
+        if (player.skillCooldown > player.maxCooldown - GAME_CONFIG.TUTORIAL.SKILL_TRIGGER_MARGIN) {
             if (!this.skillTriggered) {
+                // Ball must be above ground or moving horizontally to count
                 if (ball.z > 0 || abs(ball.vz) > 0.1) {
                     this.scoringMessage = "AMAZING SKILL!";
-                    this.successPauseTimer = 60;
+                    this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
                     this.skillTriggered = true;
+                    return;
                 }
             }
         } else {
             this.skillTriggered = false;
         }
 
-        if (this.successPauseTimer > 0) return;
-
         if (!this.needsReset) {
             let status = this.getBallStatus();
+            // Reset if the ball dies or goes out of bounds
             if (status.isDead || status.isOut) {
                 this.needsReset = true;
             }
         }
-
-        this.handleResetTimer(() => this.resetBallForAIServe(), 60);
+        this.handleResetTimer(() => this.resetBallForAIServe());
     },
 
+    // Step 5: The final mock match with full score and win condition logic
     handleScoringLogic: function () {
-        this.updateGameElements(true);
-
-        if (scoreManager.playerPoints > this.lastPlayerScore && this.successPauseTimer === 0) {
+        // Did the player score a new point?
+        if (scoreManager.playerPoints > this.lastPlayerScore) {
             this.scoringMessage = "YOU SCORE!";
-            this.successPauseTimer = 90;
+            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
+            return;
         }
-
-        if (scoreManager.opponentPoints > this.lastOpponentScore && this.successPauseTimer === 0) {
+        // Did the AI score a new point?
+        if (scoreManager.opponentPoints > this.lastOpponentScore) {
             this.scoringMessage = "AI SCORE!";
-            this.successPauseTimer = 90;
+            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
+            return;
         }
-
-        if (this.successPauseTimer > 0) return;
 
         if (!this.needsReset) {
             let status = this.getBallStatus();
+            // Ball died or went out of bounds, so the rally is over
             if (status.isDead || status.isOpponentOut || status.isPlayerOut) {
                 let winner;
                 if (status.isPlayerOut) {
@@ -412,6 +415,7 @@ const Scene_Tutorial = {
                 } else if (status.isOpponentOut) {
                     winner = 'PLAYER';
                 } else {
+                    // If it died in-court, winner is whoever hit it over the net
                     winner = (ball.y < layout.netY) ? 'PLAYER' : 'OPPONENT';
                 }
 
@@ -421,8 +425,31 @@ const Scene_Tutorial = {
                 this.needsReset = true;
             }
         }
+        this.handleResetTimer(() => {
+            this.lastPlayerScore = scoreManager.playerPoints;
+            this.lastOpponentScore = scoreManager.opponentPoints;
+            this.resetBallForAIServe();
+        });
+    },
 
-        this.handleResetTimer(() => this.resetBallForAIServe(), 60);
+    handleSuccessPause: function () {
+        if (this.successPauseTimer <= 0) return false;
+        this.successPauseTimer--;
+        push();
+        textAlign(CENTER, CENTER);
+        stroke(0); strokeWeight(6); textSize(50);
+        if (this.scoringMessage.includes("AI")) fill(255, 0, 0);
+        else if (this.scoringMessage.includes("GREAT")) fill(255, 255, 0);
+        else fill(0, 255, 0);
+
+        text(this.scoringMessage, width / 2, height / 2);
+        pop();
+
+        if (this.successPauseTimer === 0) {
+            const handler = this.stepHandlers[tutorialManager.currentStep];
+            if (handler?.onSuccess) handler.onSuccess();
+        }
+        return true;
     },
 
     displayTutorialUI: function (txt) {

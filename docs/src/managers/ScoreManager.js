@@ -24,10 +24,19 @@ class ScoreManager {
         } else {
             this.opponentPoints++;
         }
+
+        // Disable game winning logic in tutorial
+        if (typeof tutorialManager !== 'undefined' && tutorialManager.currentStep === 5) {
+            return;
+        }
+
         this.checkGameWin();
     }
     // switch the serve side between points
     prepareNextPoint() {
+        if (typeof tutorialManager !== 'undefined' && tutorialManager.currentStep === 5) {
+            return;
+        }
         // to maintain new round start from right side
         if (!this.gameWasJustReset) {
             this.currentSide = (this.currentSide === 'LEFT') ? 'RIGHT' : 'LEFT';
@@ -72,7 +81,9 @@ class ScoreManager {
             if (p > opp) return LABEL_AD;
             return LABEL_EMPTY;
         }
-        return this.scoreMap[p] || this.scoreMap[this.scoreMap.length - 1];
+        // Prevent undefined score label if points exceed map length somehow
+        const safeIndex = min(p, this.scoreMap.length - 1);
+        return this.scoreMap[safeIndex];
     }
 
     displayGameOver() {
@@ -113,8 +124,8 @@ class ScoreManager {
         text(`${p2Str} : ${p1Str}`, centerX, scoreY);
 
         textSize(UI.SIZE_SUB);
-        text(`Games: ${this.opponentGames} - ${this.playerGames}`, 
-                centerX, scoreY - UI.GAMES_OFFSET_Y);
+        text(`Games: ${this.opponentGames} - ${this.playerGames}`,
+            centerX, scoreY - UI.GAMES_OFFSET_Y);
         pop();
     }
 }
