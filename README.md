@@ -87,13 +87,13 @@ The paper prototyping process also prompted deeper discussions regarding game me
       <b>Figure 3:</b>
       <i>Tennis Game Paper Prototype </i><br>
       <a href="YT LINK" target="_blank">Watch it on YT</a><br>
-      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-tennisgame-prototype1.mp4?raw=true" controls width="640" height="360"></video>
+      <img src="weekly-homeworks/assets/week-03-tennisgame-prototype.gif" alt="Tennis Game Paper Prototype ">
     </p>
     <p align="center">
       <b>Figure 4:</b>
       <i>Vampire Survival Paper Prototype </i><br>
       <a href="YT LINK" target="_blank">Watch it on YT</a><br>
-      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-vampiresurvival-prototype.mp4?raw=true" controls width="640" height="360"></video>
+      <img src="weekly-homeworks/assets/week-03-vampiresurvival-prototype.gif" alt="Tennis Game Paper Prototype ">
     </p>
 
 #### Stakeholders
