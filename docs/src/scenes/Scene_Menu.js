@@ -97,11 +97,14 @@ const Scene_Menu = {
     },
 
     handleMouse: function () {
-        const { centerX, centerY } = layout;
+        let menuLeftX = 250;
+        let menuBaseY = height - 525;
+
         for (let i = 0; i < this.options.length; i++) {
-            let x = centerX;
-            let y = centerY + (i * 60);
-            let isHovered = (mouseX > x - this.btnW / 2 && mouseX < x + this.btnW / 2 &&
+            let x = menuLeftX;
+            let y = menuBaseY + (i * 65);
+
+            let isHovered = (mouseX > x && mouseX < x + this.btnW &&
                 mouseY > y - this.btnH / 2 && mouseY < y + this.btnH / 2);
 
             if (isHovered) {
