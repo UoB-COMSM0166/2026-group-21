@@ -86,13 +86,13 @@ The paper prototyping process also prompted deeper discussions regarding game me
     <p align="center">
       <b>Figure 3:</b>
       <i>Tennis Game Paper Prototype </i><br>
-      <a href="YT LINK" target="_blank">Watch it on YT</a><br>
+      <a href="https://www.youtube.com/watch?v=qdplPSo7CMk" target="_blank">Watch it on YT</a><br>
       <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-tennisgame-prototype1.mp4?raw=true" controls width="640" height="360"></video>
     </p>
     <p align="center">
       <b>Figure 4:</b>
       <i>Vampire Survival Paper Prototype </i><br>
-      <a href="YT LINK" target="_blank">Watch it on YT</a><br>
+      <a href="https://www.youtube.com/watch?v=HRUYlSV_QAU" target="_blank">Watch it on YT</a><br>
       <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-vampiresurvival-prototype.mp4?raw=true" controls width="640" height="360"></video>
     </p>
 
@@ -199,6 +199,22 @@ Employing object-oriented design and UML diagrams was essential for organizing o
 - Describe implementation of your game, in particular highlighting the TWO areas of *technical challenge* in developing your game. 
 
 ### Evaluation
+
+Think Aloud Session Workshop (feedback)
+
+  As we let the other group members take a look at our game project, we realized there are still plenty of things we need to work on. Whether we missed them, skipped some parts, or are still progressing on them, here are some ideas based on the feedback they gave us and what our team is currently thinking about the game.
+
+    - Our gameplay buttons feel uncomfortable to use because they are too close together, which we will work on fixing.
+    - Our characters were too slow when moving from one direction to another, which sometimes meant they couldn't chase the ball as well as we expected. As a result, we need to make the characters accelerate faster and move more accurately so players can catch the ball more easily.
+    - The score or scoreboard is currently hard to see. We need to improve it by making it clearer and more visible throughout the game.
+    - The text on our game UI isn't clear and makes it difficult for others to read, which we will also improve.
+    - We haven't done the rules and regulations yet, so we need to add them so players can understand the gameplay. We might need documentation to clearly explain how the game works for someone who has never played it before.
+    - We also need to add key prompts so that first-time players know which buttons they should press.
+    - The easy mode was too easy. We should make it a bit more competitive. For example, right now the difficulty is around 1-2, but we should change it to 3-4 so that it feels more engaging, even for first-timers.
+    - When choosing maps, some people also said it is hard to see our fonts or text, so we might need to change that as well.
+    - The UI needs to be clearer to understand. For example, we need something like a score pop-up to clearly show who won the point or the game.
+    - Additionally, we might make the audience cheer every time a person scores, or give each tennis court its own unique visual effects.
+
 
 - 15% ~750 words
 - One qualitative evaluation (of your choice) 
