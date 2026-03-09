@@ -117,6 +117,15 @@ class Ball {
     //ends the round with slight delay
     terminateRound(winner) {
         this.vz = 0; this.vx = 0; this.vy = 0;
+        if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
+            if (scoreManager) {
+                scoreManager.recordPoint(winner); 
+            }
+            this.roundEnding = false;
+            
+            this.isWaiting = true; 
+            return; 
+        }
         if (!this.roundEnding) {
             this.roundEnding = true;
             if (scoreManager) {
@@ -125,7 +134,9 @@ class Ball {
             setTimeout(() => {
                 this.roundEnding = false;
                 if (scoreManager) scoreManager.prepareNextPoint();
-                Scene_Game.nextRound();
+                if (currentState === GAME_CONFIG.STATES.PLAYING) {
+                    Scene_Game.nextRound();
+                }
             }, GAME_CONFIG.MATCH.ROUND_END_DELAY);
         }
     }

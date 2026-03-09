@@ -10,6 +10,25 @@ const GAME_CONFIG = {
         DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
     },
 
+    TUTORIAL: {
+        TARGET_SUCCESS_COUNT: 3,
+
+        TARGET_ZONE_OFFSET_X: 300,
+        TARGET_ZONE_OFFSET_Y: 200,
+        PLAYER_SERVE_Y_OFFSET: 20,
+        OPPONENT_START_Y_OFFSET: 20,
+
+        TARGET_RADIUS: 40,
+        HIT_VY_THRESHOLD: -2,
+        DEAD_BALL_VZ_THRESHOLD: 1.5,
+        OUT_OFFSET_Y: 50,
+        SKILL_TRIGGER_MARGIN: 2,
+
+        PAUSE_MINOR: 60,
+        PAUSE_MAJOR: 90,
+        RESET_WAIT_LIMIT: 60
+    },
+
     COURT: {
         WIDTH: 450,
         HEIGHT: 575,
@@ -88,19 +107,19 @@ const GAME_CONFIG = {
 
     CONTROLS: {
         RESTART: 'r',
-        ESCAPE: 27,        // esc
-        PLAYER_ACTION: 13, // Enter
-        PLAYER_LEFT: 37,   // LEFT_ARROW
-        PLAYER_RIGHT: 39,  // RIGHT_ARROW
-        PLAYER_UP: 38,     // UP_ARROW
-        PLAYER_DOWN: 40,   // DOWN_ARROW
-        OPPONENT_ACTION: 32, //space
-        OPPONENT_LEFT: 65, // A
-        OPPONENT_RIGHT: 68,// D
-        OPPONENT_UP: 87,   // W
-        OPPONENT_DOWN: 83,  // S
-        PLAYER_SKILL: 191,    // /
-        OPPONENT_SKILL: 81   // Q 
+        ESCAPE: 27,          // esc
+        OPPONENT_ACTION: 13, // Enter
+        OPPONENT_LEFT: 37,   // LEFT_ARROW
+        OPPONENT_RIGHT: 39,  // RIGHT_ARROW
+        OPPONENT_UP: 38,     // UP_ARROW
+        OPPONENT_DOWN: 40,   // DOWN_ARROW
+        PLAYER_ACTION: 32,   //space
+        PLAYER_LEFT: 65,     // A
+        PLAYER_RIGHT: 68,    // D
+        PLAYER_UP: 87,       // W
+        PLAYER_DOWN: 83,     // S
+        OPPONENT_SKILL: 191, // /
+        PLAYER_SKILL: 81     // Q 
     },
 
     VISUALS: {
@@ -125,43 +144,43 @@ const GAME_CONFIG = {
     },
 
     CHARACTERS: [
-        { 
-            name: "Cat", 
-            speed: 5, 
+        {
+            name: "Cat",
+            speed: 6,
             skillType: 'SHADOW_TELEPORT',
             assets: {
                 front: 'assets/images/player_cat_swing_front.png',
                 back: 'assets/images/player_cat_swing_back.png'
             }
         },
-        { 
-            name: "Dog", 
-            speed: 5,  
+        {
+            name: "Dog",
+            speed: 6,
             skillType: 'GIGA_BALL',
             assets: {
                 front: 'assets/images/player_dog_swing_front.png',
                 back: 'assets/images/player_dog_swing_back.png'
             }
         },
-        { 
-            name: "Deer", 
-            speed: 5,  
+        {
+            name: "Deer",
+            speed: 6,
             skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
                 back: 'assets/images/player_deer_swing_back.png'
             }
         },
-        { 
-            name: "Bird", 
-            speed: 5, 
+        {
+            name: "Bird",
+            speed: 6,
             skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
                 back: 'assets/images/player_bird_swing_back.png'
             }
         },
-        { name: "?",    speed: 5,  skillType: '?' }
+        { name: "?", speed: 6, skillType: '?' }
     ],
 
     // select AI's level after character for p2 was chosen.

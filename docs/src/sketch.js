@@ -9,6 +9,7 @@ let p1CharIndex = -1;
 let p2CharIndex = -1;
 let opponentAI;
 let characterImages = [];
+let tutorialManager;
 const STATES = GAME_CONFIG.STATES;
 
 function preload() {

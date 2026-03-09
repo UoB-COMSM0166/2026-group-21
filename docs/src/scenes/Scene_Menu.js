@@ -119,5 +119,8 @@ const Scene_Menu = {
         let choice = this.options[this.selectedIndex];
         isMultiplayer = choice.multi;
         currentState = GAME_CONFIG.STATES[choice.state];
+        if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
+            Scene_Tutorial.setup();
+        }
     }
 };
