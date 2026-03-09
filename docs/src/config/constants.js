@@ -72,6 +72,7 @@ const GAME_CONFIG = {
     },
 
     ASSETS: {
+        MENU_BG: 'assets/images/menu_background_picture.png',
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
         OPPONENT_IMG: 'assets/images/player_cat_front.png',

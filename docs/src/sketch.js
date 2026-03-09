@@ -15,6 +15,7 @@ function preload() {
     opponentImg = loadImage(GAME_CONFIG.ASSETS.OPPONENT_IMG);
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
+    bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
 }
 
 function setup() {

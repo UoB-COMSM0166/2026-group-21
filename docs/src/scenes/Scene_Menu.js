@@ -6,40 +6,85 @@ const Scene_Menu = {
         { label: "Tutorial", state: 'TUTORIAL', multi: false }
     ],
     btnW: 300,
-    btnH: 40,
+    btnH: 36,
+    baseDepth: 10,
+    spacing: 75,
+    
     draw: function () {
-        const { centerX, centerY } = layout;
-        textAlign(CENTER, CENTER);
+    if (!layout) return;
 
-        fill(0);
-        textSize(48);
-        text("Tennis Game", centerX, centerY - 120);
+    if (bgImg){
+        image(bgImg, 0, 0, width, height);
+    }
+    else{
+        background(250);
+    }
 
-        textSize(24);
-        for (let i = 0; i < this.options.length; i++) {
-            let x = centerX;
-            let y = centerY + (i * 60);
+    noSmooth();
+    let blink = frameCount % 60 < 30;
 
-            let isHovered = (mouseX > x - this.btnW / 2 && mouseX < x + this.btnW / 2 &&
-                mouseY > y - this.btnH / 2 && mouseY < y + this.btnH / 2);
+    // Title
+    push();
+    textAlign(LEFT, TOP);
+    textStyle(BOLD);
+    textSize(70);
+    let titleX = 200;
+    let titleY = 60;
 
-            if (isHovered) this.selectedIndex = i;
+    stroke(56, 49, 78);
+    strokeWeight(12);
+    fill(0);
+    text("TENNIS GAME", titleX + 6, titleY + 6);
+    
+    stroke(64, 57, 85);
+    strokeWeight(12);
+    fill(80);
+    text("TENNIS GAME", titleX + 3, titleY + 3);
+    
+    stroke(51, 44, 74);
+    strokeWeight(12);
+    fill(255, 188, 31);
+    text("TENNIS GAME", titleX, titleY);
+    pop();
 
-            if (i === this.selectedIndex) {
-                fill(0);
-                rectMode(CENTER);
-                noFill();
-                stroke(0);
-                rect(x, y, this.btnW, this.btnH, 5);
-                noStroke();
-                fill(0);
-            } else {
-                fill(200);
-            }
+    // Menu
+    push();
+    textAlign(LEFT, CENTER);
+    textStyle(BOLD);
+    let menuLeftX = 250;
+    let menuBaseY = height - 525;
 
-            text(this.options[i].label, x, y);
+    for (let i = 0; i < this.options.length; i++) {
+
+        let x = menuLeftX;
+        let y = menuBaseY + (i * 65);
+
+        let isHovered =
+            mouseX > x &&
+            mouseX < x + this.btnW &&
+            mouseY > y - this.btnH / 2 &&
+            mouseY < y + this.btnH / 2;
+
+        if (isHovered) this.selectedIndex = i;
+
+        if (i === this.selectedIndex && blink) {
+            textSize(17);
+            stroke(51, 44, 74);
+            strokeWeight(10);
+            fill(250);
+            text("▶", x - 40, y);
         }
+
+        textSize(38);
+        stroke(51, 44, 74);
+        strokeWeight(10);
+        fill(250);
+        text(this.options[i].label.toUpperCase(), x, y);
+    }
+    pop();
     },
+
+
 
     handleInput: function () {
         if (keyCode === UP_ARROW) {
