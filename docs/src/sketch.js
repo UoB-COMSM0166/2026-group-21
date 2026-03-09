@@ -15,6 +15,7 @@ const STATES = GAME_CONFIG.STATES;
 function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
+    bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};

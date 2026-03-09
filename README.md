@@ -52,7 +52,7 @@ We have streamlined the traditional rules to keep the action fluid: players use 
 At the core of the game is a custom ball physics system built to balance realistic collisions with arcade-style gameplay. This engine powers both local multiplayer and single-player modes against a custom AI. To ensure no two matches feel the same, we've introduced two key twists:
 
 1. **Skill System:** Each character comes with unique abilities. Players can trigger supernatural effects such as instant teleportation, or manipulate the ball itself - forcing it to enlarge, shrink, or accelerate unpredictably mid-flight.  
-    
+   
     <p align="center">
       <b>Figure 1:</b>
       <i>Demonstration of skill system</i>
@@ -61,8 +61,8 @@ At the core of the game is a custom ball physics system built to balance realist
     </p>
 
 1. **Dynamic Environments:** Each map features its own hazards, from the freezing mechanics in Antarctica to visibility-reducing sandstorms in the Desert stage. These elements force players to adapt their positioning and strategy on the fly.
-    
-    
+   
+   
     <p align="center">
       <b>Figure 2:</b>
       <i>Demonstration of dynamic environments</i>
@@ -86,14 +86,14 @@ The paper prototyping process also prompted deeper discussions regarding game me
     <p align="center">
       <b>Figure 3:</b>
       <i>Tennis Game Paper Prototype </i><br>
-      <a href="YT LINK" target="_blank">Watch it on YT</a><br>
-      <img src="weekly-homeworks/assets/week-03-tennisgame-prototype.gif" alt="Tennis Game Paper Prototype ">
+      <a href="https://www.youtube.com/watch?v=qdplPSo7CMk" target="_blank">Watch it on YT</a><br>
+      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-tennisgame-prototype1.mp4?raw=true" controls width="640" height="360"></video>
     </p>
     <p align="center">
       <b>Figure 4:</b>
       <i>Vampire Survival Paper Prototype </i><br>
-      <a href="YT LINK" target="_blank">Watch it on YT</a><br>
-      <img src="weekly-homeworks/assets/week-03-vampiresurvival-prototype.gif" alt="Tennis Game Paper Prototype ">
+      <a href="https://www.youtube.com/watch?v=HRUYlSV_QAU" target="_blank">Watch it on YT</a><br>
+      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-vampiresurvival-prototype.mp4?raw=true" controls width="640" height="360"></video>
     </p>
 
 #### Stakeholders
@@ -200,13 +200,49 @@ Employing object-oriented design and UML diagrams was essential for organizing o
 
 ### Evaluation
 
+Think Aloud Session Workshop (feedback)
+
+  As we let the other group members take a look at our game project, we realized there are still plenty of things we need to work on. Whether we missed them, skipped some parts, or are still progressing on them, here are some ideas based on the feedback they gave us and what our team is currently thinking about the game.
+
+    - Our gameplay buttons feel uncomfortable to use because they are too close together, which we will work on fixing.
+    - Our characters were too slow when moving from one direction to another, which sometimes meant they couldn't chase the ball as well as we expected. As a result, we need to make the characters accelerate faster and move more accurately so players can catch the ball more easily.
+    - The score or scoreboard is currently hard to see. We need to improve it by making it clearer and more visible throughout the game.
+    - The text on our game UI isn't clear and makes it difficult for others to read, which we will also improve.
+    - We haven't done the rules and regulations yet, so we need to add them so players can understand the gameplay. We might need documentation to clearly explain how the game works for someone who has never played it before.
+    - We also need to add key prompts so that first-time players know which buttons they should press.
+    - The easy mode was too easy. We should make it a bit more competitive. For example, right now the difficulty is around 1-2, but we should change it to 3-4 so that it feels more engaging, even for first-timers.
+    - When choosing maps, some people also said it is hard to see our fonts or text, so we might need to change that as well.
+    - The UI needs to be clearer to understand. For example, we need something like a score pop-up to clearly show who won the point or the game.
+    - Additionally, we might make the audience cheer every time a person scores, or give each tennis court its own unique visual effects.
+
+
 - 15% ~750 words
-
 - One qualitative evaluation (of your choice) 
-
 - One quantitative evaluation (of your choice) 
-
 - Description of how code was tested. 
+
+### Heuristic Evaluation
+
+**Process**
+
+Our team conducted an expert heuristic evaluation of the game prototype, assessing the interface against the 10 Nielsen design heuristics. We also incorporated informal playtesting feedback to identify key usability issues. We assigned them a severity rating based on a 0–4 scale for Impact, Frequency, and Persistence. The overall severity was calculated as an average of these three factors, helping us prioritize which issues to fix before release. 
+
+**Table: Heuristic violations identified in our game, their severity ratings, and solutions**
+
+| Heuristic Violated                                          | Issue Description                                            | Impact (0–4) | Frequency (0–4) | Persistence (0–4) | Overall Severity | Solution                                                     |
+| :---------------------------------------------------------- | :----------------------------------------------------------- | :----------- | :-------------- | :---------------- | :--------------- | :----------------------------------------------------------- |
+| **Visibility of system status**                             | When a player scores a point or hits a great shot, the game lacks immediate feedback, making the match feel unresponsive. | 3            | 4               | 3                 | 3.33             | Add audience reaction sound effects (e.g., applause, cheering) and visual text pop-ups to celebrate points won. |
+| **Match between system and the real world**                 | The out-of-bounds lines on the tennis court are not clearly or consistently marked, making it hard to judge if a ball is "in" or "out". | 3            | 4               | 4                 | 3.67             | Redraw the court boundaries with sharp, high-contrast white lines that mimic a real-world tennis court. |
+| **User control and freedom**                                | Players can move to intercept the ball but cannot control the shot's direction, angle, or power, making them feel like passive participants. | 4            | 4               | 4                 | 4.00             | Introduce directional aiming (using movement keys during the swing) and a charge-up mechanic to let players dictate shot power and angle. |
+| **Consistency and standards**                               | The "Play Again" button on the Game Over screen uses a different style, color, or interaction logic compared to the main menu buttons. | 2            | 1               | 2                 | 1.67             | Standardize UI elements by applying consistent styling and hover effects across all interactive buttons in the canvas. |
+| **Error prevention**                                        | Because players lack control over hit power, normal returns frequently and inevitably go out of bounds, forcing errors. | 4            | 4               | 3                 | 3.67             | Implement a slight aim-assist or cap the maximum power for standard shots to keep them in bounds, reserving high-risk out-of-bounds shots for special skills. |
+| **Recognition rather than recall**                          | The "Skills" category UI is too small. Players have to squint to recognize which skills are available or on cooldown. | 3            | 4               | 4                 | 3.67             | Enlarge the skills UI panel, use clear icons, and add noticeable visual cooldown indicators. |
+| **Flexibility and efficiency of use**                       | Local multiplayer demands too much from a single keyboard. Using the Numpad or playing close together creates physical crowding and potential hardware key-ghosting. | 4            | 4               | 4                 | 4.00             | Optimize the default key bindings (e.g., Player 1 on far-left WASD, Player 2 on far-right Arrows) and allow custom keymapping to maximize physical space between players. |
+| **Aesthetic and minimalist design**                         | While players praised the cute interface design, the bright and colorful court sometimes camouflages the yellow tennis ball. | 3            | 4               | 3                 | 3.33             | Maintain the cute aesthetic but add a subtle drop shadow or glowing outline to the tennis ball to improve visual contrast. |
+| **Help users recognize, diagnose, and recover from errors** | When a ball is missed (hit out or into the net), the game doesn't explicitly state why the point was lost. | 2            | 3               | 3                 | 2.67             | Add clear visual text like "OUT!" or "NET!" exactly where the error occurred so the player understands their mistake. |
+| **Help and documentation**                                  | New players are unsure of the key bindings for different shot types or how to activate skills before starting the match. | 3            | 2               | 4                 | 3.00             | Add an accessible "How to Play / Controls" screen in the main menu before the match begins. |
+
+
 
 ### Process 
 
