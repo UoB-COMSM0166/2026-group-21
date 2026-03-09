@@ -1,5 +1,5 @@
 let player, opponent, ball, layout;
-let playerImg, opponentImg, courtImg, backgroundImg;
+let courtImg, backgroundImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;
@@ -8,21 +8,28 @@ let selectedMap = 0;
 let p1CharIndex = -1; 
 let p2CharIndex = -1;
 let opponentAI;
+let characterImages = [];
 const STATES = GAME_CONFIG.STATES;
 
 function preload() {
-    playerImg = loadImage(GAME_CONFIG.ASSETS.PLAYER_IMG);
-    opponentImg = loadImage(GAME_CONFIG.ASSETS.OPPONENT_IMG);
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
+    // preload every character's sprite images
+    GAME_CONFIG.CHARACTERS.forEach((char, index) => {
+        characterImages[index] = {};
+        if (char.assets) {
+            if (char.assets.front) characterImages[index].front = loadImage(char.assets.front);
+            if (char.assets.back) characterImages[index].back = loadImage(char.assets.back);
+        }
+    });
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     layout = new LayoutManager();
-    player = new Player(layout.sideRight, playerImg, true);
-    opponent = new Player(layout.sideLeft, opponentImg, false);
+    player = new Player(layout.sideRight, null, true);
+    opponent = new Player(layout.sideLeft, null, false);
     opponentAI = new AI(opponent);
     ball = new Ball();
     scoreManager = new ScoreManager();
@@ -38,6 +45,8 @@ function draw() {
         case STATES.PLAYING:     Scene_Game.draw();       break;
         case STATES.PAUSED:      Scene_Pause.draw();      break;
         case STATES.TUTORIAL:    Scene_Tutorial.draw();   break;
+        case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.draw(); break;
+
     }
 }
 
@@ -47,6 +56,7 @@ function mousePressed() {
         case STATES.CHAR_SELECT: Scene_CharSelect.handleMouse(); break;
         case STATES.MAP_SELECT:  Scene_MapSelect.handleMouse();  break;
         case STATES.PAUSED:      Scene_Pause.handleMouse();      break;
+        case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleMouse(); break;
     }
 }
 
@@ -58,14 +68,15 @@ function keyPressed() {
         case STATES.PLAYING:     Scene_Game.handleInput();       break;
         case STATES.TUTORIAL:    Scene_Tutorial.handleInput();   break;
         case STATES.PAUSED:      Scene_Pause.handleInput();      break;
+        case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleInput(); break;
     }
 }
 // handle window resizing
 function windowResized() {
     //calculate relative positions before resizing
-    let relP = player.getRelativePos(layout);
-    let relO = opponent.getRelativePos(layout);
-    let relB = ball.getRelativePos(layout);
+    let relP = player.relativePos;
+    let relO = opponent.relativePos;
+    let relB = ball.relativePos;
     //resize canvas and caculate layout boundaries
     resizeCanvas(windowWidth, windowHeight);
     layout.update();

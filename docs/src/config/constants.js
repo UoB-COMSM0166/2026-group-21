@@ -5,7 +5,9 @@ const GAME_CONFIG = {
         MAP_SELECT: 'MAP_SELECT',
         PLAYING: 'PLAYING',
         PAUSED: 'PAUSED',
-        TUTORIAL: 'TUTORIAL'
+
+        TUTORIAL: 'TUTORIAL',
+        DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
     },
 
     COURT: {
@@ -43,7 +45,7 @@ const GAME_CONFIG = {
         BOUNCE_Z: 6,                // Upward force after first bounce
         HIT_Y: 13,                  // Forward power imparted by racket
         HIT_Z: 7,                   // Upward lift imparted by racket
-        DIRECTION_MULT: 0.2,        // Sensitivity of horizontal angle deflection
+        DIRECTION_MULT: 0.15,       // Sensitivity of horizontal angle deflection
         HIT_MIN_Z: 5,               // Hit window: minimum height required
         HIT_MAX_Z: 50,              // Hit window: maximum height allowed
         SERVE_MIN_VX: 6,
@@ -62,20 +64,25 @@ const GAME_CONFIG = {
     },
 
     PLAYER: {
-        WIDTH: 64,
+        WIDTH: 100,
         HEIGHT: 64,
-        SPEED: 5,
+        SPEED: 6,
         SWING_DURATION: 10,         // frames: how long the hit window stays active
         SERVE_OFFSET: 5,            // Starting distance behind baseline
         NET_MARGIN: 10,             // Minimum safe distance from net
-        SWING_SCALE: 1.1            // Visual feedback multiplier during swing
+        SWING_SCALE: 1.1,            // Visual feedback multiplier during swing
+        SKILL_COOLDOWN: 180,
+        TOTAL_FRAMES: 6,
+        ANIM_SPEED: 0.4,
+        SPRITE_WIDTH: 100,
+        SPRITE_HEIGHT: 64,
+        SPRITE_COLS: 2
     },
 
     ASSETS: {
         MENU_BG: 'assets/images/menu_background_picture.png',
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
-        OPPONENT_IMG: 'assets/images/player_cat_front.png',
         COURT_IMG: 'assets/images/stadiumtest.png'
     },
 
@@ -118,10 +125,64 @@ const GAME_CONFIG = {
     },
 
     CHARACTERS: [
-        { name: "Cat", speed: 5, skillType: 'SPEED_BURST' },
-        { name: "Dog", speed: 5,  skillType: 'POWER_SHOT' },
-        { name: "Deer", speed: 5,  skillType: 'LONG_REACH' },
-        { name: "Bird", speed: 5, skillType: 'TELEPORT' },
-        { name: "?",    speed: 5,  skillType: 'RANDOM' }
-    ]
+        { 
+            name: "Cat", 
+            speed: 5, 
+            skillType: 'SHADOW_TELEPORT',
+            assets: {
+                front: 'assets/images/player_cat_swing_front.png',
+                back: 'assets/images/player_cat_swing_back.png'
+            }
+        },
+        { 
+            name: "Dog", 
+            speed: 5,  
+            skillType: 'GIGA_BALL',
+            assets: {
+                front: 'assets/images/player_dog_swing_front.png',
+                back: 'assets/images/player_dog_swing_back.png'
+            }
+        },
+        { 
+            name: "Deer", 
+            speed: 5,  
+            skillType: 'FEATHER_STORM',
+            assets: {
+                front: 'assets/images/player_deer_swing_front.png',
+                back: 'assets/images/player_deer_swing_back.png'
+            }
+        },
+        { 
+            name: "Bird", 
+            speed: 5, 
+            skillType: 'FOREST_ZEN',
+            assets: {
+                front: 'assets/images/player_bird_swing_front.png',
+                back: 'assets/images/player_bird_swing_back.png'
+            }
+        },
+        { name: "?",    speed: 5,  skillType: '?' }
+    ],
+
+    // select AI's level after character for p2 was chosen.
+    AI_LEVELS: {
+        EASY: {
+            speedMult: 0.7,
+            reactionDelay: 13,
+            errorRange: 45,
+            prediction: 4
+        },
+        NORMAL: {
+            speedMult: 0.8,
+            reactionDelay: 8,
+            errorRange: 25,
+            prediction: 8
+        },
+        HARD: {
+            speedMult: 0.89,
+            reactionDelay: 5,
+            errorRange: 15,
+            prediction: 10
+        }
+    }
 };

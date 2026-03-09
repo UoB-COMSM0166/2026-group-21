@@ -1,40 +1,99 @@
 class AI {
     constructor(playerInstance) {
         this.player = playerInstance;
-        this.reactionSpeed = 0.15;
-        this.targetSwingHeight = random(45, 65);
+        this.noiseOffset = random(1000);
+        this.fidgetSpeed = 0.015;
+        this.serveDelayTimer = -1;
+        this.serveTargetX = -1;
+        this.targetX = width / 2;
+    
+        // default: Normal
+        const defaultLevel = GAME_CONFIG.AI_LEVELS.NORMAL;
+        this.difficulty     = 'NORMAL';
+        this.speedMult      = defaultLevel.speedMult;
+        this.reactionDelay  = defaultLevel.reactionDelay;
+        this.errorRange     = defaultLevel.errorRange;
+        this.prediction     = defaultLevel.prediction;
+    
+        this._reactionCounter = 0;
+    }
+    
+    update(ball) {
+        this._reactionCounter++;
+        if (this._reactionCounter >= this.reactionDelay) {
+            this._reactionCounter = 0;
+    
+            if (ball.isWaiting || ball.isTossing) {
+                if (scoreManager.currentServer === 'PLAYER') {
+                    let isPlayerOnRight = player.x > layout.centerX;
+                    let homeX = isPlayerOnRight ?
+                        layout.courtLeft + (layout.COURT_W / 4) :
+                        layout.courtRight - (layout.COURT_W / 4);
+                    let fidgetRange = layout.COURT_W / 8;
+                    let noiseValue = (noise(this.noiseOffset) - 0.5) * fidgetRange;
+                    this.noiseOffset += this.fidgetSpeed;
+                    this.targetX = homeX + noiseValue;
+                } else {
+                    this.targetX = this.calculateServePosition();
+                }
+            } else {
+                let error = random(-this.errorRange, this.errorRange);
+                this.targetX = ball.x + (ball.vx * this.prediction) + error;
+                this.serveDelayTimer = -1;
+                this.serveTargetX = -1;
+            }
+        }
+    
+        // moving and actions are executed per frame
+        this.applySmoothMovement();
+        this.handleActions(ball);
+    }
+    
+    applySmoothMovement() {
+        let dx = this.targetX - this.player.x;
+        if (Math.abs(dx) < 3) return;
+        let lerpFactor = (scoreManager.currentServer === 'PLAYER' && !ball.isWaiting) ? 0.2 : 0.1;
+        let moveStep = dx * lerpFactor;
+        // multiplying "speedMult" reflects the speed diff by difficulty
+        moveStep = constrain(moveStep, -this.player.speed * this.speedMult, this.player.speed * this.speedMult);
+        this.player.x += moveStep;
     }
 
-    update(ball) {
-        let targetX = ball.x;
-
-        let dx = targetX - this.player.x;
-
-        if (Math.abs(dx) > 2) {
-            let moveStep = dx * 0.2;
-
-            moveStep = constrain(moveStep, -this.player.speed, this.player.speed);
-
-            this.player.x += moveStep;
+    calculateServePosition() {
+        if (this.serveTargetX !== -1) return this.serveTargetX;
+        const { courtLeft, courtRight, centerX } = layout;
+        const padding = (this.player.w / 2) + 10; 
+        if (scoreManager.currentSide === 'RIGHT') {
+            this.serveTargetX = random(centerX + padding, courtRight - padding);
+        } else {
+            this.serveTargetX = random(courtLeft + padding, centerX - padding);
         }
+        return this.serveTargetX;
+    }
 
+    handleActions(ball) {
         if (!ball.isWaiting && !ball.isTossing && ball.vy < 0) {
-            let distToBall = dist(this.player.x, this.player.y, ball.x, ball.y);
-            if (distToBall < 80) {
+            let xDiff = Math.abs(this.player.x - ball.x);
+            let yDiff = Math.abs(this.player.y - ball.y);
+            if (xDiff < 70 && yDiff < 100) {
                 this.player.swing();
             }
         }
 
-        if (ball.isWaiting && scoreManager.currentServer === 'OPPONENT') {
-            if (frameCount % 60 === 0) {
-                ball.toss();
-            }
-        }
-
-        if (ball.isTossing && scoreManager.currentServer === 'OPPONENT') {
-            if (ball.z > this.targetSwingHeight) {
+        if (scoreManager.currentServer === 'OPPONENT') {
+            if (ball.isWaiting) {
+                if (this.serveDelayTimer === -1) {
+                    this.serveDelayTimer = int(random(90, 160));
+                }
+                let distToTarget = Math.abs(this.player.x - this.serveTargetX);
+                if (distToTarget < 20 && this.serveDelayTimer > 0) {
+                    this.serveDelayTimer--;
+                } else if (this.serveDelayTimer === 0) {
+                    ball.toss();
+                    this.serveDelayTimer = -1;
+                }
+            } else if (ball.isTossing && ball.z > 55) {
                 this.player.swing();
-                this.targetSwingHeight = random(45, 65);
             }
         }
     }
