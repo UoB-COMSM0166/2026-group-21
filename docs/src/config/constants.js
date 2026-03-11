@@ -80,6 +80,22 @@ const GAME_CONFIG = {
         PINK: [255, 200, 200],
         DARK_GRAY: [0, 0, 0, 180],
         FALLBACK: 150,
+        FEEDBACK_PERFECT: [50,205,50],
+        FEEDBACK_MISS: [220, 20, 60],
+        INDICATOR_YELLOW: [255, 215, 0],
+    },
+
+    FEEDBACK: {
+        MISS_DISTANCE_THRESHOLD: 300,
+        DISPLAY_DURATION: 60,
+        TEXT_SIZE: 24,
+        TEXT_OFFSET_Y: 20,
+        INDICATOR_OFFSET_Y: 50,
+        INDICATOR_ANIM_SPEED: 0.1,
+        INDICATOR_ANIM_AMP: 5,
+        INDICATOR_WIDTH: 10,
+        INDICATOR_HEIGHT: 15
+
     },
 
     PLAYER: {

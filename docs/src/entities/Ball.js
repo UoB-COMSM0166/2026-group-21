@@ -157,17 +157,21 @@ class Ball {
     checkHit(p) {
         const { HIT_MIN_Z, HIT_MAX_Z, HIT_Z, HIT_Y, DIRECTION_MULT } = GAME_CONFIG.BALL;
         const { SERVE_MIN_VX, SERVE_MAX_VX } = GAME_CONFIG.BALL;
-        // only hit if player is swing and ball is at hittable height
+        
+        // only hit if player is swinging and ball is at hittable height
         const isHittable = p.swingTimer > 0 && !p.hasHit && this.z > HIT_MIN_Z && this.z < HIT_MAX_Z;
         if (!isHittable) return;
+        
         // basic box-to-box collision detection
         const hitX = this.x > p.x - p.w / 2 && this.x < p.x + p.w / 2;
         const hitY = abs(this.y - p.y) < this.r + p.h / 2;
+        
         if (hitX && hitY) {
             this.vz = HIT_Z;
             this.vy = p.isBottom ? -HIT_Y : HIT_Y;
-            //Change the ball's angle based on where it hits the player
+            // Change the ball's angle based on where it hits the player
             this.vx = (this.x - p.x) * DIRECTION_MULT;
+            
             // forces the ball to fly diagonally to the opposite side during a serve
             if (this.isTossing) {
                 if (scoreManager.currentSide === 'RIGHT') {
@@ -176,10 +180,16 @@ class Ball {
                     this.vx = constrain(this.vx, SERVE_MIN_VX, SERVE_MAX_VX);
                 }
             }
+            
             this.recordHit(p);
             p.hasHit = true;
+
+            // Trigger PERFECT visual feedback and reset timer
+            p.feedbackText = "PERFECT";
+            p.feedbackTimer = GAME_CONFIG.FEEDBACK.DISPLAY_DURATION;
         }
     }
+    
     //transition ball state from serve or idle to active play
     recordHit(p) {
         this.bounceCount = 0;

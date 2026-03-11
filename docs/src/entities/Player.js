@@ -5,9 +5,9 @@ class Player {
         this.w = GAME_CONFIG.PLAYER.WIDTH;
         this.h = GAME_CONFIG.PLAYER.HEIGHT;
         this.speed = GAME_CONFIG.PLAYER.SPEED;
-        this.isBottom = isBottom; //true for bottom player, false for opponent
-        this.swingTimer = 0; //duration of the hit active window
-        this.resetPosition(x); //initialize position to the starting baseline
+        this.isBottom = isBottom; // true for bottom player, false for opponent
+        this.swingTimer = 0; // duration of the hit active window
+        this.resetPosition(x); // initialize position to the starting baseline
         this.skillCooldown = 0;
         this.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
         this.currentFrame = 0;
@@ -17,6 +17,11 @@ class Player {
         this.spriteH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
         this.spriteCols = GAME_CONFIG.PLAYER.SPRITE_COLS;
         this.hasHit = false;
+
+        // Visual feedback states
+        this.feedbackText = "";
+        this.feedbackTimer = 0;
+        this.wasBallNearOnSwing = false;
     }
 
     get isServer() {
@@ -37,9 +42,41 @@ class Player {
         imageMode(CENTER);
         translate(this.x, this.y);
         this.drawSprite();
+        
+        const { FEEDBACK, COLORS } = GAME_CONFIG;
+
+        // --- PERFECT / MISS visual feedback logic ---
+        if (this.feedbackTimer > 0 && this.feedbackText !== "") {
+            push(); 
+            textAlign(CENTER, BOTTOM);
+            textSize(FEEDBACK.TEXT_SIZE); 
+            textStyle(BOLD);
+            
+            if (this.feedbackText === "PERFECT") {
+                fill(...COLORS.FEEDBACK_PERFECT); 
+            } else {
+                fill(...COLORS.FEEDBACK_MISS); 
+            }
+            text(this.feedbackText, 0, -this.h / 2 - FEEDBACK.TEXT_OFFSET_Y);
+            pop();
+        }
+        
+        // --- Serve Indicator logic ---
+        if (this.isServer && typeof ball !== 'undefined' && ball.isWaiting) {
+            push();
+            let bounceOffset = sin(frameCount * FEEDBACK.INDICATOR_ANIM_SPEED) * FEEDBACK.INDICATOR_ANIM_AMP; 
+            translate(0, -this.h / 2 - FEEDBACK.INDICATOR_OFFSET_Y + bounceOffset); 
+            fill(...COLORS.INDICATOR_YELLOW); 
+            noStroke();
+            let w = FEEDBACK.INDICATOR_WIDTH;
+            let h = FEEDBACK.INDICATOR_HEIGHT;
+            triangle(-w, -h, w, -h, 0, 0);  
+            pop();
+        }
+
         pop();
     }
-    // draw player swing animation sprite
+
     drawSprite() {
         let frameIdx = floor(this.currentFrame);
         let sx = (frameIdx % this.spriteCols) * this.spriteW;
@@ -47,18 +84,24 @@ class Player {
         if (this.img) {
             image(this.img, 0, 0, this.w, this.h, sx, sy, this.spriteW, this.spriteH);
         } else {
-            //fallback if image fails to load
             fill(GAME_CONFIG.COLORS.FALLBACK);
             rect(0, 0, this.w, this.h);
         }
     }
 
-    //enable the hit detection for a short period
-    swing() { 
+    swing(ball) { 
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
+
+        // Record proximity for potential MISS evaluation
+        if (ball) {
+            let d = dist(this.x, this.y, ball.x, ball.y);
+            this.wasBallNearOnSwing = (d < GAME_CONFIG.FEEDBACK.MISS_DISTANCE_THRESHOLD);
+        } else {
+            this.wasBallNearOnSwing = false;
+        }
     }
-    // handle skill and swing button
+
     handleKeyPress(keyCode, ball) {
         const { CONTROLS } = GAME_CONFIG;
         const actionKey = this.isBottom ? CONTROLS.PLAYER_ACTION : CONTROLS.OPPONENT_ACTION;
@@ -66,13 +109,12 @@ class Player {
 
         if (keyCode === actionKey) {
             if (this.isServer && ball.isWaiting) ball.toss();
-            else this.swing();
+            else this.swing(ball); // Pass the ball reference
         } else if (keyCode === skillKey) {
             this.useSkill(ball);
         }
     }
 
-    // reset player's position
     resetPosition(newX) {
         this.x = newX;
         let serveBackDistance = GAME_CONFIG.PLAYER.SERVE_OFFSET;
@@ -89,22 +131,19 @@ class Player {
     moveDown() { this.y += this.speed; }
 
     handleInput() {
-        // handle keyboard inputs based on player role
-        // left, right, up, down arrows
         if (this.isBottom) {
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_LEFT)) this.moveLeft();
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_RIGHT)) this.moveRight();
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_UP)) this.moveUp();
             if (keyIsDown(GAME_CONFIG.CONTROLS.PLAYER_DOWN)) this.moveDown();
         } else {
-            // WASD
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.moveLeft();
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.moveRight();
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.moveUp();
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.moveDown();
         }
     }
-    // decrement hit window timer, skill cool down and calcu animation's frame
+
     updateTimers() {
         if (this.swingTimer > 0) {
             this.swingTimer--;
@@ -113,12 +152,27 @@ class Player {
             if (this.currentFrame >= this.totalFrames) {
                 this.currentFrame = 0;
             }
+
+            // Evaluate MISS at the exact end of the swing window
+            if (this.swingTimer === 0) {
+                if (this.wasBallNearOnSwing && !this.hasHit && this.feedbackText !== "PERFECT") {
+                    this.feedbackText = "MISS";
+                    this.feedbackTimer = GAME_CONFIG.FEEDBACK.DISPLAY_DURATION; 
+                }
+            }
         } else {
             this.currentFrame = 0;
         }
+        
         if (this.skillCooldown > 0) this.skillCooldown--;
+
+        if (this.feedbackTimer > 0) {
+            this.feedbackTimer--;
+        } else {
+            this.feedbackText = "";
+        }
     }
-    //constraint player's position based on current state
+
     applyConstraints() {
         const { COURT, PLAYER } = GAME_CONFIG;
         const { courtLeft, courtRight, courtTop, courtBottom, centerX, netY } = layout;
@@ -131,7 +185,7 @@ class Player {
             minY = max(hh, courtTop - COURT.MOVE_PADDING_Y);
         }
         const isServingNow = (ball.isWaiting || ball.isTossing) && this.isServer;
-        //serve mode boundaries
+        
         if (isServingNow) {
             if (scoreManager.currentSide === 'RIGHT') {
                 minX = centerX + hw;
@@ -145,7 +199,6 @@ class Player {
             } else {
                 maxY = courtTop - hh;
             }
-            //standard mode boundaries
         } else {
             minX = max(hw, courtLeft - COURT.MOVE_PADDING_X);
             maxX = min(width - hw, courtRight + COURT.MOVE_PADDING_X);
@@ -155,18 +208,17 @@ class Player {
                 maxY = netY - PLAYER.NET_MARGIN - hh;
             }
         }
-        //update position based on calculation
         this.x = constrain(this.x, minX, maxX);
         this.y = constrain(this.y, minY, maxY);
     }
-    //normalizes position to a 0-1 scale to maintain alignment during resizing
+
     get relativePos() {
         return {
             x: (this.x - layout.courtLeft) / layout.COURT_W,
             y: (this.y - layout.courtTop) / layout.COURT_H
         };
     }
-    //re-maps normalized coordinates back to absolute pixels after resizing
+
     reposition(rel, layout) {
         this.x = layout.courtLeft + rel.x * layout.COURT_W;
         this.y = layout.courtTop + rel.y * layout.COURT_H;
@@ -179,7 +231,7 @@ class Player {
             this.skillCooldown = this.maxCooldown;
         }
     }
-    // temporarily skillbar placeholder
+
     displaySkillBar(x, y, w, h) {
         push();
         let progress = 1 - (this.skillCooldown / this.maxCooldown);
