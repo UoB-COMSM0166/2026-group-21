@@ -17,6 +17,7 @@ class Player {
         this.spriteH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
         this.spriteCols = GAME_CONFIG.PLAYER.SPRITE_COLS;
         this.hasHit = false;
+        this.skillType = null; // This would be set after character selection, for examples: "SHADOW_TELEPORT" and "GIGA_BALL"
     }
 
     get isServer() {
@@ -59,10 +60,13 @@ class Player {
         this.hasHit = false;
     }
     // handle skill and swing button
+    // player skill key would be Q (which is keyCode 81) and opponent skill key: / (keyCode 191)
     handleKeyPress(keyCode, ball) {
         const { CONTROLS } = GAME_CONFIG;
         const actionKey = this.isBottom ? CONTROLS.PLAYER_ACTION : CONTROLS.OPPONENT_ACTION;
-        const skillKey = this.isBottom ? CONTROLS.PLAYER_SKILL : CONTROLS.OPPONENT_SKILL;
+        const skillKey = this.isBottom
+            ? (CONTROLS.PLAYER_SKILL != null ? CONTROLS.PLAYER_SKILL : 81)
+            : (CONTROLS.OPPONENT_SKILL != null ? CONTROLS.OPPONENT_SKILL : 191);
 
         if (keyCode === actionKey) {
             if (this.isServer && ball.isWaiting) ball.toss();
