@@ -17,6 +17,9 @@ class Player {
         this.spriteH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
         this.spriteCols = GAME_CONFIG.PLAYER.SPRITE_COLS;
         this.hasHit = false;
+        this.feedbackText = "";
+        this.feedbackTimer = 0;
+        this.wasBallNearOnSwing = false;
     }
 
     get isServer() {
@@ -37,6 +40,36 @@ class Player {
         imageMode(CENTER);
         translate(this.x, this.y);
         this.drawSprite();
+
+        const { FEEDBACK, COLORS } = GAME_CONFIG;
+
+        if (this.feedbackTimer > 0 && this.feedbackText !== "") {
+            push(); 
+            textAlign(CENTER, BOTTOM);
+            textSize(FEEDBACK.TEXT_SIZE); 
+            textStyle(BOLD);
+            
+            if (this.feedbackText === "PERFECT") {
+                fill(...COLORS.FEEDBACK_PERFECT); 
+            } else {
+                fill(...COLORS.FEEDBACK_MISS); 
+            }
+            text(this.feedbackText, 0, -this.h / 2 - FEEDBACK.TEXT_OFFSET_Y);
+            pop();
+        }
+        
+        if (this.isServer && typeof ball !== 'undefined' && ball.isWaiting) {
+            push();
+            let bounceOffset = sin(frameCount * FEEDBACK.INDICATOR_ANIM_SPEED) * FEEDBACK.INDICATOR_ANIM_AMP; 
+            translate(0, -this.h / 2 - FEEDBACK.INDICATOR_OFFSET_Y + bounceOffset); 
+            fill(...COLORS.INDICATOR_YELLOW); 
+            noStroke();
+            let w = FEEDBACK.INDICATOR_WIDTH;
+            let h = FEEDBACK.INDICATOR_HEIGHT;
+            triangle(-w, -h, w, -h, 0, 0);  
+            pop();
+        }
+
         pop();
     }
     // draw player swing animation sprite
@@ -54,9 +87,16 @@ class Player {
     }
 
     //enable the hit detection for a short period
-    swing() { 
+    swing(ball) { 
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
+
+        if (ball) {
+            let d = dist(this.x, this.y, ball.x, ball.y);
+            this.wasBallNearOnSwing = (d < GAME_CONFIG.FEEDBACK.MISS_DISTANCE_THRESHOLD);
+        } else {
+            this.wasBallNearOnSwing = false;
+        }
     }
     // handle skill and swing button
     handleKeyPress(keyCode, ball) {
@@ -66,7 +106,7 @@ class Player {
 
         if (keyCode === actionKey) {
             if (this.isServer && ball.isWaiting) ball.toss();
-            else this.swing();
+            else this.swing(ball);
         } else if (keyCode === skillKey) {
             this.useSkill(ball);
         }
@@ -113,10 +153,22 @@ class Player {
             if (this.currentFrame >= this.totalFrames) {
                 this.currentFrame = 0;
             }
+            if (this.swingTimer === 0) {
+                if (this.wasBallNearOnSwing && !this.hasHit && this.feedbackText !== "PERFECT") {
+                    this.feedbackText = "MISS";
+                    this.feedbackTimer = GAME_CONFIG.FEEDBACK.DISPLAY_DURATION; 
+                }
+            }
         } else {
             this.currentFrame = 0;
         }
         if (this.skillCooldown > 0) this.skillCooldown--;
+
+        if (this.feedbackTimer > 0) {
+            this.feedbackTimer--;
+        } else {
+            this.feedbackText = "";
+        }
     }
     //constraint player's position based on current state
     applyConstraints() {
