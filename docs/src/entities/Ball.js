@@ -199,6 +199,8 @@ class Ball {
             this.recordHit(p);
             p.hasHit = true;
             SkillManager.triggerHitSkill(p, this);
+            p.feedbackText = "PERFECT";
+            p.feedbackTimer = GAME_CONFIG.FEEDBACK.DISPLAY_DURATION;
         }
     }
     //transition ball state from serve or idle to active play
