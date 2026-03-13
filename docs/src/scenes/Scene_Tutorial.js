@@ -11,16 +11,20 @@ const Scene_Tutorial = {
     scoringMessage: "",
 
     setup: function () {
+        player.isAI = false;
+        opponent.isAI = true;
         tutorialManager = new TutorialManager();
         if (scoreManager) {
             scoreManager.init();
             scoreManager.currentServer = 'NONE';
         }
 
-        if (characterImages[0] && characterImages[0].back) {
-            player.img = characterImages[0].back;
+        if (characterImages[0] && characterImages[3]) {
+            player.img = characterImages[3].back;
             opponent.img = characterImages[0].front;
         }
+
+        player.skillType = 'FEATHER_STORM';
 
         this.resetState(0);
         this.isPausedForIntro = true;
@@ -131,7 +135,8 @@ const Scene_Tutorial = {
             opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
 
             if (stepConfig.step === 4) {
-                player.skillCooldown = player.maxCooldown / 2;
+                player.skillCooldown = 0;
+                player.activeBuff = null;
             } else if (stepConfig.step === 5) {
                 if (scoreManager) scoreManager.init();
                 this.lastPlayerScore = 0;
@@ -277,6 +282,8 @@ const Scene_Tutorial = {
         this.hasHitBall = false;
         this.needsReset = false;
         this.successPauseTimer = 0;
+        this.skillTriggered = false;
+        player.activeBuff = null;
         this.lastPlayerScore = scoreManager.playerPoints;
         this.lastOpponentScore = scoreManager.opponentPoints;
     },
@@ -365,19 +372,13 @@ const Scene_Tutorial = {
 
     // Step 4: Successfully using the special skill mechanics
     handleSkillLogic: function () {
-        // Player activated skill when cooldown gauge is completely full
-        if (player.skillCooldown > player.maxCooldown - GAME_CONFIG.TUTORIAL.SKILL_TRIGGER_MARGIN) {
-            if (!this.skillTriggered) {
-                // Ball must be above ground or moving horizontally to count
-                if (ball.z > 0 || abs(ball.vz) > 0.1) {
-                    this.scoringMessage = "AMAZING SKILL!";
-                    this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
-                    this.skillTriggered = true;
-                    return;
-                }
-            }
-        } else {
-            this.skillTriggered = false;
+        let hasJustFiredSkill = player.skillCooldown > player.maxCooldown - 5;
+
+        if (hasJustFiredSkill && !this.skillTriggered) {
+            this.scoringMessage = "AMAZING SKILL!";
+            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+            this.skillTriggered = true;
+            return;
         }
 
         if (!this.needsReset) {
@@ -385,6 +386,7 @@ const Scene_Tutorial = {
             // Reset if the ball dies or goes out of bounds
             if (status.isDead || status.isOut) {
                 this.needsReset = true;
+                player.activeBuff = null;
             }
         }
         this.handleResetTimer(() => this.resetBallForAIServe());

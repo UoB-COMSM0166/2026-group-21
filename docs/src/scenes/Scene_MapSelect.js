@@ -106,6 +106,7 @@ const Scene_MapSelect = {
 
     confirmSelection: function () {
         Scene_Game.restartGame();
+        Scene_Game.setup();
         currentState = GAME_CONFIG.STATES.PLAYING;
     },
     goBack: function () {

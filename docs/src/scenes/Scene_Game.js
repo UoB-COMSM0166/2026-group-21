@@ -1,4 +1,13 @@
 const Scene_Game = {
+    setup: function() {
+        player.isAI = false;
+        if (!isMultiplayer) {
+            opponent.isAI = true;
+        } else {
+            opponent.isAI = false;
+        }
+    },
+
     draw: function () {
         strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT);
         stroke(GAME_CONFIG.COLORS.BLACK);

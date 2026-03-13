@@ -25,6 +25,11 @@ class AI {
     }
 
     update(ball) {
+        // if AI catch the gigaball, it should be stunned as well
+        if (this.player.stunTimer > 0) {
+            return; 
+        }
+
         this._reactionCounter++;
         if (this._reactionCounter >= this.reactionDelay) {
             this._reactionCounter = 0;

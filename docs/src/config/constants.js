@@ -165,7 +165,7 @@ const GAME_CONFIG = {
         {
             name: "Deer",
             speed: 6,
-            skillType: 'FEATHER_STORM',
+            skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
                 back: 'assets/images/player_deer_swing_back.png'
@@ -174,7 +174,7 @@ const GAME_CONFIG = {
         {
             name: "Bird",
             speed: 6,
-            skillType: 'FOREST_ZEN',
+            skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
                 back: 'assets/images/player_bird_swing_back.png'

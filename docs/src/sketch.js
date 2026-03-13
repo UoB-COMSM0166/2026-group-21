@@ -1,5 +1,5 @@
 let player, opponent, ball, layout;
-let courtImg, backgroundImg;
+let courtImg, backgroundImg, bgImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;

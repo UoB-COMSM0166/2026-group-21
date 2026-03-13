@@ -5,6 +5,9 @@ class Ball {
         this.bounceCount = 0;
         this.lastHitter = null;
         this.reset(0, 0, 'PLAYER');
+        this.speedMultiplier = 1.0;
+        this.speedTimer = 0;
+        this.sizeTimer = 0;
     }
     //resets the ball to its starting state for a new serve
     reset(startX, startY, side) {
@@ -21,6 +24,19 @@ class Ball {
     }
 
     update() {
+        if (this.speedTimer > 0) {
+            this.speedTimer--;
+            if (this.speedTimer === 0) {
+                this.speedMultiplier = 1.0;
+            }
+        }
+        if (this.sizeTimer > 0) {
+            this.sizeTimer--;
+            if (this.sizeTimer === 0) {
+                this.r = GAME_CONFIG.BALL.RADIUS;
+            }
+        }
+
         if (this.handleServeState()) return;
         this.applyPhysics();
         this.checkGroundCollision();
@@ -66,8 +82,8 @@ class Ball {
     }
     //calculates position, air resistance and gravity
     applyPhysics() {
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * this.speedMultiplier;
+        this.y += this.vy * this.speedMultiplier;
         this.z += this.vz;
         this.vx *= GAME_CONFIG.BALL.AIR_RESISTANCE;
         this.vy *= GAME_CONFIG.BALL.AIR_RESISTANCE;
@@ -161,9 +177,13 @@ class Ball {
         const isHittable = p.swingTimer > 0 && !p.hasHit && this.z > HIT_MIN_Z && this.z < HIT_MAX_Z;
         if (!isHittable) return;
         // basic box-to-box collision detection
-        const hitX = this.x > p.x - p.w / 2 && this.x < p.x + p.w / 2;
+        const hitX = abs(this.x - p.x) < this.r + p.w / 2;
         const hitY = abs(this.y - p.y) < this.r + p.h / 2;
         if (hitX && hitY) {
+            if (this.r > GAME_CONFIG.BALL.RADIUS + 1) {
+                p.stunTimer = 45;
+            }
+
             this.vz = HIT_Z;
             this.vy = p.isBottom ? -HIT_Y : HIT_Y;
             //Change the ball's angle based on where it hits the player
@@ -178,6 +198,7 @@ class Ball {
             }
             this.recordHit(p);
             p.hasHit = true;
+            SkillManager.triggerHitSkill(p, this);
         }
     }
     //transition ball state from serve or idle to active play

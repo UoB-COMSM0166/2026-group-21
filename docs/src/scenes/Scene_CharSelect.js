@@ -143,9 +143,7 @@ const Scene_CharSelect = {
         if (characterImages[p2CharIndex] && characterImages[p2CharIndex].front) {
             opponent.img = characterImages[p2CharIndex].front;
         }
-
-        if (opponentAI) {
-
-        }
+        player.isAI = false;
+        opponent.isAI = !isMultiplayer;
     }
 };
