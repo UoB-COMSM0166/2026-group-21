@@ -52,9 +52,6 @@ class SkillManager {
 
     // This would be used to reduce the ball’s velocity to 0.5x speed for around 1 second, then return it back to normal
     static forestZen(ball) {
-        ball.r = GAME_CONFIG.BALL.RADIUS * 1.2;
-        ball.sizeTimer = 60;
-
         ball.speedMultiplier = 0.7; 
         ball.speedTimer = 60;
     }

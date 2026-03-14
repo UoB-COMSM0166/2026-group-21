@@ -3,11 +3,12 @@ let courtImg, backgroundImg, bgImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;
-let selectedCharacter = 0;
 let selectedMap = 0;
+let selectedDifficulty = "NORMAL";
 let p1CharIndex = -1; 
 let p2CharIndex = -1;
 let opponentAI;
+let mapImages = [];
 let characterImages = [];
 let tutorialManager;
 const STATES = GAME_CONFIG.STATES;
@@ -16,6 +17,12 @@ function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
+    GAME_CONFIG.MAPS.forEach((map, index) => {
+        mapImages[index] = {
+            bg: loadImage(map.bgPath),
+            court: loadImage(map.courtPath)
+        };
+    });
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};

@@ -266,8 +266,10 @@ const Scene_Tutorial = {
 
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
-
-        opponentAI = new AI(opponent);
+        
+        if (opponentAI) {
+            opponentAI.resetServeState(); 
+        }
         opponent.x = layout.sideLeft;
         opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
         opponent.swingTimer = 0;

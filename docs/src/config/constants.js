@@ -105,7 +105,7 @@ const GAME_CONFIG = {
         MENU_BG: 'assets/images/menu_background_picture.png',
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
-        COURT_IMG: 'assets/images/stadiumtest.png'
+        COURT_IMG: 'assets/images/bg_stadium.png'
     },
 
     CONTROLS: {
@@ -157,6 +157,12 @@ const GAME_CONFIG = {
         INDICATOR_WIDTH: 10,
         INDICATOR_HEIGHT: 15
     },
+
+    MAPS: [
+        { name: "Polar", bgPath: "assets/images/bg_polar.png", courtPath: "assets/images/bg_stadium.png" },
+        { name: "Egypt", bgPath: "assets/images/bg_egypt.png", courtPath: "assets/images/bg_stadium.png" },
+        { name: "Hard Court", bgPath: "assets/images/bg_hardcourt.png", courtPath: "assets/images/bg_stadium.png" }
+    ],
 
     CHARACTERS: [
         {

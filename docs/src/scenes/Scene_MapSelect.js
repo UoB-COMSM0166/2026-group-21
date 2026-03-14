@@ -1,5 +1,5 @@
 const Scene_MapSelect = {
-    mapNames: ["Polar", "Egypt", "?"],
+    mapNames: ["Polar", "Egypt", "Hard Court"],
 
     iconW: 180,
     iconH: 100,
@@ -105,12 +105,16 @@ const Scene_MapSelect = {
     },
 
     confirmSelection: function () {
-        Scene_Game.restartGame();
         Scene_Game.setup();
         currentState = GAME_CONFIG.STATES.PLAYING;
     },
+    
     goBack: function () {
-        p2CharIndex = -1;
-        currentState = GAME_CONFIG.STATES.CHAR_SELECT;
+        if (!isMultiplayer) {
+            currentState = GAME_CONFIG.STATES.DIFFICULTY_SELECT;
+        } else {
+            p2CharIndex = -1;
+            currentState = GAME_CONFIG.STATES.CHAR_SELECT;
+        }
     }
 };

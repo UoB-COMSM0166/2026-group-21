@@ -31,6 +31,18 @@ class Player {
                (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
     }
 
+    resetState() {
+        this.activeBuff = null;
+        this.skillCooldown = 0;
+        this.stunTimer = 0;
+        this.swingTimer = 0;
+        this.hasHit = false;
+        this.wasBallNearOnSwing = false;
+        this.currentFrame = 0;
+        this.feedbackText = "";
+        this.feedbackTimer = 0;
+    }
+
     update() {
         if (!this.isAI) {
             this.handleInput();

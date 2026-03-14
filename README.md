@@ -87,13 +87,13 @@ The paper prototyping process also prompted deeper discussions regarding game me
       <b>Figure 3:</b>
       <i>Tennis Game Paper Prototype </i><br>
       <a href="https://www.youtube.com/watch?v=qdplPSo7CMk" target="_blank">Watch it on YT</a><br>
-      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-tennisgame-prototype1.mp4?raw=true" controls width="640" height="360"></video>
+      <img src="weekly-homeworks/assets/week-03-tennisgame-prototype.gif" alt="Tennis Game Paper Prototype ">
     </p>
     <p align="center">
       <b>Figure 4:</b>
       <i>Vampire Survival Paper Prototype </i><br>
       <a href="https://www.youtube.com/watch?v=HRUYlSV_QAU" target="_blank">Watch it on YT</a><br>
-      <video src="https://github.com/UoB-COMSM0166/2026-group-21/blob/main/weekly-homeworks/assets/week-03-vampiresurvival-prototype.mp4?raw=true" controls width="640" height="360"></video>
+      <img src="weekly-homeworks/assets/week-03-vampiresurvival-prototype.gif" alt="Vampire Survival Paper Prototype ">
     </p>
 
 #### Stakeholders
@@ -199,27 +199,22 @@ Employing object-oriented design and UML diagrams was essential for organizing o
 - Describe implementation of your game, in particular highlighting the TWO areas of *technical challenge* in developing your game. 
 
 ### Evaluation
+---
 
 Think Aloud Session Workshop (feedback)
 
   As we let the other group members take a look at our game project, we realized there are still plenty of things we need to work on. Whether we missed them, skipped some parts, or are still progressing on them, here are some ideas based on the feedback they gave us and what our team is currently thinking about the game.
 
-    - Our gameplay buttons feel uncomfortable to use because they are too close together, which we will work on fixing.
-    - Our characters were too slow when moving from one direction to another, which sometimes meant they couldn't chase the ball as well as we expected. As a result, we need to make the characters accelerate faster and move more accurately so players can catch the ball more easily.
-    - The score or scoreboard is currently hard to see. We need to improve it by making it clearer and more visible throughout the game.
-    - The text on our game UI isn't clear and makes it difficult for others to read, which we will also improve.
-    - We haven't done the rules and regulations yet, so we need to add them so players can understand the gameplay. We might need documentation to clearly explain how the game works for someone who has never played it before.
-    - We also need to add key prompts so that first-time players know which buttons they should press.
-    - The easy mode was too easy. We should make it a bit more competitive. For example, right now the difficulty is around 1-2, but we should change it to 3-4 so that it feels more engaging, even for first-timers.
-    - When choosing maps, some people also said it is hard to see our fonts or text, so we might need to change that as well.
-    - The UI needs to be clearer to understand. For example, we need something like a score pop-up to clearly show who won the point or the game.
-    - Additionally, we might make the audience cheer every time a person scores, or give each tennis court its own unique visual effects.
-
-
-- 15% ~750 words
-- One qualitative evaluation (of your choice) 
-- One quantitative evaluation (of your choice) 
-- Description of how code was tested. 
+  - Our gameplay buttons feel uncomfortable to use because they are too close together, which we will work on fixing.
+  - Our characters were too slow when moving from one direction to another, which sometimes meant they couldn't chase the ball as well as we expected. As a result, we need to make the characters accelerate faster and move more accurately so players can catch the ball more easily.
+  - The score or scoreboard is currently hard to see. We need to improve it by making it clearer and more visible throughout the game.
+  - The text on our game UI isn't clear and makes it difficult for others to read, which we will also improve.
+  - We haven't done the rules and regulations yet, so we need to add them so players can understand the gameplay. We might need documentation to clearly explain how the game works for someone who has never played it before.
+  - We also need to add key prompts so that first-time players know which buttons they should press.
+  - The easy mode was too easy. We should make it a bit more competitive. For example, right now the difficulty is around 1-2, but we should change it to 3-4 so that it feels more engaging, even for first-timers.
+  - When choosing maps, some people also said it is hard to see our fonts or text, so we might need to change that as well.
+  - The UI needs to be clearer to understand. For example, we need something like a score pop-up to clearly show who won the point or the game.
+  - Additionally, we might make the audience cheer every time a person scores, or give each tennis court its own unique visual effects.
 
 ### Heuristic Evaluation
 
@@ -242,7 +237,53 @@ Our team conducted an expert heuristic evaluation of the game prototype, assessi
 | **Help users recognize, diagnose, and recover from errors** | When a ball is missed (hit out or into the net), the game doesn't explicitly state why the point was lost. | 2            | 3               | 3                 | 2.67             | Add clear visual text like "OUT!" or "NET!" exactly where the error occurred so the player understands their mistake. |
 | **Help and documentation**                                  | New players are unsure of the key bindings for different shot types or how to activate skills before starting the match. | 3            | 2               | 4                 | 3.00             | Add an accessible "How to Play / Controls" screen in the main menu before the match begins. |
 
+System Usability Scale (SUS)
 
+|Participant|Easy Level Score|Hard Level Score|
+|:--|:--|:--|
+|Participant 1|60.0|60.0|
+|Participant 2|85.0|92.5|
+|Participant 3|80.0|65.0|
+|Participant 4|82.5|77.5|
+|Participant 5|90.0|90.0|
+|Participant 6|67.5|87.5|
+|Participant 7|57.5|60.0|
+|Participant 8|80.0|80.0|
+|Participant 9|87.5|90.0|
+|Participant 10|92.5|82.5|
+|Aggregate Mean|78.25|78.50|
+
+- Statistical Analysis: Wilcoxon Signed-RankTest.
+- Result: W = 14, n = 7 (3 ties excluded).
+- Critical Value: 2 (alpha = 0.05).
+- Conclusion: Since W > 2, there is no significant difference in usability between the two difficulty levels.
+
+NASA Task Load Index (NASA TLX)
+
+|Participant|Easy Level Workload|Hard Level Workload
+|:--|:--|:--|
+|Participant 1|34.17|31.25|
+|Participant 2|43.33|43.75|
+|Participant 3|32.50|42.50|
+|Participant 4|25.00|35.83|
+|Participant 5|25.00|35.00|
+|Participant 6|36.67|60.00|
+|Participant 7|37.50|42.50|
+|Participant 8|45.00|53.33|
+|Participant 9|0.00|20.83|
+|Participant 10|14.17|21.67|
+|Aggregate Mean|29.33|38.67|
+
+- Statistical Analysis: Wilcoxon Signed-Rank Test.
+- Result: W = 2.0, n = 10.
+- Critical Value: 8 (alpha = 0.05).
+- Conclusion: Since W <= 8, there is a significant difference in perceived workload between the two difficulty levels.
+
+The quantitative evaluation demonstrates that the game successfully balances challenge with user experience:
+- System Usability (SUS): The average scores for both difficulty levels (78.25 and 78.50) are well above the industry average of 68. Statistical testing indicates no significant difference in usability between levels (W=14 > 2), suggesting that increasing the game's difficulty did not negatively impact the system's intuitiveness or ease of use.
+- Perceived Workload(NASA TLX): There is a statistically significant increase in workload from the Easy to the Hard level (W=2 <= 8). This confirms that our difficulty design was effective, as players experienced a measurably higher level of mental and physical demand, effort, and challenge in the harder mode.
+
+In summary, the results show that while the Hard level significantly increased the perceived challenge for players, the game maintained a consistently high standard of usability across both modes.
 
 ### Process 
 
