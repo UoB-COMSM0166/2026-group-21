@@ -11,6 +11,7 @@ class Ball {
     }
     //resets the ball to its starting state for a new serve
     reset(startX, startY, side) {
+        this.r = GAME_CONFIG.BALL.RADIUS;
         this.x = startX;
         this.y = startY;
         this.z = 0;
@@ -183,7 +184,7 @@ class Ball {
             if (this.r > GAME_CONFIG.BALL.RADIUS + 1) {
                 p.stunTimer = 45;
             }
-
+            this.r = GAME_CONFIG.BALL.RADIUS;
             this.vz = HIT_Z;
             this.vy = p.isBottom ? -HIT_Y : HIT_Y;
             //Change the ball's angle based on where it hits the player
