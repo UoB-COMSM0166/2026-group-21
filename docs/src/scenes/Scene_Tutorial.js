@@ -12,6 +12,7 @@ const Scene_Tutorial = {
 
     setup: function () {
         tutorialManager = new TutorialManager();
+        this.victorySoundPlayedInTutorial = false;
         if (scoreManager) {
             scoreManager.init();
             scoreManager.currentServer = 'NONE';
@@ -206,6 +207,9 @@ const Scene_Tutorial = {
     handleInput: function () {
         if (this.isPausedForIntro) {
             if (tutorialManager.currentStep > 5) {
+                if (soundManager && soundManager.sounds.victory) {
+                    soundManager.sounds.victory.stop();
+                }
                 currentState = GAME_CONFIG.STATES.MENU;
                 this.setup();
                 return;
@@ -396,12 +400,14 @@ const Scene_Tutorial = {
         if (scoreManager.playerPoints > this.lastPlayerScore) {
             this.scoringMessage = "YOU SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
+            this.lastPlayerScore = scoreManager.playerPoints;
             return;
         }
         // Did the AI score a new point?
         if (scoreManager.opponentPoints > this.lastOpponentScore) {
             this.scoringMessage = "AI SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
+            this.lastOpponentScore = scoreManager.opponentPoints;
             return;
         }
 
@@ -434,6 +440,22 @@ const Scene_Tutorial = {
 
     handleSuccessPause: function () {
         if (this.successPauseTimer <= 0) return false;
+        const { PAUSE_MINOR, PAUSE_MAJOR } = GAME_CONFIG.TUTORIAL;
+    
+        // Only trigger sound on the exact initial frame we entered the success state
+        if (this.successPauseTimer === PAUSE_MINOR && this.scoringMessage !== "YOU SCORE!" && this.scoringMessage !== "AI SCORE!") {
+            if (soundManager) {
+                if (!this.scoringMessage.includes("AI")) {
+                    soundManager.play('success');
+                }
+            }
+        } else if (this.successPauseTimer === PAUSE_MAJOR) {
+            if (soundManager) {
+                if (!this.scoringMessage.includes("AI")) {
+                    soundManager.play('success');
+                }
+            }
+        }
         this.successPauseTimer--;
         push();
         textAlign(CENTER, CENTER);
@@ -477,6 +499,13 @@ const Scene_Tutorial = {
 
     drawTransitionOverlay: function () {
         let intro = tutorialManager.getStepIntro();
+
+        if (tutorialManager.currentStep > 5) {
+            if (soundManager && !this.victorySoundPlayedInTutorial) {
+                soundManager.play('victory');
+                this.victorySoundPlayedInTutorial = true;
+            }
+        }
 
         push();
         rectMode(CORNER);

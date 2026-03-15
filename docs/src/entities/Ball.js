@@ -129,11 +129,6 @@ class Ball {
         if (!this.roundEnding) {
             this.roundEnding = true;
 
-            //sound-winner
-            if (typeof soundManager !== 'undefined') {
-                soundManager.score(winner);
-            }
-
             if (scoreManager) {
                 scoreManager.recordPoint(winner);
             }

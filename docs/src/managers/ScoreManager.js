@@ -15,18 +15,29 @@ class ScoreManager {
         this.gameWasJustReset = false;
         this.currentServer = GAME_CONFIG.MATCH.DEFAULT_SERVER;
         this.currentSide = GAME_CONFIG.MATCH.DEFAULT_SIDE;
+        this.victorySoundPlayed = false;
     }
     // record a point for the winner and check the win condition
     recordPoint(winner) {
         this.gameWasJustReset = false;
+        const sManager = typeof soundManager !== 'undefined' ? soundManager : null; 
+        const isMulti = typeof isMultiplayer !== 'undefined' ? isMultiplayer : false; 
+        const isTutorial = typeof currentState !== 'undefined' && currentState === GAME_CONFIG.STATES.TUTORIAL;
+
         if (winner === 'PLAYER') {
             this.playerPoints++;
+            if (sManager && !isTutorial) {
+                sManager.play('clap');
+            }
         } else {
             this.opponentPoints++;
-        }
-
-        //sound - winner
-        if (typeof soundManager !== 'undefined') {
+            if (sManager && !isTutorial) {
+                if (isMulti) {
+                    sManager.play('clap');
+                } else {
+                    sManager.play('boo');
+                }
+            }
         }
 
         // Disable game winning logic in tutorial
@@ -66,6 +77,13 @@ class ScoreManager {
         } else if (this.opponentGames >= WINNING_GAMES) {
             this.isMatchOver = true;
             this.matchWinner = "OPPONENT";
+        }
+
+        if (this.isMatchOver && !this.victorySoundPlayed) {
+            if (typeof soundManager !== 'undefined' && soundManager) {
+                soundManager.play('victory'); 
+            } 
+            this.victorySoundPlayed = true;
         }
     }
     // resets points for a new game and rotates the server role

@@ -55,8 +55,10 @@ class Player {
 
     //enable the hit detection for a short period
     swing() { 
+        if (this.swingTimer > 0) return;
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
+        soundManager.play('swing');
     }
     // handle skill and swing button
     handleKeyPress(keyCode, ball) {
