@@ -52,7 +52,9 @@ const Scene_Settings = {
                 textSize(24);
                 text(this.options[i], x - 140, y);
                 
-                let vol = (this.options[i] === "BGM Volume") ? soundManager.targetVolume : (soundManager.sfxVolume || 0.5);
+                let vol = (this.options[i] === "BGM Volume") ? 
+                           soundManager.targetVolume : 
+                           soundManager.sfxVolume;
 
                 fill(100);
                 rect(x + 20, y - 5, this.barW, 10, 5);
@@ -74,8 +76,7 @@ const Scene_Settings = {
         let newVol = constrain((mouseX - barStartX) / this.barW, 0, 1);
         
         if (this.options[index] === "BGM Volume") {
-            soundManager.targetVolume = newVol;
-            if (soundManager.currentBGM) soundManager.currentBGM.setVolume(newVol);
+            soundManager.setMasterVolume(newVol);
         } else {
             soundManager.sfxVolume = newVol;
         }
@@ -99,10 +100,10 @@ const Scene_Settings = {
 
     adjust: function(amt) {
         if (this.options[this.selectedIndex] === "BGM Volume") {
-            soundManager.targetVolume = constrain(soundManager.targetVolume + amt, 0, 1);
-            if (soundManager.currentBGM) soundManager.currentBGM.setVolume(soundManager.targetVolume);
+            let nextVol = constrain(soundManager.targetVolume + amt, 0, 1);
+            soundManager.setMasterVolume(nextVol);
         } else {
-            soundManager.sfxVolume = constrain((soundManager.sfxVolume || 0.5) + amt, 0, 1);
+            soundManager.sfxVolume = constrain(soundManager.sfxVolume + amt, 0, 1);
         }
         if (soundManager) soundManager.play('select');
     },
