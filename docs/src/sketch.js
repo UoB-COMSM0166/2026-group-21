@@ -10,6 +10,7 @@ let p2CharIndex = -1;
 let opponentAI;
 let characterImages = [];
 let tutorialManager;
+let soundManager;
 const STATES = GAME_CONFIG.STATES;
 
 function preload() {
@@ -24,6 +25,9 @@ function preload() {
             if (char.assets.back) characterImages[index].back = loadImage(char.assets.back);
         }
     });
+        //load sound
+        soundManager = new SoundManager();
+        soundManager.loadSounds();
 }
 
 function setup() {
@@ -35,10 +39,20 @@ function setup() {
     ball = new Ball();
     scoreManager = new ScoreManager();
     ball.reset(player.x, player.y, 'PLAYER');
+
+    //play sound
+    soundManager.updateBGM(currentState);
+    userStartAudio();
 }
 
 function draw() {
     background(GAME_CONFIG.COLORS.WHITE);
+    
+    //if change the BGM
+    if (soundManager) {
+        soundManager.updateBGM(currentState);
+    }
+
     switch (currentState) {
         case STATES.MENU:        Scene_Menu.draw();       break;
         case STATES.CHAR_SELECT: Scene_CharSelect.draw(); break;
@@ -52,6 +66,15 @@ function draw() {
 }
 
 function mousePressed() {
+    
+    //Auto-play the BGM
+    if (getAudioContext().state !== 'running') {
+        userStartAudio().then(() => {
+            console.log("AudioContext");
+            soundManager.updateBGM(GAME_CONFIG.STATES.MENU);
+        });
+    }
+
     switch (currentState) {
         case STATES.MENU:        Scene_Menu.handleMouse();       break;
         case STATES.CHAR_SELECT: Scene_CharSelect.handleMouse(); break;

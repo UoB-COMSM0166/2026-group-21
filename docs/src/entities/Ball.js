@@ -128,6 +128,12 @@ class Ball {
         }
         if (!this.roundEnding) {
             this.roundEnding = true;
+
+            //sound-winner
+            if (typeof soundManager !== 'undefined') {
+                soundManager.score(winner);
+            }
+
             if (scoreManager) {
                 scoreManager.recordPoint(winner);
             }
@@ -176,6 +182,11 @@ class Ball {
                     this.vx = constrain(this.vx, SERVE_MIN_VX, SERVE_MAX_VX);
                 }
             }
+            //hit sound
+            if (typeof soundManager !== 'undefined') {
+                soundManager.play('hit'); 
+            }
+
             this.recordHit(p);
             p.hasHit = true;
         }

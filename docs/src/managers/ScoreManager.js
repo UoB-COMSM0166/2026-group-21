@@ -25,6 +25,10 @@ class ScoreManager {
             this.opponentPoints++;
         }
 
+        //sound - winner
+        if (typeof soundManager !== 'undefined') {
+        }
+
         // Disable game winning logic in tutorial
         if (typeof tutorialManager !== 'undefined' && tutorialManager.currentStep === 5) {
             return;
