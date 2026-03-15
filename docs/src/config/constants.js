@@ -81,6 +81,9 @@ const GAME_CONFIG = {
         PINK: [255, 200, 200],
         DARK_GRAY: [0, 0, 0, 180],
         FALLBACK: 150,
+        FEEDBACK_PERFECT: [50, 205, 50],
+        FEEDBACK_MISS: [220, 20, 60],
+        INDICATOR_YELLOW: [255, 215, 0],
     },
 
     PLAYER: {
@@ -144,6 +147,18 @@ const GAME_CONFIG = {
         SCORE_MARGIN_TOP: 10        // safety margin from top edge
     },
 
+    FEEDBACK: {
+        MISS_DISTANCE_THRESHOLD: 300,
+        DISPLAY_DURATION: 60,
+        TEXT_SIZE: 24,
+        TEXT_OFFSET_Y: 20,
+        INDICATOR_OFFSET_Y: 50,
+        INDICATOR_ANIM_SPEED: 0.1,
+        INDICATOR_ANIM_AMP: 5,
+        INDICATOR_WIDTH: 10,
+        INDICATOR_HEIGHT: 15
+    },
+
     CHARACTERS: [
         {
             name: "Cat",
@@ -184,13 +199,12 @@ const GAME_CONFIG = {
         { name: "?", speed: 6, skillType: '?' }
     ],
 
-    // select AI's level after character for p2 was chosen.
     AI_LEVELS: {
         EASY: {
-            speedMult: 0.7,
-            reactionDelay: 13,
-            errorRange: 45,
-            prediction: 4
+            speedMult: 0.7,     // Directly proportional
+            reactionDelay: 13,  // Inversely proportional
+            errorRange: 45,     // Inversely proportional
+            prediction: 4       // Directly proportional
         },
         NORMAL: {
             speedMult: 0.8,
@@ -204,5 +218,21 @@ const GAME_CONFIG = {
             errorRange: 15,
             prediction: 10
         }
+    },
+
+    AI: {
+        FIDGET_SPEED: 0.015,        // Speed of lateral sway while receiving
+        HOME_X_DIVISOR: 4,          // Court ratio for receive home pos
+        FIDGET_RANGE_DIVISOR: 8,    // Court ratio for  lateral sway range
+        RECEIVE_X_THRESHOLD: 70,    
+        RECEIVE_Y_THRESHOLD: 100,
+        SERVE_DELAY_MIN: 90,
+        SERVE_DELAY_MAX: 160,
+        LERP_FACTOR_NORMAL: 0.2,
+        LERP_FACTOR_SERVE: 0.1,
+        SERVE_POS_PADDING: 10,
+        SERVE_DIST_THRESHOLD: 20,
+        SERVE_SWING_Z_MIN: 10,      // Min z height to swing during serve
+        SERVE_SWING_Z_MAX: 40       // Max z height to swing during serve
     }
 };
