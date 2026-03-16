@@ -5,16 +5,15 @@ const Scene_Menu = {
         { label: "Multi Player", state: 'CHAR_SELECT', multi: true },
         { label: "Tutorial", state: 'TUTORIAL', multi: false }
     ],
-    btnW: 300,
-    btnH: 36,
-    baseDepth: 10,
-    spacing: 75,
     
     draw: function () {
     if (!layout) return;
 
+    const w = width;
+    const h = height;
+
     if (bgImg){
-        image(bgImg, 0, 0, width, height);
+        image(bgImg, 0, 0, w, h);
     }
     else{
         background(250);
@@ -25,59 +24,66 @@ const Scene_Menu = {
 
     // Title
     push();
+    let titleX = w * 0.15;
+    let titleY = h * 0.12;
+    let titleSize = w * 0.06;
+    let strokeSize = titleSize * 0.15;
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(70);
-    let titleX = 200;
-    let titleY = 60;
+    textSize(titleSize);
 
     stroke(56, 49, 78);
-    strokeWeight(12);
+    strokeWeight(strokeSize);
     fill(0);
-    text("TENNIS GAME", titleX + 6, titleY + 6);
+    text("TENNIS GAME", titleX + w * 0.005, titleY + w * 0.005);
     
     stroke(64, 57, 85);
-    strokeWeight(12);
+    strokeWeight(strokeSize);
     fill(80);
-    text("TENNIS GAME", titleX + 3, titleY + 3);
+    text("TENNIS GAME", titleX + w * 0.002, titleY + w * 0.002);
     
     stroke(51, 44, 74);
-    strokeWeight(12);
+    strokeWeight(strokeSize);
     fill(255, 188, 31);
     text("TENNIS GAME", titleX, titleY);
     pop();
 
     // Menu
     push();
+    let menuLeftX = w * 0.18;
+    let menuBaseY = h * 0.35;
+    let itemSpacing = h * 0.09;
+    let menuFontSize = w * 0.027;
     textAlign(LEFT, CENTER);
     textStyle(BOLD);
-    let menuLeftX = 250;
-    let menuBaseY = height - 525;
 
     for (let i = 0; i < this.options.length; i++) {
 
         let x = menuLeftX;
-        let y = menuBaseY + (i * 65);
+        let y = menuBaseY + (i * itemSpacing);
+
+        let btnW = w * 0.35;
+        let btnH = menuFontSize * 1.2;
 
         let isHovered =
             mouseX > x &&
-            mouseX < x + this.btnW &&
-            mouseY > y - this.btnH / 2 &&
-            mouseY < y + this.btnH / 2;
+            mouseX < x + btnW &&
+            mouseY > y - btnH / 2 &&
+            mouseY < y + btnH / 2;
 
         if (isHovered) this.selectedIndex = i;
 
         if (i === this.selectedIndex && blink) {
-            textSize(17);
+            textSize(menuFontSize * 0.5);
             stroke(51, 44, 74);
-            strokeWeight(10);
+            strokeWeight(w * 0.0075);
             fill(250);
-            text("▶", x - 40, y);
+            text("▶", x - w * 0.04, y);
         }
 
-        textSize(38);
+        textSize(menuFontSize);
         stroke(51, 44, 74);
-        strokeWeight(10);
+        strokeWeight(w * 0.009);
         fill(250);
         text(this.options[i].label.toUpperCase(), x, y);
     }
@@ -97,22 +103,36 @@ const Scene_Menu = {
     },
 
     handleMouse: function () {
-        let menuLeftX = 250;
-        let menuBaseY = height - 525;
+        const w = width;
+        const h = height;
+        let menuLeftX = w * 0.18;
+        let menuBaseY = h * 0.35;
+        let itemSpacing = h * 0.09;
+        let menuFontSize = w * 0.027;
+
+        push();
+        textSize(menuFontSize);
+        textStyle(BOLD);
 
         for (let i = 0; i < this.options.length; i++) {
             let x = menuLeftX;
-            let y = menuBaseY + (i * 65);
+            let y = menuBaseY + (i * itemSpacing);
 
-            let isHovered = (mouseX > x && mouseX < x + this.btnW &&
-                mouseY > y - this.btnH / 2 && mouseY < y + this.btnH / 2);
+            let txt = this.options[i].label.toUpperCase();
+            let realTxtWidth = textWidth(txt); 
+            let btnH = menuFontSize;
+
+            let isHovered = (mouseX > x && mouseX < x + realTxtWidth + 10 &&
+                mouseY > y - btnH / 2 && mouseY < y + btnH / 2);
 
             if (isHovered) {
                 this.selectedIndex = i;
                 this.confirmSelection();
+                pop();
                 return;
             }
         }
+        pop();
     },
 
     confirmSelection: function () {

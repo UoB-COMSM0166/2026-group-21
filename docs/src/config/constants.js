@@ -165,7 +165,8 @@ const GAME_CONFIG = {
             skillType: 'SHADOW_TELEPORT',
             assets: {
                 front: 'assets/images/player_cat_swing_front.png',
-                back: 'assets/images/player_cat_swing_back.png'
+                back: 'assets/images/player_cat_swing_back.png',
+                portrait: 'assets/images/player_cat_front.png'
             }
         },
         {
@@ -174,7 +175,8 @@ const GAME_CONFIG = {
             skillType: 'GIGA_BALL',
             assets: {
                 front: 'assets/images/player_dog_swing_front.png',
-                back: 'assets/images/player_dog_swing_back.png'
+                back: 'assets/images/player_dog_swing_back.png',
+                portrait: 'assets/images/player_dog_front.png'
             }
         },
         {
@@ -183,7 +185,8 @@ const GAME_CONFIG = {
             skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
-                back: 'assets/images/player_deer_swing_back.png'
+                back: 'assets/images/player_deer_swing_back.png',
+                portrait: 'assets/images/player_deer_front.png'
             }
         },
         {
@@ -192,7 +195,8 @@ const GAME_CONFIG = {
             skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
-                back: 'assets/images/player_bird_swing_back.png'
+                back: 'assets/images/player_bird_swing_back.png',
+                portrait: 'assets/images/player_bird_front.png'
             }
         },
         { name: "?", speed: 6, skillType: '?' }

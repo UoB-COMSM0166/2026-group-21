@@ -23,6 +23,9 @@ function preload() {
             if (char.assets.front) characterImages[index].front = loadImage(char.assets.front);
             if (char.assets.back) characterImages[index].back = loadImage(char.assets.back);
         }
+        if (char.assets.portrait) {
+                characterImages[index].portrait = loadImage(char.assets.portrait);
+        }
     });
 }
 
