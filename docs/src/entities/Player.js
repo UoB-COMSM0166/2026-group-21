@@ -88,8 +88,11 @@ class Player {
 
     //enable the hit detection for a short period
     swing(ball) { 
+        if (this.swingTimer > 0) return;
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
+        soundManager.play('swing');
+
 
         if (ball) {
             let d = dist(this.x, this.y, ball.x, ball.y);

@@ -3,7 +3,8 @@ const Scene_Menu = {
     options: [
         { label: "Single Player", state: 'CHAR_SELECT', multi: false },
         { label: "Multi Player", state: 'CHAR_SELECT', multi: true },
-        { label: "Tutorial", state: 'TUTORIAL', multi: false }
+        { label: "Tutorial", state: 'TUTORIAL', multi: false },
+        { label: "Settings", state: 'SETTINGS', multi: false }
     ],
     btnW: 300,
     btnH: 36,
@@ -116,6 +117,7 @@ const Scene_Menu = {
     },
 
     confirmSelection: function () {
+        if (soundManager) soundManager.play('confirm');
         let choice = this.options[this.selectedIndex];
         isMultiplayer = choice.multi;
         currentState = GAME_CONFIG.STATES[choice.state];
