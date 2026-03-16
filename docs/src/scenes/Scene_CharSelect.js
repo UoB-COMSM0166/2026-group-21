@@ -218,7 +218,6 @@ const Scene_CharSelect = {
         opponent.speed = p2Config.speed;
         opponent.name = p2Config.name;
 
-        // 確保遊戲內也直接使用 front 圖片
         if (characterImages[p1CharIndex]) player.img = characterImages[p1CharIndex];
         if (characterImages[p2CharIndex]) opponent.img = characterImages[p2CharIndex];
     }
