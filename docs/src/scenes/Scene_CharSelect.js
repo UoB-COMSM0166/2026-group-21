@@ -24,6 +24,17 @@ const Scene_CharSelect = {
         rect(0, 0, w, h);
         pop();
 
+        // ESC
+        push();
+        textAlign(LEFT, TOP);
+        fill(56, 49, 78);
+        noStroke();
+        textSize(18);
+
+        let escText = (p1CharIndex === -1) ? "Press 'ESC' to Back to Menu" : "Press 'ESC' to Back to P1";
+        text(escText, 20, 20);
+        pop();
+
         // Title
         push();
         textAlign(CENTER, CENTER);
@@ -32,7 +43,7 @@ const Scene_CharSelect = {
         stroke(51, 44, 74); 
         strokeWeight(w * 0.008); 
         fill(this.menuYellow);
-        let promptText = (p1CharIndex === -1) ? "P1 : Charcter Selection" : "P2: Charcter Selection";
+        let promptText = (p1CharIndex === -1) ? "P1 : Character Selection" : "P2 : Character Selection";
         text(promptText, w * 0.5, h * 0.12);
         pop();
 

@@ -1,113 +1,182 @@
 const Scene_MapSelect = {
-    mapNames: ["Polar", "Egypt", "?"],
-
-    iconW: 180,
-    iconH: 100,
-    spacing: 30,
+    mapNames: ["Polar", "Egypt", "Wimbledon"],
+    mapEffects: [
+        "Polar: Characters frozen every 30s",
+        "Egypt: Sandstorm obscures vision every 30s",
+        "Wimbledon: Classic tournament rules"
+    ],
 
     draw: function () {
+        if (!layout) return;
         const { centerX, centerY } = layout;
+        const w = width;
+        const h = height;
 
+        // Background
+        if (bgImg) {
+            imageMode(CORNER);
+            image(bgImg, 0, 0, w, h);
+        }
+        rectMode(CORNER);
+        fill(255, 200); 
+        noStroke();
+        rect(0, 0, w, h);
+
+        // ESC
         push();
         textAlign(LEFT, TOP);
-        fill(150);
-        textSize(16);
+        fill(56, 49, 78);
+        noStroke();
+        textSize(w * 0.012);
         text("Press 'ESC' to Re-select Characters", 20, 20);
         pop();
 
+        // Title
         push();
         textAlign(CENTER, CENTER);
-        fill(0);
-        textSize(40);
-        text("Select Tournament Map", centerX, centerY - 150);
+        fill(255, 188, 31); 
+        stroke(51, 44, 74); 
+        strokeWeight(w * 0.008);
+        textStyle(BOLD);
+        textSize(w * 0.045); 
+        text("Select Tournament Map", centerX, centerY - h * 0.3); 
         pop();
 
-        let totalWidth = (this.mapNames.length * this.iconW) + ((this.mapNames.length - 1) * this.spacing);
-        let startX = centerX - totalWidth / 2 + this.iconW / 2;
+        // Map preview area
+        let pW = w * 0.4;
+        let pH = h * 0.5;
+        let triSize = w * 0.012;
 
-        rectMode(CENTER);
+        this.drawPreviewArea(centerX, centerY + h * 0.05, pW, pH, triSize);
+    },
 
-        for (let i = 0; i < this.mapNames.length; i++) {
-            push();
-            let x = startX + i * (this.iconW + this.spacing);
-            let y = centerY;
+    drawPreviewArea: function (x, y, pW, pH, triSize) {
+        const w = width;
+        const h = height;
 
-            let isHovered = (mouseX > x - this.iconW / 2 && mouseX < x + this.iconW / 2 &&
-                mouseY > y - this.iconH / 2 && mouseY < y + this.iconH / 2);
-            if (isHovered) selectedMap = i;
-
-            noFill();
-            strokeWeight(3);
-            rectMode(CENTER);
-            if (i === selectedMap) {
-                stroke(0, 255, 255);
-                strokeWeight(4);
-                fill(0, 255, 255, 30);
-                rect(x, y, this.iconW, this.iconH, 10);
-            } else {
-                stroke(100);
-                strokeWeight(2);
-                fill(0);
-                rect(x, y, this.iconW, this.iconH, 10);
-            }
-
-            fill(255);
-            noStroke();
-            textAlign(CENTER, CENTER);
-            text(this.mapNames[i], x, y);
-            pop();
-        }
+        this.drawArrowButton(x - pW / 2 - triSize * 3, y, "LEFT", triSize);
+        this.drawArrowButton(x + pW / 2 + triSize * 3, y, "RIGHT", triSize);
 
         push();
-        fill(150);
-        textSize(16);
-        text("Arrows to Navigate, Enter to Start Match", centerX, centerY + 120);
+        rectMode(CENTER);
+        
+        // Preview area
+        noFill();
+        stroke(0);
+        strokeWeight(width * 0.011);
+        rect(x, y, pW, pH, 15);
+
+        stroke(255, 188, 31);
+        strokeWeight(width * 0.005);
+        fill(200, 30, 30);
+        rect(x, y, pW, pH, 15);
+
+        // Picture
+        let imgAreaW = pW * 0.88;
+        let imgAreaH = pH * 0.58;
+        let imgY = y - pH * 0.12;
+        
+        stroke(220);
+        strokeWeight(1);
+        fill(245);
+        rect(x, imgY, imgAreaW, imgAreaH, 5);
+        
+        noStroke();
+        fill(180);
+        textAlign(CENTER, CENTER);
+        textSize(pW * 0.04);
+        text("( Map Image Preview Coming Soon )", x, imgY);
+
+        // Map Name
+        fill(255, 188, 31);
+        stroke(0);
+        strokeWeight(w * 0.005);
+        textStyle(BOLD);
+        textAlign(CENTER, CENTER);
+        textSize(pW * 0.08);
+        text(this.mapNames[selectedMap], x, y + pH * 0.28);
+
+        // Map Effects Description
+        fill(255, 188, 31); 
+        stroke(0);
+        strokeWeight(w * 0.002);
+        textStyle(BOLD);
+        textAlign(CENTER, CENTER);
+        textSize(pW * 0.035);
+        text(this.mapEffects[selectedMap], x, y + pH * 0.42);
+        pop();
+
+    },
+
+    drawArrowButton: function(x, y, direction, size) {
+        let isHovered = dist(mouseX, mouseY, x, y) < size * 2;
+        let scaleFactor = isHovered ? 1.2 : 1.0;
+        let s = size * scaleFactor;
+        
+        push();
+        stroke(0);
+        strokeWeight(width * 0.004);
+        fill(0);
+        this.drawTriangleShape(x, y, direction, s);
+
+        stroke(0);
+        strokeWeight(width * 0.0015);
+        fill(255, 188, 31);
+        this.drawTriangleShape(x, y, direction, s);
         pop();
     },
 
+    drawTriangleShape: function(x, y, direction, s) {
+        if (direction === "LEFT") {
+            triangle(x - s, y, x + s * 0.5, y - s, x + s * 0.5, y + s);
+        } else {
+            triangle(x + s, y, x - s * 0.5, y - s, x - s * 0.5, y + s);
+        }
+    },
+
     handleInput: function () {
-        if (keyCode === ESCAPE) {
-            this.goBack();
+        if (keyCode === ESCAPE) this.goBack();
+        if (keyCode === LEFT_ARROW) this.changeMap(-1);
+        if (keyCode === RIGHT_ARROW) this.changeMap(1);
+        if (keyCode === ENTER) this.confirmSelection();
+    },
+
+    handleMouse: function () {
+        const { centerX, centerY } = layout;
+        const w = width;
+        const h = height;
+
+        let pW = w * 0.4;
+        let pH = h * 0.5;
+        let triSize = w * 0.015;
+        let yPos = centerY + h * 0.05;
+
+        // 2. Arrows
+        if (dist(mouseX, mouseY, centerX - pW / 2 - triSize * 3, yPos) < triSize * 2) {
+            this.changeMap(-1);
             return;
         }
-        if (keyCode === LEFT_ARROW) {
-            selectedMap = (selectedMap - 1 + this.mapNames.length) % this.mapNames.length;
-        } else if (keyCode === RIGHT_ARROW) {
-            selectedMap = (selectedMap + 1) % this.mapNames.length;
-        } else if (keyCode === ENTER) {
+        if (dist(mouseX, mouseY, centerX + pW / 2 + triSize * 3, yPos) < triSize * 2) {
+            this.changeMap(1);
+            return;
+        }
+        
+        // 3. Preview area
+        if (mouseX > centerX - pW/2 && mouseX < centerX + pW/2 &&
+            mouseY > yPos - pH/2 && mouseY < yPos + pH/2) {
             this.confirmSelection();
         }
     },
 
-    handleMouse: function () {
-        if (mouseX < 200 && mouseY < 50) {
-            this.goBack();
-            return;
-        }
-
-        const { centerX, centerY } = layout;
-        let totalWidth = (this.mapNames.length * this.iconW) + ((this.mapNames.length - 1) * this.spacing);
-        let startX = centerX - totalWidth / 2 + this.iconW / 2;
-
-        for (let i = 0; i < this.mapNames.length; i++) {
-            let x = startX + i * (this.iconW + this.spacing);
-            let y = centerY;
-
-            let isOverMap = (mouseX > x - this.iconW / 2 && mouseX < x + this.iconW / 2 &&
-                mouseY > y - this.iconH / 2 && mouseY < y + this.iconH / 2);
-
-            if (isOverMap) {
-                selectedMap = i;
-                this.confirmSelection();
-                return;
-            }
-        }
+    changeMap: function(dir) {
+        selectedMap = (selectedMap + dir + this.mapNames.length) % this.mapNames.length;
     },
 
     confirmSelection: function () {
         Scene_Game.restartGame();
         currentState = GAME_CONFIG.STATES.PLAYING;
     },
+
     goBack: function () {
         p2CharIndex = -1;
         currentState = GAME_CONFIG.STATES.CHAR_SELECT;
