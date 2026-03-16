@@ -24,11 +24,12 @@ const Scene_MapSelect = {
 
         // ESC
         push();
-        textAlign(LEFT, TOP);
-        fill(56, 49, 78);
-        noStroke();
-        textSize(w * 0.012);
-        text("Press 'ESC' to Re-select Characters", 20, 20);
+        const escSize = w * 0.06;
+        const margin = 20;
+        if (typeof escImg !== 'undefined' && escImg) {
+            imageMode(CORNER);
+            image(escImg, margin, margin, escSize, escSize);
+        }
         pop();
 
         // Title
@@ -145,13 +146,21 @@ const Scene_MapSelect = {
         const { centerX, centerY } = layout;
         const w = width;
         const h = height;
+        const escSize = w * 0.06;
+        const margin = 20;
 
         let pW = w * 0.4;
         let pH = h * 0.5;
         let triSize = w * 0.015;
         let yPos = centerY + h * 0.05;
 
-        // 2. Arrows
+        // ESC
+        if (mouseX > margin && mouseX < margin + escSize &&
+            mouseY > margin && mouseY < margin + escSize) {
+            this.goBack();
+            return;
+        }
+        // Arrows
         if (dist(mouseX, mouseY, centerX - pW / 2 - triSize * 3, yPos) < triSize * 2) {
             this.changeMap(-1);
             return;
@@ -160,8 +169,7 @@ const Scene_MapSelect = {
             this.changeMap(1);
             return;
         }
-        
-        // 3. Preview area
+        // Preview area
         if (mouseX > centerX - pW/2 && mouseX < centerX + pW/2 &&
             mouseY > yPos - pH/2 && mouseY < yPos + pH/2) {
             this.confirmSelection();

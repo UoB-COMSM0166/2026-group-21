@@ -103,6 +103,7 @@ const GAME_CONFIG = {
 
     ASSETS: {
         MENU_BG: 'assets/images/menu_background_picture.png',
+        ESC_IMG: 'assets/images/ESC.png',
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
         COURT_IMG: 'assets/images/stadiumtest.png'
@@ -199,7 +200,7 @@ const GAME_CONFIG = {
                 portrait: 'assets/images/player_bird_front.png'
             }
         },
-        { name: "?", speed: 6, skillType: '?' }
+        { name: "?", speed: 6, skillType: '?', assets:{}}
     ],
 
     AI_LEVELS: {

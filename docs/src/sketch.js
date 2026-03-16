@@ -16,15 +16,16 @@ function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
+    escImg = loadImage(GAME_CONFIG.ASSETS.ESC_IMG);
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};
         if (char.assets) {
             if (char.assets.front) characterImages[index].front = loadImage(char.assets.front);
             if (char.assets.back) characterImages[index].back = loadImage(char.assets.back);
-        }
-        if (char.assets.portrait) {
+            if (char.assets.portrait) {
                 characterImages[index].portrait = loadImage(char.assets.portrait);
+            }
         }
     });
 }

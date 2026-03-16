@@ -26,13 +26,12 @@ const Scene_CharSelect = {
 
         // ESC
         push();
-        textAlign(LEFT, TOP);
-        fill(56, 49, 78);
-        noStroke();
-        textSize(18);
-
-        let escText = (p1CharIndex === -1) ? "Press 'ESC' to Back to Menu" : "Press 'ESC' to Back to P1";
-        text(escText, 20, 20);
+        const escSize = w * 0.06;
+        const margin = 20;
+        if (typeof escImg !== 'undefined' && escImg) {
+            imageMode(CORNER);
+            image(escImg, margin, margin, escSize, escSize);
+        }
         pop();
 
         // Title
@@ -174,9 +173,19 @@ const Scene_CharSelect = {
     handleMouse: function () {
         const w = width;
         const h = height;
+        const escSize = w * 0.06;
+        const margin = 20;
+
         let ph = h * 0.55;
         let py = h * 0.52;
         let curX = (p1CharIndex === -1) ? w * 0.32 : w * 0.68;
+
+        // ESC
+        if (mouseX > margin && mouseX < margin + escSize &&
+            mouseY > margin && mouseY < margin + escSize) {
+            this.goBack();
+            return;
+        }
 
         if (mouseX > curX - 80 && mouseX < curX + 80) {
             // The Up Arrow 
@@ -229,7 +238,12 @@ const Scene_CharSelect = {
         opponent.speed = p2Config.speed;
         opponent.name = p2Config.name;
 
-        if (characterImages[p1CharIndex]) player.img = characterImages[p1CharIndex];
-        if (characterImages[p2CharIndex]) opponent.img = characterImages[p2CharIndex];
+        //apply selection to character's images
+        if (characterImages[p1CharIndex] && characterImages[p1CharIndex].back) {
+            player.img = characterImages[p1CharIndex].back;
+        }
+        if (characterImages[p2CharIndex] && characterImages[p2CharIndex].front) {
+            opponent.img = characterImages[p2CharIndex].front;
+        }
     }
 };
