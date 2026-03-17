@@ -104,6 +104,11 @@ const GAME_CONFIG = {
     ASSETS: {
         MENU_BG: 'assets/images/menu_background_picture.png',
         ESC_IMG: 'assets/images/ESC.png',
+        DIFFICULTY_IMGS: [
+            'assets/images/easy_mode.png',
+            'assets/images/normal_mode.png',
+            'assets/images/hard_mode.png'
+        ],
         MAP_IMGS: [
             'assets/images/preview_polar_bg.png',
             'assets/images/preview_eygpt_bg.png',
@@ -111,7 +116,8 @@ const GAME_CONFIG = {
         ],
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
-        COURT_IMG: 'assets/images/stadiumtest.png'
+        COURT_IMG: 'assets/images/stadiumtest.png',
+        TUTORIAL_IMG: 'assets/images/game_key_instruction.png'
     },
 
     CONTROLS: {

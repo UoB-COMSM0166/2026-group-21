@@ -64,7 +64,7 @@ const Scene_MapSelect = {
         // Preview area
         noFill();
         stroke(0);
-        strokeWeight(width * 0.011);
+        strokeWeight(width * 0.013);
         rect(x, y, pW, pH, 15);
 
         stroke(255, 188, 31);
@@ -134,7 +134,7 @@ const Scene_MapSelect = {
         this.drawTriangleShape(x, y, direction, s);
 
         stroke(0);
-        strokeWeight(width * 0.0015);
+        strokeWeight(width * 0.003);
         fill(255, 188, 31);
         this.drawTriangleShape(x, y, direction, s);
         pop();

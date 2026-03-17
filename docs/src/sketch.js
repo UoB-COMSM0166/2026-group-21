@@ -10,7 +10,9 @@ let p2CharIndex = -1;
 let opponentAI;
 let characterImages = [];
 let tutorialManager;
+let difficultyImages = [];
 let mapImages = [];
+let tutorialImg;
 const STATES = GAME_CONFIG.STATES;
 
 function preload() {
@@ -18,13 +20,20 @@ function preload() {
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
     escImg = loadImage(GAME_CONFIG.ASSETS.ESC_IMG);
+    tutorialImg = loadImage(GAME_CONFIG.ASSETS.TUTORIAL_IMG);
+
+    if (GAME_CONFIG.ASSETS.DIFFICULTY_IMGS) {
+        GAME_CONFIG.ASSETS.DIFFICULTY_IMGS.forEach((path, index) => {
+            difficultyImages[index] = loadImage(path);
+        });
+    }
 
     if (GAME_CONFIG.ASSETS.MAP_IMGS) {
         GAME_CONFIG.ASSETS.MAP_IMGS.forEach((path, index) => {
             mapImages[index] = loadImage(path);
         });
     }
-    
+
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};
@@ -86,6 +95,7 @@ function keyPressed() {
 }
 // handle window resizing
 function windowResized() {
+    if (player && opponent && ball && layout) {
     //calculate relative positions before resizing
     let relP = player.relativePos;
     let relO = opponent.relativePos;
@@ -97,4 +107,9 @@ function windowResized() {
     player.reposition(relP, layout);
     opponent.reposition(relO, layout);
     ball.reposition(relB, layout);
+    }
+    else{
+        resizeCanvas(windowWidth, windowHeight);
+        if (layout) layout.update();
+    }
 }
