@@ -81,12 +81,25 @@ const Scene_MapSelect = {
         strokeWeight(1);
         fill(245);
         rect(x, imgY, imgAreaW, imgAreaH, 5);
-        
-        noStroke();
-        fill(180);
-        textAlign(CENTER, CENTER);
-        textSize(pW * 0.04);
-        text("( Map Image Preview Coming Soon )", x, imgY);
+
+        if (typeof mapImages !== 'undefined' && mapImages[selectedMap]) {
+            imageMode(CENTER);
+            image(mapImages[selectedMap], x, imgY, imgAreaW, imgAreaH);
+        } else {
+            noStroke();
+            fill(180);
+            textAlign(CENTER, CENTER);
+            textSize(pW * 0.04);
+            text("( Map Image Preview )", x, imgY);
+        }
+
+        push();
+        rectMode(CENTER);
+        noFill();
+        stroke(0);
+        strokeWeight(width * 0.003);
+        rect(x, imgY, imgAreaW, imgAreaH, 5);
+        pop();
 
         // Map Name
         fill(255, 188, 31);

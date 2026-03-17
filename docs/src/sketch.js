@@ -10,6 +10,7 @@ let p2CharIndex = -1;
 let opponentAI;
 let characterImages = [];
 let tutorialManager;
+let mapImages = [];
 const STATES = GAME_CONFIG.STATES;
 
 function preload() {
@@ -17,6 +18,13 @@ function preload() {
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
     escImg = loadImage(GAME_CONFIG.ASSETS.ESC_IMG);
+
+    if (GAME_CONFIG.ASSETS.MAP_IMGS) {
+        GAME_CONFIG.ASSETS.MAP_IMGS.forEach((path, index) => {
+            mapImages[index] = loadImage(path);
+        });
+    }
+    
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};
