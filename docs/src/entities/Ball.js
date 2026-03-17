@@ -8,6 +8,7 @@ class Ball {
         this.speedMultiplier = 1.0;
         this.speedTimer = 0;
         this.sizeTimer = 0;
+        this.isGigaShot = false;
     }
     //resets the ball to its starting state for a new serve
     reset(startX, startY, side) {
@@ -22,6 +23,7 @@ class Ball {
         this.isWaiting = true; // holding the ball before tossing
         this.isTossing = false; // ball is in the air but not yet hit
         this.serveSide = side; // track who is serving
+        this.isGigaShot = false;
     }
 
     update() {
@@ -145,6 +147,7 @@ class Ball {
         }
         if (!this.roundEnding) {
             this.roundEnding = true;
+
             if (scoreManager) {
                 scoreManager.recordPoint(winner);
             }
@@ -181,10 +184,11 @@ class Ball {
         const hitX = abs(this.x - p.x) < this.r + p.w / 2;
         const hitY = abs(this.y - p.y) < this.r + p.h / 2;
         if (hitX && hitY) {
-            if (this.r > GAME_CONFIG.BALL.RADIUS + 1) {
+            if (this.isGigaShot) { 
                 p.stunTimer = 45;
             }
             this.r = GAME_CONFIG.BALL.RADIUS;
+            this.isGigaShot = false;
             this.vz = HIT_Z;
             this.vy = p.isBottom ? -HIT_Y : HIT_Y;
             //Change the ball's angle based on where it hits the player
@@ -197,6 +201,11 @@ class Ball {
                     this.vx = constrain(this.vx, SERVE_MIN_VX, SERVE_MAX_VX);
                 }
             }
+            //hit sound
+            if (typeof soundManager !== 'undefined') {
+                soundManager.play('hit'); 
+            }
+
             this.recordHit(p);
             p.hasHit = true;
             SkillManager.triggerHitSkill(p, this);

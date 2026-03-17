@@ -8,7 +8,7 @@ class Player {
         this.isBottom = isBottom; //true for bottom player, false for opponent
         this.swingTimer = 0; //duration of the hit active window
         this.resetPosition(x); //initialize position to the starting baseline
-        this.skillCooldown = 0;
+        this.skillCooldown = this.maxCooldown;
         this.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
         this.currentFrame = 0;
         this.totalFrames = GAME_CONFIG.PLAYER.TOTAL_FRAMES;
@@ -33,7 +33,7 @@ class Player {
 
     resetState() {
         this.activeBuff = null;
-        this.skillCooldown = 0;
+        this.skillCooldown = this.maxCooldown;
         this.stunTimer = 0;
         this.swingTimer = 0;
         this.hasHit = false;
@@ -110,8 +110,11 @@ class Player {
 
     //enable the hit detection for a short period
     swing(ball) { 
+        if (this.swingTimer > 0) return;
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
+        soundManager.play('swing');
+
 
         if (ball) {
             let d = dist(this.x, this.y, ball.x, ball.y);
@@ -147,6 +150,7 @@ class Player {
         } else {
             this.y = layout.courtTop - serveBackDistance - this.h / 2;
         }
+        this.skillCooldown = this.maxCooldown;
     }
 
     moveLeft() { this.x -= this.speed; }
@@ -194,7 +198,9 @@ class Player {
         } else {
             this.currentFrame = 0;
         }
-        if (this.skillCooldown > 0) this.skillCooldown--;
+        if (this.skillCooldown > 0 && typeof ball !== 'undefined' && !ball.isWaiting) {
+            this.skillCooldown--;
+        }
 
         if (this.feedbackTimer > 0) {
             this.feedbackTimer--;
@@ -258,6 +264,7 @@ class Player {
     }
 
     useSkill(ball) {
+        if (ball.isWaiting || ball.isTossing) return;
         if (this.skillCooldown === 0) {
             SkillManager.execute(this, ball);
         }

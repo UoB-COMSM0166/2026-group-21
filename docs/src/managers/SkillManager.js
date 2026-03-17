@@ -30,15 +30,22 @@ class SkillManager {
 
     // Instantly teleport the player horizontally to the x-coordinate match the ball (while keeping the same y-coordinate)
     static shadowTeleport(p, ball) {
-        const hw = p.w / 2;
-        const { courtLeft, courtRight } = layout;
-        p.x = constrain(ball.x, courtLeft + hw, courtRight - hw);
+        p.x = ball.x;
+        // offset to make player have time to react
+        let hitOffset = 100; 
+        if (p.isBottom) {
+            p.y = ball.y + hitOffset;
+        } else {
+            p.y = ball.y - hitOffset;
+        }
+        p.applyConstraints();
     }
 
     // Grow ball to 2x size for 1 second, then return to normal size, opponent will be stunned if they catch ball
     static gigaBall(ball) {
         ball.r = GAME_CONFIG.BALL.RADIUS * 2;
         ball.sizeTimer = 60;
+        ball.isGigaShot = true;
     }
 
     // Shrink ball to 0.5x size and increase speed for around 1 second, then return everything back to normal

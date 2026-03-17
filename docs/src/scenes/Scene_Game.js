@@ -89,7 +89,10 @@ const Scene_Game = {
             return;
         }
         if (scoreManager.isMatchOver) {
-            if (key.toLowerCase() === CONTROLS.RESTART) this.restartGame();
+            if (key.toLowerCase() === CONTROLS.RESTART) {
+                if (soundManager) soundManager.play('confirm');
+                this.restartGame();
+            }
             return;
         }
         player.handleKeyPress(keyCode, ball);
@@ -101,6 +104,9 @@ const Scene_Game = {
     restartGame: function () {
         player.resetState();
         opponent.resetState();
+        if (soundManager && soundManager.sounds.victory) {
+            soundManager.sounds.victory.stop();
+        }
         scoreManager.init();
         this.nextRound();
     },

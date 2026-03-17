@@ -14,6 +14,7 @@ const Scene_Tutorial = {
         player.isAI = false;
         opponent.isAI = true;
         tutorialManager = new TutorialManager();
+        this.victorySoundPlayedInTutorial = false;
         if (scoreManager) {
             scoreManager.init();
             scoreManager.currentServer = 'NONE';
@@ -135,7 +136,7 @@ const Scene_Tutorial = {
             opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
 
             if (stepConfig.step === 4) {
-                player.skillCooldown = 0;
+                player.skillCooldown = player.maxCooldown;
                 player.activeBuff = null;
             } else if (stepConfig.step === 5) {
                 if (scoreManager) scoreManager.init();
@@ -148,7 +149,8 @@ const Scene_Tutorial = {
 
     resetState: function (step) {
         this.initializedStep = step;
-        player.skillCooldown = 0;
+        player.skillCooldown = player.maxCooldown;
+        this.isSkillReady = false;
         this.ballResetTimer = 0;
         this.needsReset = false;
         this.hasHitBall = false;
@@ -211,6 +213,9 @@ const Scene_Tutorial = {
     handleInput: function () {
         if (this.isPausedForIntro) {
             if (tutorialManager.currentStep > 5) {
+                if (soundManager && soundManager.sounds.victory) {
+                    soundManager.sounds.victory.stop();
+                }
                 currentState = GAME_CONFIG.STATES.MENU;
                 this.setup();
                 return;
@@ -250,6 +255,7 @@ const Scene_Tutorial = {
         this.ballResetTimer = 0;
         this.hasHitBall = false;
         this.needsReset = false;
+        player.skillCooldown = player.maxCooldown;
     },
 
     resetBallForAIServe: function () {
@@ -286,12 +292,16 @@ const Scene_Tutorial = {
         this.successPauseTimer = 0;
         this.skillTriggered = false;
         player.activeBuff = null;
+        player.skillCooldown = player.maxCooldown;
+        this.isSkillReady = false;
         this.lastPlayerScore = scoreManager.playerPoints;
         this.lastOpponentScore = scoreManager.opponentPoints;
     },
 
     handleResetTimer: function (resetAction) {
         if (this.needsReset) {
+            player.skillCooldown = player.maxCooldown;
+            this.isSkillReady = false;
             this.ballResetTimer++;
             if (this.ballResetTimer > GAME_CONFIG.TUTORIAL.RESET_WAIT_LIMIT) {
                 resetAction();
@@ -374,7 +384,10 @@ const Scene_Tutorial = {
 
     // Step 4: Successfully using the special skill mechanics
     handleSkillLogic: function () {
-        let hasJustFiredSkill = player.skillCooldown > player.maxCooldown - 5;
+        if (player.skillCooldown === 0) {
+            this.isSkillReady = true;
+        }
+        let hasJustFiredSkill = this.isSkillReady && (player.skillCooldown > player.maxCooldown - 5);
 
         if (hasJustFiredSkill && !this.skillTriggered) {
             this.scoringMessage = "AMAZING SKILL!";
@@ -400,12 +413,14 @@ const Scene_Tutorial = {
         if (scoreManager.playerPoints > this.lastPlayerScore) {
             this.scoringMessage = "YOU SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
+            this.lastPlayerScore = scoreManager.playerPoints;
             return;
         }
         // Did the AI score a new point?
         if (scoreManager.opponentPoints > this.lastOpponentScore) {
             this.scoringMessage = "AI SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
+            this.lastOpponentScore = scoreManager.opponentPoints;
             return;
         }
 
@@ -438,6 +453,22 @@ const Scene_Tutorial = {
 
     handleSuccessPause: function () {
         if (this.successPauseTimer <= 0) return false;
+        const { PAUSE_MINOR, PAUSE_MAJOR } = GAME_CONFIG.TUTORIAL;
+    
+        // Only trigger sound on the exact initial frame we entered the success state
+        if (this.successPauseTimer === PAUSE_MINOR && this.scoringMessage !== "YOU SCORE!" && this.scoringMessage !== "AI SCORE!") {
+            if (soundManager) {
+                if (!this.scoringMessage.includes("AI")) {
+                    soundManager.play('success');
+                }
+            }
+        } else if (this.successPauseTimer === PAUSE_MAJOR) {
+            if (soundManager) {
+                if (!this.scoringMessage.includes("AI")) {
+                    soundManager.play('success');
+                }
+            }
+        }
         this.successPauseTimer--;
         push();
         textAlign(CENTER, CENTER);
@@ -481,6 +512,13 @@ const Scene_Tutorial = {
 
     drawTransitionOverlay: function () {
         let intro = tutorialManager.getStepIntro();
+
+        if (tutorialManager.currentStep > 5) {
+            if (soundManager && !this.victorySoundPlayedInTutorial) {
+                soundManager.play('victory');
+                this.victorySoundPlayedInTutorial = true;
+            }
+        }
 
         push();
         rectMode(CORNER);
