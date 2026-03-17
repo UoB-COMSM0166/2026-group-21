@@ -55,7 +55,7 @@ const Scene_Pause = {
         let menuFontSize = w * 0.027;
 
         let imgX = centerX + w * 0.2;
-        let imgY = contentY + h * 0.12;
+        let imgY = contentY + h * 0.16;
         let imgScale = 0.55;
 
         // Pause Menu area
@@ -106,12 +106,6 @@ const Scene_Pause = {
                 tW = tH / aspectRatio;
             }
 
-            noFill();
-            stroke(51, 44, 74);
-            strokeWeight(w * 0.002);
-            rectMode(CENTER);
-            rect(imgX, imgY, tW, tH, 5); 
-            
             image(tutorialImg, imgX, imgY, tW, tH);
             pop();
         }

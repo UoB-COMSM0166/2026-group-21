@@ -103,7 +103,7 @@ const GAME_CONFIG = {
 
     ASSETS: {
         MENU_BG: 'assets/images/menu_background_picture.png',
-        ESC_IMG: 'assets/images/ESC.png',
+        ESC_IMG: 'assets/images/esc.png',
         DIFFICULTY_IMGS: [
             'assets/images/easy_mode.png',
             'assets/images/normal_mode.png',
