@@ -27,8 +27,12 @@ class SoundManager {
         window.addEventListener('keydown', startAudio);
     }
     loadSounds() {
-        this.sounds.bgmGame = loadSound(this.basePath + 'bgm/bgm_game.mp3');
-        this.sounds.bgmMenu = loadSound(this.basePath + 'bgm/bgm_main_menu.mp3');
+        this.sounds.bgmGame = loadSound(this.basePath + 'bgm/bgm_game.mp3', () => {
+            this.sounds.bgmGame.setVolume(0);
+        });
+        this.sounds.bgmMenu = loadSound(this.basePath + 'bgm/bgm_main_menu.mp3', () => {
+            this.sounds.bgmMenu.setVolume(0);
+        });
 
         const sfxPath = this.basePath + 'sfx/';
 
@@ -52,7 +56,7 @@ class SoundManager {
         if (!this.sounds.bgmGame || !this.sounds.bgmMenu) return;
         if (!this.sounds.bgmGame.isLoaded() || !this.sounds.bgmMenu.isLoaded()) return;
         let nextBGM = (state === GAME_CONFIG.STATES.PLAYING) ? this.sounds.bgmGame : this.sounds.bgmMenu;
-        
+
         let isDifferent = this.currentBGM !== nextBGM;
         let isNotPlaying = this.currentBGM && !this.currentBGM.isPlaying();
 
@@ -90,12 +94,12 @@ class SoundManager {
             this.currentBGM.setVolume(0);
             let t2 = setTimeout(() => {
                 this.playBGMWithFadeLoop(this.currentBGM, fadeTime);
-                
+
                 let t3 = setTimeout(() => {
                     this.isFading = false;
                 }, fadeTime * 1000);
                 this.fadeTimeouts.push(t3);
-            }, 100); 
+            }, 100);
             this.fadeTimeouts.push(t2);
         } else {
             this.isFading = false;
@@ -124,24 +128,33 @@ class SoundManager {
     playBGMWithFadeLoop(bgm, fadeTime) {
         if (!bgm || !bgm.isLoaded()) return;
 
-        if (bgm.isPlaying()) {
-            bgm.stop();
+        bgm.stop();
+        if (this.fadeTimeouts) {
+            this.fadeTimeouts.forEach(t => clearTimeout(t));
         }
+        this.fadeTimeouts = [];
+
+        bgm.setVolume(0);
+
+        bgm.play(0, 1, 0);
+
+        let tFadeIn = setTimeout(() => {
+            if (this.currentBGM === bgm) {
+                bgm.setVolume(0);
+                bgm.setVolume(this.targetVolume, fadeTime);
+            }
+        }, 100);
+        this.fadeTimeouts.push(tFadeIn);
 
         let dur = bgm.duration();
-        // Use custom fade loop if duration is properly defined and long enough
         if (dur > fadeTime * 2.5) {
-            bgm.play(0, 1, 0); // start at time 0, rate 1, amplitude 0
-            bgm.setVolume(this.targetVolume, fadeTime);
-
             let fadeOutStart = (dur - fadeTime) * 1000;
             let loopTimeout = setTimeout(() => {
                 if (this.currentBGM === bgm && bgm.isPlaying()) {
                     bgm.setVolume(0, fadeTime);
-                    
+
                     let restartTimeout = setTimeout(() => {
                         if (this.currentBGM === bgm) {
-                            bgm.stop();
                             this.playBGMWithFadeLoop(bgm, fadeTime);
                         }
                     }, fadeTime * 1000);
@@ -150,9 +163,7 @@ class SoundManager {
             }, fadeOutStart);
             this.fadeTimeouts.push(loopTimeout);
         } else {
-            // Fallback for missing duration metadata or very short clips
             bgm.loop();
-            bgm.setVolume(0);
             bgm.setVolume(this.targetVolume, fadeTime);
         }
     }
