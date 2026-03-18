@@ -28,7 +28,7 @@ class TutorialManager {
             case 1: return "Use WASD to move to the yellow zone";
             case 2: return `Press SPACE to toss, then press again to hit at the right height (${this.successCount}/${this.targetCount})`;
             case 3: return `Press SPACE to return the AI's serve (${this.successCount}/${this.targetCount})`;
-            case 4: return `When the bar is full, press Q to use SKILL before the ball lands (${this.successCount}/${this.targetCount})`;
+            case 4: return `Press Q to CHARGE, then HIT the ball! (${this.successCount}/${this.targetCount})`;
             case 5: return `Score 3 points (${this.successCount}/${this.targetCount})`;
             default: return "";
         }

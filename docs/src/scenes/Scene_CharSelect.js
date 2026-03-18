@@ -102,11 +102,18 @@ const Scene_CharSelect = {
     },
 
     confirmSelection: function () {
+        let finalIndex = this.focusedIndex;
+        if (finalIndex === 4) {
+            finalIndex = floor(random(0, this.charNames.length - 1));
+        }
         if (p1CharIndex === -1) {
-            p1CharIndex = this.focusedIndex;
+            p1CharIndex = finalIndex;
+            if (!isMultiplayer) {
+                p2CharIndex = floor(random(0, this.charNames.length - 1));
+                currentState = GAME_CONFIG.STATES.DIFFICULTY_SELECT;
+            }
         } else if (p2CharIndex === -1) {
-            p2CharIndex = this.focusedIndex;
-            this.applySelections();
+            p2CharIndex = finalIndex;
             if (isMultiplayer) {
                 currentState = GAME_CONFIG.STATES.MAP_SELECT;
             } else {
@@ -122,30 +129,6 @@ const Scene_CharSelect = {
             p1CharIndex = -1;
             p2CharIndex = -1;
             currentState = GAME_CONFIG.STATES.MENU;
-        }
-    },
-
-    applySelections: function () {
-        const p1Config = GAME_CONFIG.CHARACTERS[p1CharIndex];
-        const p2Config = GAME_CONFIG.CHARACTERS[p2CharIndex];
-
-        player.speed = p1Config.speed;
-        player.skillType = p1Config.skillType;
-        player.name = p1Config.name;
-
-        opponent.speed = p2Config.speed;
-        opponent.skillType = p2Config.skillType;
-        opponent.name = p2Config.name;
-        //apply selection to character's images
-        if (characterImages[p1CharIndex] && characterImages[p1CharIndex].back) {
-            player.img = characterImages[p1CharIndex].back;
-        }
-        if (characterImages[p2CharIndex] && characterImages[p2CharIndex].front) {
-            opponent.img = characterImages[p2CharIndex].front;
-        }
-
-        if (opponentAI) {
-
         }
     }
 };
