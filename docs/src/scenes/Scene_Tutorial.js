@@ -219,7 +219,6 @@ const Scene_Tutorial = {
                     soundManager.sounds.victory.stop();
                 }
                 currentState = GAME_CONFIG.STATES.MENU;
-                this.setup();
                 return;
             }
             this.isPausedForIntro = false;
@@ -228,7 +227,6 @@ const Scene_Tutorial = {
         if (this.successPauseTimer > 0) return;
         if (keyCode === ESCAPE) {
             currentState = GAME_CONFIG.STATES.MENU;
-            this.setup();
             return;
         }
         player.handleKeyPress(keyCode, ball);
@@ -247,6 +245,8 @@ const Scene_Tutorial = {
     resetBallForServe: function () {
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
+        player.swingTimer = 0;
+        player.isSwinging = false;
 
         ball.reset(player.x, player.y, 'PLAYER');
         ball.vx = 0;
@@ -274,6 +274,8 @@ const Scene_Tutorial = {
 
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
+        player.swingTimer = 0;
+        player.isSwinging = false;
         
         if (opponentAI) {
             opponentAI.resetServeState(); 

@@ -71,7 +71,7 @@ const Scene_Settings = {
                     fill(250);
                     textAlign(RIGHT, CENTER);
 
-                    let arrowX = this.options[i].includes("Volume") ? x - 260 : x - 70;
+                    let arrowX = this.options[i].includes("Volume") ? x - 400 : x - 150;
                     text("▶", arrowX, y);
                     pop();
                 }

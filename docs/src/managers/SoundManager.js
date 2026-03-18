@@ -6,6 +6,7 @@ class SoundManager {
         this.targetVolume = 0.3;  //volume
         this.sfxVolume = 0.5;
         this.isFading = false;
+        this.fadeTimeouts = [];
         this.lastPlayTime = {};
         this.needsMusicStateReset = false;
 
@@ -14,6 +15,9 @@ class SoundManager {
                 userStartAudio().then(() => {
                     this.needsMusicStateReset = true;
                     this.isFading = false;
+                    if (this.currentBGM && this.currentBGM.isLoaded() && !this.currentBGM.isPlaying()) {
+                        this.playBGMWithFadeLoop(this.currentBGM, 1.5);
+                    }
                 });
             }
             window.removeEventListener('mousedown', startAudio);
@@ -48,13 +52,12 @@ class SoundManager {
         if (!this.sounds.bgmGame || !this.sounds.bgmMenu) return;
         if (!this.sounds.bgmGame.isLoaded() || !this.sounds.bgmMenu.isLoaded()) return;
         let nextBGM = (state === GAME_CONFIG.STATES.PLAYING) ? this.sounds.bgmGame : this.sounds.bgmMenu;
-        if (!this.isFading) {
-            let isDifferent = this.currentBGM !== nextBGM;
-            let isNotPlaying = this.currentBGM && !this.currentBGM.isPlaying();
+        
+        let isDifferent = this.currentBGM !== nextBGM;
+        let isNotPlaying = this.currentBGM && !this.currentBGM.isPlaying();
 
-            if (isDifferent || isNotPlaying || !this.currentBGM) {
-                this.transitionTo(nextBGM);
-            }
+        if (isDifferent || isNotPlaying || !this.currentBGM) {
+            this.transitionTo(nextBGM);
         }
     }
 
@@ -62,46 +65,95 @@ class SoundManager {
         if (!nextBGM || !nextBGM.isLoaded()) return;
         if (this.currentBGM === nextBGM && nextBGM.isPlaying()) return;
 
+        if (this.fadeTimeouts) {
+            this.fadeTimeouts.forEach(t => clearTimeout(t));
+        }
+        this.fadeTimeouts = [];
+
         this.isFading = true;
         const fadeTime = 1.5;
         let oldBGM = this.currentBGM;
 
-        if (oldBGM && oldBGM.isPlaying()) {
-            oldBGM.fade(0, fadeTime);
-            setTimeout(() => {
-                if (this.currentBGM !== oldBGM) {
+        if (oldBGM && oldBGM.isLoaded() && oldBGM.isPlaying()) {
+            oldBGM.setVolume(0, fadeTime);
+            let t1 = setTimeout(() => {
+                if (this.currentBGM !== oldBGM && oldBGM.isLoaded() && oldBGM.isPlaying()) {
                     oldBGM.stop();
                 }
             }, fadeTime * 1000);
+            this.fadeTimeouts.push(t1);
         }
 
         this.currentBGM = nextBGM;
 
         if (getAudioContext().state === 'running') {
             this.currentBGM.setVolume(0);
-            if (!this.currentBGM.isPlaying()) {
-                this.currentBGM.loop();
-            }
-
-            setTimeout(() => {
-                this.currentBGM.fade(this.targetVolume, fadeTime);
+            let t2 = setTimeout(() => {
+                this.playBGMWithFadeLoop(this.currentBGM, fadeTime);
                 
-                setTimeout(() => {
+                let t3 = setTimeout(() => {
                     this.isFading = false;
                 }, fadeTime * 1000);
+                this.fadeTimeouts.push(t3);
             }, 100); 
+            this.fadeTimeouts.push(t2);
         } else {
             this.isFading = false;
+            if (oldBGM && oldBGM.isLoaded() && oldBGM.isPlaying()) {
+                oldBGM.stop();
+            }
         }
     }
 
     startNewBGM(newBGM, fadeTime) {
         if (newBGM && newBGM.isLoaded()) {
+            if (this.currentBGM && this.currentBGM.isLoaded() && this.currentBGM.isPlaying() && this.currentBGM !== newBGM) {
+                this.currentBGM.stop();
+            }
+            if (this.fadeTimeouts) {
+                this.fadeTimeouts.forEach(t => clearTimeout(t));
+            }
+            this.fadeTimeouts = [];
+
             this.currentBGM = newBGM;
-            this.currentBGM.setVolume(0);
-            this.currentBGM.loop();
-            this.currentBGM.fade(this.targetVolume, fadeTime); // fade in
+            this.playBGMWithFadeLoop(this.currentBGM, fadeTime);
             this.isFading = false;
+        }
+    }
+
+    playBGMWithFadeLoop(bgm, fadeTime) {
+        if (!bgm || !bgm.isLoaded()) return;
+
+        if (bgm.isPlaying()) {
+            bgm.stop();
+        }
+
+        let dur = bgm.duration();
+        // Use custom fade loop if duration is properly defined and long enough
+        if (dur > fadeTime * 2.5) {
+            bgm.play(0, 1, 0); // start at time 0, rate 1, amplitude 0
+            bgm.setVolume(this.targetVolume, fadeTime);
+
+            let fadeOutStart = (dur - fadeTime) * 1000;
+            let loopTimeout = setTimeout(() => {
+                if (this.currentBGM === bgm && bgm.isPlaying()) {
+                    bgm.setVolume(0, fadeTime);
+                    
+                    let restartTimeout = setTimeout(() => {
+                        if (this.currentBGM === bgm) {
+                            bgm.stop();
+                            this.playBGMWithFadeLoop(bgm, fadeTime);
+                        }
+                    }, fadeTime * 1000);
+                    this.fadeTimeouts.push(restartTimeout);
+                }
+            }, fadeOutStart);
+            this.fadeTimeouts.push(loopTimeout);
+        } else {
+            // Fallback for missing duration metadata or very short clips
+            bgm.loop();
+            bgm.setVolume(0);
+            bgm.setVolume(this.targetVolume, fadeTime);
         }
     }
 
@@ -139,11 +191,15 @@ class SoundManager {
             let finalVol = baseVol * this.sfxVolume;
 
             if (name === 'victory') {
-                if (this.sounds.clap) this.sounds.clap.stop();
+                if (this.sounds.clap && this.sounds.clap.isLoaded() && this.sounds.clap.isPlaying()) {
+                    this.sounds.clap.stop();
+                }
             }
 
             if (name === 'boo' || name === 'clap') {
-                this.sounds[name].stop();
+                if (this.sounds[name] && this.sounds[name].isLoaded() && this.sounds[name].isPlaying()) {
+                    this.sounds[name].stop();
+                }
             }
             this.sounds[name].setVolume(finalVol);
             this.sounds[name].play();
