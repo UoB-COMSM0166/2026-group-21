@@ -47,6 +47,7 @@ class Ball {
     }
 
     display() {
+        push();
         const { COLORS, VISUALS } = GAME_CONFIG;
         let visualZ = max(0, this.z);
         // draw shadow
@@ -59,7 +60,9 @@ class Ball {
         // draw ball
         fill(COLORS.YELLOW);
         stroke(0);
+        strokeWeight(VISUALS.BASE_STROKE_WEIGHT || 2);
         ellipse(this.x, this.y - visualZ - this.r, this.r * 2);
+        pop();
     }
     // initialzie the serve toss
     toss() {

@@ -80,6 +80,8 @@ const Scene_Tutorial = {
     },
 
     draw: function () {
+        strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT || 2);
+        stroke(0);
         background(backgroundImg);
         imageMode(CORNER);
         image(courtImg, layout.courtLeft, layout.courtTop, layout.COURT_W, layout.COURT_H);
@@ -490,6 +492,7 @@ const Scene_Tutorial = {
     displayTutorialUI: function (txt) {
         push();
         textAlign(CENTER, CENTER);
+        noStroke();
         fill(255, 255, 0);
         textSize(24);
         text(txt, width / 2, height * 0.2);
@@ -522,7 +525,7 @@ const Scene_Tutorial = {
 
         push();
         rectMode(CORNER);
-
+        noStroke();
         fill(0, 0, 0, 180);
         rect(0, 0, width, height);
 

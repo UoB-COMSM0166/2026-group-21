@@ -4,6 +4,10 @@ const Scene_CharSelect = {
     menuYellow: [255, 188, 31],
 
     draw: function () {
+        rectMode(CORNER);
+        imageMode(CORNER);
+        noStroke();
+
         const w = width;
         const h = height;
 
@@ -58,6 +62,28 @@ const Scene_CharSelect = {
 
         this.drawCharacterPanel(p1X, panelY, panelW, panelH, "P1", p1DisplayIdx, 0);
         this.drawCharacterPanel(p2X, panelY, panelW, panelH, "P2", p2DisplayIdx, 1);
+
+        let currentHoverId = -1;
+        let ph = h * 0.55;
+        let py = h * 0.52;
+        let curX = (p1CharIndex === -1) ? w * 0.32 : w * 0.68;
+        let btnW = 160;
+
+        let btnLeftX = curX - (btnW / 2);
+
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
+            currentHoverId = 0;
+        } 
+        else if (UIManager.isMouseOver(btnLeftX, py - ph * 0.45, btnW, ph * 0.3, true)) {
+            currentHoverId = 1;
+        } 
+        else if (UIManager.isMouseOver(btnLeftX, py + ph * 0.45, btnW, ph * 0.3, true)) {
+            currentHoverId = 2;
+        } 
+        else if (UIManager.isMouseOver(btnLeftX, py, btnW, ph * 0.5, true)) {
+            currentHoverId = 3;
+        }
+        UIManager.updateHoverSound(currentHoverId);
     },
 
     drawCharacterPanel: function(x, y, pw, ph, playerTag, charIdx, playerType) {
@@ -179,27 +205,25 @@ const Scene_CharSelect = {
         let ph = h * 0.55;
         let py = h * 0.52;
         let curX = (p1CharIndex === -1) ? w * 0.32 : w * 0.68;
+        let btnW = 160;
 
-        // ESC
-        if (mouseX > margin && mouseX < margin + escSize &&
-            mouseY > margin && mouseY < margin + escSize) {
+        let btnLeftX = curX - (btnW / 2);
+
+       // ESC
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
             this.goBack();
             return;
         }
-
-        if (mouseX > curX - 80 && mouseX < curX + 80) {
-            // The Up Arrow 
-            if (mouseY > py - ph * 0.6 && mouseY < py - ph * 0.3) {
-                this.focusedIndex = (this.focusedIndex - 1 + this.charNames.length) % this.charNames.length;
-            }
-            // The Down Arrow
-            else if (mouseY > py + ph * 0.3 && mouseY < py + ph * 0.6) {
-                this.focusedIndex = (this.focusedIndex + 1) % this.charNames.length;
-            }
-            // Charachter Selection
-            else if (mouseY > py - ph * 0.25 && mouseY < py + ph * 0.25) {
-                this.confirmSelection();
-            }
+        if (UIManager.isMouseOver(btnLeftX, py - ph * 0.45, btnW, ph * 0.3, true)) {
+            if (soundManager) soundManager.play('select'); 
+            this.focusedIndex = (this.focusedIndex - 1 + this.charNames.length) % this.charNames.length;
+        }
+        else if (UIManager.isMouseOver(btnLeftX, py + ph * 0.45, btnW, ph * 0.3, true)) {
+            if (soundManager) soundManager.play('select'); 
+            this.focusedIndex = (this.focusedIndex + 1) % this.charNames.length;
+        }
+        else if (UIManager.isMouseOver(btnLeftX, py, btnW, ph * 0.5, true)) {
+            this.confirmSelection();
         }
     },
 
@@ -215,6 +239,8 @@ const Scene_CharSelect = {
     },
 
     confirmSelection: function () {
+        if (soundManager) soundManager.play('confirm');
+
         let finalIndex = this.focusedIndex;
         if (finalIndex === 4) {
             finalIndex = floor(random(0, this.charNames.length - 1));
@@ -236,6 +262,7 @@ const Scene_CharSelect = {
     },
 
     goBack: function () {
+        if (soundManager) soundManager.play('confirm');
         if (p1CharIndex !== -1 && p2CharIndex === -1) {
             p1CharIndex = -1;
         } else {

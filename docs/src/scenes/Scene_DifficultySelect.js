@@ -13,6 +13,10 @@ const Scene_DifficultySelect = {
     focusedIndex: 1, // default: Normal(Easy might be better)
 
     draw: function () {
+        rectMode(CORNER);
+        imageMode(CORNER);
+        noStroke();
+
         if (!layout) return;
         const { centerX, centerY } = layout;
         const w = width;
@@ -54,31 +58,40 @@ const Scene_DifficultySelect = {
         let boxH = h * 0.52;
         let spacing = w * 0.28;
 
+        let currentHoverId = -1;
+
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
+            currentHoverId = 0;
+        }
+
         for (let i = 0; i < this.difficulties.length; i++) {
             let x = centerX + (i - 1) * spacing;;
             let y = centerY + h * 0.08;
 
-            if (mouseX > x - boxW/2 && mouseX < x + boxW/2 &&
-                mouseY > y - boxH/2 && mouseY < y + boxH/2) {
+            let boxLeftX = x - (boxW / 2);
+
+            if (UIManager.isMouseOver(boxLeftX, y, boxW, boxH, true)) {
                 this.focusedIndex = i;
+                currentHoverId = i + 1;
             }
             this.drawDifficultyBox(x, y, boxW, boxH, i);
         }
+        UIManager.updateHoverSound(currentHoverId);
     },
 
     drawDifficultyBox: function (x, y, pW, pH, index) {
         const w = width;
         const isSelected = (this.focusedIndex === index);
         const config = this.imgConfigs[index];
-        
+
         push();
         rectMode(CENTER);
-        
+
         // Shadow
         if (!isSelected) {
-        noStroke();
-        fill(0, 160);
-        rect(x + 12, y + 12, pW, pH, 15);
+            noStroke();
+            fill(0, 160);
+            rect(x + 12, y + 12, pW, pH, 15);
         }
 
         // Colours
@@ -92,12 +105,12 @@ const Scene_DifficultySelect = {
         if (typeof difficultyImages !== 'undefined' && difficultyImages[index]) {
             let img = difficultyImages[index];
             let aspectRatio = img.height / img.width;
-            
-            let displayW = pW * config.s; 
+
+            let displayW = pW * config.s;
             let displayH = displayW * aspectRatio;
 
             let imgY = y + (pH * config.yOff);
-            
+
             imageMode(CENTER);
             image(img, x, imgY, displayW, displayH);
         }
@@ -113,10 +126,10 @@ const Scene_DifficultySelect = {
 
         // Selected status
         if (isSelected) {
-            let pulseAlpha = 180 + sin(frameCount * 0.1) * 75; 
+            let pulseAlpha = 180 + sin(frameCount * 0.1) * 75;
             noFill();
             stroke(255, 255, 255, pulseAlpha);
-            strokeWeight(w * 0.012); 
+            strokeWeight(w * 0.012);
             rect(x, y, pW + 15, pH + 15, 20);
         }
         pop();
@@ -128,8 +141,10 @@ const Scene_DifficultySelect = {
             return;
         }
         if (keyCode === LEFT_ARROW) {
+            if (soundManager) soundManager.play('select');
             this.focusedIndex = (this.focusedIndex - 1 + this.difficulties.length) % this.difficulties.length;
         } else if (keyCode === RIGHT_ARROW) {
+            if (soundManager) soundManager.play('select');
             this.focusedIndex = (this.focusedIndex + 1) % this.difficulties.length;
         } else if (keyCode === ENTER) {
             this.confirmSelection();
@@ -144,8 +159,7 @@ const Scene_DifficultySelect = {
         const margin = 20;
 
         // ESC
-        if (mouseX > margin && mouseX < margin + escSize &&
-            mouseY > margin && mouseY < margin + escSize) {
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
             this.goBack();
             return;
         }
@@ -157,8 +171,9 @@ const Scene_DifficultySelect = {
         for (let i = 0; i < this.difficulties.length; i++) {
             let x = centerX + (i - 1) * spacing;
             let y = centerY + h * 0.08;
-            if (mouseX > x - boxW/2 && mouseX < x + boxW/2 &&
-                mouseY > y - boxH/2 && mouseY < y + boxH/2) {
+            let boxLeftX = x - (boxW / 2);
+            if (UIManager.isMouseOver(boxLeftX, y, boxW, boxH, true)) {
+                this.focusedIndex = i;
                 this.confirmSelection();
                 return;
             }
@@ -166,7 +181,8 @@ const Scene_DifficultySelect = {
     },
 
     confirmSelection: function () {
-        selectedDifficulty = this.difficulties[this.focusedIndex].toUpperCase(); 
+        if (soundManager) soundManager.play('confirm');
+        selectedDifficulty = this.difficulties[this.focusedIndex].toUpperCase();
         currentState = GAME_CONFIG.STATES.MAP_SELECT;
     },
 

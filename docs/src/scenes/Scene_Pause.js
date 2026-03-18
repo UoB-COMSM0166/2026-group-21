@@ -1,10 +1,14 @@
 const Scene_Pause = {
     selectedIndex: 0,
-    options: ["Resume", "Main Menu"],
+    options: ["Resume", "Restart", "Settings", "Main Menu"],
     btnW: 0,
     btnH: 0,
 
     draw: function() {
+        rectMode(CORNER);
+        imageMode(CORNER);
+        noStroke();
+
         if (!layout) return;
         const w = width;
         const h = height;
@@ -58,6 +62,8 @@ const Scene_Pause = {
         let imgY = contentY + h * 0.16;
         let imgScale = 0.55;
 
+        let currentHoverId = -1;
+
         // Pause Menu area
         push();
         textAlign(LEFT, CENTER);
@@ -71,9 +77,11 @@ const Scene_Pause = {
             textSize(menuFontSize);
             let txtW = textWidth(txt);
             
-            let isHovered = (mouseX > x && mouseX < x + txtW + 20 &&
-                             mouseY > y - menuFontSize/2 && mouseY < y + menuFontSize/2);
-            if (isHovered) this.selectedIndex = i;
+            let isHovered = UIManager.isMouseOver(x, y, txtW + 20, menuFontSize * 1.2, true);
+            if (isHovered) {
+                this.selectedIndex = i;
+                currentHoverId = i;
+            }
 
             // Arrow blinking
             if (i === this.selectedIndex && blink) {
@@ -92,6 +100,8 @@ const Scene_Pause = {
             text(txt, x, y);
         }
         pop();
+
+        UIManager.updateHoverSound(currentHoverId);
 
         // Tutorial Picture
         if (typeof tutorialImg !== 'undefined' && tutorialImg) {
@@ -113,12 +123,15 @@ const Scene_Pause = {
 
     handleInput: function() {
         if (keyCode === UP_ARROW) {
+            if (soundManager) soundManager.play('select');
             this.selectedIndex = (this.selectedIndex - 1 + this.options.length) % this.options.length;
         } else if (keyCode === DOWN_ARROW) {
+            if (soundManager) soundManager.play('select');
             this.selectedIndex = (this.selectedIndex + 1) % this.options.length;
         } else if (keyCode === ENTER) {
             this.confirmSelection();
         } else if (keyCode === ESCAPE) {
+            if (soundManager) soundManager.play('confirm');
             currentState = GAME_CONFIG.STATES.PLAYING;
         }
     },
@@ -142,19 +155,27 @@ const Scene_Pause = {
             let txtW = textWidth(this.options[i].toUpperCase());
             pop();
 
-            if (mouseX > x && mouseX < x + txtW + 20 &&
-                mouseY > y - (menuFontSize * 1.2)/2 && 
-                mouseY < y + (menuFontSize * 1.2)/2) {
+            if (UIManager.isMouseOver(x, y, txtW + 20, menuFontSize * 1.2, true)) {
                 this.selectedIndex = i;
                 this.confirmSelection();
+                return;
             }
         }
     },
 
     confirmSelection: function() {
+        if (soundManager) soundManager.play('confirm');
         if (this.selectedIndex === 0) {
             currentState = GAME_CONFIG.STATES.PLAYING;
-        } else {
+        } else if(this.selectedIndex === 1){
+            if (typeof Scene_Game !== 'undefined' && Scene_Game.setup) {
+                Scene_Game.setup(); 
+            }
+            currentState = GAME_CONFIG.STATES.PLAYING;
+        } else if(this.selectedIndex === 2){
+            previousState = GAME_CONFIG.STATES.PAUSED; 
+            currentState = GAME_CONFIG.STATES.SETTINGS;
+        }  else {
             p1CharIndex = -1;
             p2CharIndex = -1;
             currentState = GAME_CONFIG.STATES.MENU;

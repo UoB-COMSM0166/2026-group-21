@@ -10,6 +10,10 @@ const Scene_MapSelect = {
     spacing: 30,
 
     draw: function () {
+        rectMode(CORNER);
+        imageMode(CORNER);
+        noStroke();
+
         if (!layout) return;
         const { centerX, centerY } = layout;
         const w = width;
@@ -21,7 +25,7 @@ const Scene_MapSelect = {
             image(bgImg, 0, 0, w, h);
         }
         rectMode(CORNER);
-        fill(255, 200); 
+        fill(255, 200);
         noStroke();
         rect(0, 0, w, h);
 
@@ -38,32 +42,57 @@ const Scene_MapSelect = {
         // Title
         push();
         textAlign(CENTER, CENTER);
-        fill(255, 188, 31); 
-        stroke(51, 44, 74); 
+        fill(255, 188, 31);
+        stroke(51, 44, 74);
         strokeWeight(w * 0.008);
         textStyle(BOLD);
-        textSize(w * 0.045); 
-        text("Select Tournament Map", centerX, centerY - h * 0.3); 
+        textSize(w * 0.045);
+        text("Select Tournament Map", centerX, centerY - h * 0.3);
         pop();
 
         // Map preview area
         let pW = w * 0.4;
         let pH = h * 0.5;
         let triSize = w * 0.012;
+        let yPos = centerY + h * 0.05;
+        let currentHoverId = -1;
 
-        this.drawPreviewArea(centerX, centerY + h * 0.05, pW, pH, triSize);
+        let leftArrowX = centerX - pW / 2 - triSize * 3;
+        let rightArrowX = centerX + pW / 2 + triSize * 3;
+        let arrowHitSize = triSize * 5;
+
+        let leftArrowLeftX = leftArrowX - (arrowHitSize / 2);
+        let rightArrowLeftX = rightArrowX - (arrowHitSize / 2);
+        let boxLeftX = centerX - (pW / 2);
+
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
+            currentHoverId = 0;
+        }
+
+        let isLeftHovered = UIManager.isMouseOver(leftArrowLeftX, yPos, arrowHitSize, arrowHitSize, true);
+        if (isLeftHovered) currentHoverId = 1;
+
+        let isRightHovered = UIManager.isMouseOver(rightArrowLeftX, yPos, arrowHitSize, arrowHitSize, true);
+        if (isRightHovered) currentHoverId = 2;
+
+        let isBoxHovered = UIManager.isMouseOver(boxLeftX, yPos, pW, pH, true);
+        if (isBoxHovered) currentHoverId = 3;
+
+        UIManager.updateHoverSound(currentHoverId);
+
+        this.drawPreviewArea(centerX, yPos, pW, pH, triSize, isLeftHovered, isRightHovered);
     },
 
-    drawPreviewArea: function (x, y, pW, pH, triSize) {
+    drawPreviewArea: function (x, y, pW, pH, triSize, isLeftHovered, isRightHovered) {
         const w = width;
         const h = height;
 
-        this.drawArrowButton(x - pW / 2 - triSize * 3, y, "LEFT", triSize);
-        this.drawArrowButton(x + pW / 2 + triSize * 3, y, "RIGHT", triSize);
+        this.drawArrowButton(x - pW / 2 - triSize * 3, y, "LEFT", triSize, isLeftHovered);
+        this.drawArrowButton(x + pW / 2 + triSize * 3, y, "RIGHT", triSize, isRightHovered);
 
         push();
         rectMode(CENTER);
-        
+
         // Preview area
         noFill();
         stroke(0);
@@ -79,7 +108,7 @@ const Scene_MapSelect = {
         let imgAreaW = pW * 0.88;
         let imgAreaH = pH * 0.58;
         let imgY = y - pH * 0.12;
-        
+
         stroke(220);
         strokeWeight(1);
         fill(245);
@@ -114,7 +143,7 @@ const Scene_MapSelect = {
         text(this.mapNames[selectedMap], x, y + pH * 0.28);
 
         // Map Effects Description
-        fill(255, 188, 31); 
+        fill(255, 188, 31);
         stroke(0);
         strokeWeight(w * 0.002);
         textStyle(BOLD);
@@ -125,11 +154,10 @@ const Scene_MapSelect = {
 
     },
 
-    drawArrowButton: function(x, y, direction, size) {
-        let isHovered = dist(mouseX, mouseY, x, y) < size * 2;
+    drawArrowButton: function (x, y, direction, size, isHovered) {
         let scaleFactor = isHovered ? 1.2 : 1.0;
         let s = size * scaleFactor;
-        
+
         push();
         stroke(0);
         strokeWeight(width * 0.004);
@@ -143,7 +171,7 @@ const Scene_MapSelect = {
         pop();
     },
 
-    drawTriangleShape: function(x, y, direction, s) {
+    drawTriangleShape: function (x, y, direction, s) {
         if (direction === "LEFT") {
             triangle(x - s, y, x + s * 0.5, y - s, x + s * 0.5, y + s);
         } else {
@@ -170,38 +198,48 @@ const Scene_MapSelect = {
         let triSize = w * 0.015;
         let yPos = centerY + h * 0.05;
 
-        // ESC
-        if (mouseX > margin && mouseX < margin + escSize &&
-            mouseY > margin && mouseY < margin + escSize) {
+        let leftArrowX = centerX - pW / 2 - triSize * 3;
+        let rightArrowX = centerX + pW / 2 + triSize * 3;
+        let arrowHitSize = triSize * 5;
+
+        let leftArrowLeftX = leftArrowX - (arrowHitSize / 2);
+        let rightArrowLeftX = rightArrowX - (arrowHitSize / 2);
+        let boxLeftX = centerX - (pW / 2);
+
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
             this.goBack();
             return;
         }
-        // Arrows
-        if (dist(mouseX, mouseY, centerX - pW / 2 - triSize * 3, yPos) < triSize * 2) {
+
+        if (UIManager.isMouseOver(leftArrowLeftX, yPos, arrowHitSize, arrowHitSize, true)) {
             this.changeMap(-1);
             return;
         }
-        if (dist(mouseX, mouseY, centerX + pW / 2 + triSize * 3, yPos) < triSize * 2) {
+
+        if (UIManager.isMouseOver(rightArrowLeftX, yPos, arrowHitSize, arrowHitSize, true)) {
             this.changeMap(1);
             return;
         }
-        // Preview area
-        if (mouseX > centerX - pW/2 && mouseX < centerX + pW/2 &&
-            mouseY > yPos - pH/2 && mouseY < yPos + pH/2) {
+        
+        if (UIManager.isMouseOver(boxLeftX, yPos, pW, pH, true)) {
             this.confirmSelection();
+            return;
         }
     },
 
-    changeMap: function(dir) {
+    changeMap: function (dir) {
+        if (soundManager) soundManager.play('select');
         selectedMap = (selectedMap + dir + this.mapNames.length) % this.mapNames.length;
     },
 
     confirmSelection: function () {
+        if (soundManager) soundManager.play('confirm');
         Scene_Game.setup();
         currentState = GAME_CONFIG.STATES.PLAYING;
     },
-    
+
     goBack: function () {
+        if (soundManager) soundManager.play('confirm');
         if (!isMultiplayer) {
             currentState = GAME_CONFIG.STATES.DIFFICULTY_SELECT;
         } else {

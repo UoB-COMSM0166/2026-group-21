@@ -6,24 +6,39 @@ const Scene_Settings = {
     barW: 150,
 
     draw: function() {
-        if (bgImg) image(bgImg, 0, 0, width, height);
-        else background(250);
-        fill(0, 0, 0, 100);
-        rect(0, 0, width, height);
-
-        const centerX = width / 2;
-        const centerY = height / 2;
+        rectMode(CORNER);
+        imageMode(CORNER);
+        noStroke();
         
+        const w = width;
+        const h = height;
+
+        if (bgImg) image(bgImg, 0, 0, w, h);
+        else background(250);
+        
+        fill(0, 0, 0, 100);
+        rect(0, 0, w, h);
+
+        const centerX = w / 2;
+        const centerY = h / 2;
+        let blink = frameCount % 60 < 30;
+        
+        push();
         textAlign(CENTER, CENTER);
-        fill(255);
-        textSize(50);
-        text("SETTINGS", centerX, centerY - 150);
+        textStyle(BOLD);
+        textSize(w * 0.06); 
+        stroke(51, 44, 74);
+        strokeWeight(w * 0.008);
+        fill(255, 188, 31);
+        text("SETTINGS", centerX, centerY - h * 0.3);
+        pop();
 
         let currentHoverId = -1;
+        let menuFontSize = w * 0.027;
 
         for (let i = 0; i < this.options.length; i++) {
             let x = centerX;
-            let y = centerY + (i * 80) - 50;
+            let y = centerY + (i * h * 0.1) - h * 0.05;
 
             let isHovered = UIManager.isMouseOver(x - this.btnW/2, y, this.btnW, 60, true);
             if (isHovered) {
@@ -44,26 +59,56 @@ const Scene_Settings = {
             }
 
             push();
-            if (i === this.selectedIndex) fill(255, 255, 0);
-            else fill(200);
+            textStyle(BOLD);
+
+            if (i === this.selectedIndex) {
+                fill(255, 255, 0); 
+                if (blink) {
+                    push();
+                    textSize(menuFontSize * 0.5);
+                    stroke(51, 44, 74);
+                    strokeWeight(w * 0.0075);
+                    fill(250);
+                    textAlign(RIGHT, CENTER);
+
+                    let arrowX = this.options[i].includes("Volume") ? x - 260 : x - 70;
+                    text("▶", arrowX, y);
+                    pop();
+                }
+            } else {
+                fill(250); 
+            }
+
+            stroke(51, 44, 74);
+            strokeWeight(w * 0.008);
 
             if (this.options[i].includes("Volume")) {
-                textAlign(LEFT, CENTER);
-                textSize(24);
-                text(this.options[i], x - 140, y);
+                textAlign(RIGHT, CENTER);
+                textSize(menuFontSize);
+                let textStartX = x - 170;
+                text(this.options[i], x - 30, y);
                 
                 let vol = (this.options[i] === "BGM Volume") ? 
                            soundManager.targetVolume : 
                            soundManager.sfxVolume;
 
+                noStroke();
+
+                let barStartX = x + 30;
+                
                 fill(100);
-                rect(x + 20, y - 5, this.barW, 10, 5);
+                rect(barStartX, y - 5, this.barW, 10, 5);
+                
                 fill(i === this.selectedIndex ? [255, 215, 0] : 255);
-                rect(x + 20, y - 5, this.barW * vol, 10, 5);
-                ellipse(x + 20 + this.barW * vol, y, 15, 15);
+                rect(barStartX, y - 5, this.barW * vol, 10, 5);
+                
+                stroke(51, 44, 74);
+                strokeWeight(2);
+                ellipse(barStartX + this.barW * vol, y, 18, 18);
+
             } else {
                 textAlign(CENTER, CENTER);
-                textSize(30);
+                textSize(menuFontSize * 1.2);
                 text(this.options[i], x, y);
             }
             pop();
@@ -72,7 +117,7 @@ const Scene_Settings = {
     },
 
     updateVolumeByMouse: function(centerX, index) {
-        let barStartX = centerX + 20;
+        let barStartX = centerX + 30;
         let newVol = constrain((mouseX - barStartX) / this.barW, 0, 1);
         
         if (this.options[index] === "BGM Volume") {
@@ -87,8 +132,14 @@ const Scene_Settings = {
             this.goBack();
             return;
         }
-        if (keyCode === UP_ARROW) this.selectedIndex = (this.selectedIndex - 1 + this.options.length) % this.options.length;
-        if (keyCode === DOWN_ARROW) this.selectedIndex = (this.selectedIndex + 1) % this.options.length;
+        if (keyCode === UP_ARROW) {
+            if (soundManager) soundManager.play('select');
+            this.selectedIndex = (this.selectedIndex - 1 + this.options.length) % this.options.length;
+        }
+        if (keyCode === DOWN_ARROW) {
+            if (soundManager) soundManager.play('select');
+            this.selectedIndex = (this.selectedIndex + 1) % this.options.length;
+        }
         if (this.options[this.selectedIndex].includes("Volume")) {
             if (keyCode === LEFT_ARROW) this.adjust(-0.05);
             if (keyCode === RIGHT_ARROW) this.adjust(0.05);
@@ -109,12 +160,14 @@ const Scene_Settings = {
     },
 
     handleMouse: function() {
-        const centerX = width / 2;
-        const centerY = height / 2;
+        const w = width;
+        const h = height;
+        const centerX = w / 2;
+        const centerY = h / 2;
         
         let i = this.selectedIndex;
         let x = centerX;
-        let y = centerY + (i * 80) - 50;
+        let y = centerY + (i * h * 0.1) - h * 0.05;
 
         if (UIManager.isMouseOver(x - this.btnW/2, y - 25, this.btnW, 60)) {
             if (this.options[i] === "Back") {
@@ -128,6 +181,11 @@ const Scene_Settings = {
 
     goBack: function() {
         if (soundManager) soundManager.play('confirm');
-        currentState = GAME_CONFIG.STATES.MENU;
+        if (typeof previousState !== 'undefined' && previousState === GAME_CONFIG.STATES.PAUSED) {
+            currentState = GAME_CONFIG.STATES.PAUSED;
+            previousState = null;
+        } else {
+            currentState = GAME_CONFIG.STATES.MENU;
+        }
     }
 };
