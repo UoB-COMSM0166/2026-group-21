@@ -1,19 +1,21 @@
 let player, opponent, ball, layout;
-let courtImg, backgroundImg;
+let courtImg, backgroundImg, bgImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;
-let selectedCharacter = 0;
 let selectedMap = 0;
+let selectedDifficulty = "NORMAL";
 let p1CharIndex = -1; 
 let p2CharIndex = -1;
 let opponentAI;
+let mapImages = [];
 let characterImages = [];
 let tutorialManager;
 let difficultyImages = [];
-let mapImages = [];
 let tutorialImg;
+let soundManager;
 const STATES = GAME_CONFIG.STATES;
+let lastMusicState = null;
 
 function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
@@ -29,11 +31,14 @@ function preload() {
     }
 
     if (GAME_CONFIG.ASSETS.MAP_IMGS) {
-        GAME_CONFIG.ASSETS.MAP_IMGS.forEach((path, index) => {
-            mapImages[index] = loadImage(path);
+        GAME_CONFIG.MAPS.forEach((map, index) => {
+            mapImages[index] = {
+                bg: loadImage(map.bgPath),
+                court: loadImage(map.courtPath),
+                preview: loadImage(GAME_CONFIG.ASSETS.MAP_IMGS[index])
+            };
         });
     }
-
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};
@@ -45,6 +50,9 @@ function preload() {
             }
         }
     });
+    //load sound
+    soundManager = new SoundManager();
+    soundManager.loadSounds();
 }
 
 function setup() {
@@ -56,10 +64,21 @@ function setup() {
     ball = new Ball();
     scoreManager = new ScoreManager();
     ball.reset(player.x, player.y, 'PLAYER');
+
+    //play sound
+    userStartAudio();
 }
 
 function draw() {
     background(GAME_CONFIG.COLORS.WHITE);
+    
+    //if change the BGM
+    if (soundManager && (currentState !== lastMusicState || soundManager.needsMusicStateReset)) {
+        soundManager.updateBGM(currentState);
+        lastMusicState = currentState; 
+        soundManager.needsMusicStateReset = false;
+    }
+
     switch (currentState) {
         case STATES.MENU:        Scene_Menu.draw();       break;
         case STATES.CHAR_SELECT: Scene_CharSelect.draw(); break;
@@ -68,21 +87,52 @@ function draw() {
         case STATES.PAUSED:      Scene_Pause.draw();      break;
         case STATES.TUTORIAL:    Scene_Tutorial.draw();   break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.draw(); break;
-
+        case STATES.SETTINGS: Scene_Settings.draw(); break;
     }
 }
 
 function mousePressed() {
+    //Auto-play the BGM
+    if (getAudioContext().state !== 'running') {
+        userStartAudio().then(() => {
+            if (soundManager) soundManager.updateBGM(currentState);
+        });
+    }
+
     switch (currentState) {
         case STATES.MENU:        Scene_Menu.handleMouse();       break;
         case STATES.CHAR_SELECT: Scene_CharSelect.handleMouse(); break;
         case STATES.MAP_SELECT:  Scene_MapSelect.handleMouse();  break;
         case STATES.PAUSED:      Scene_Pause.handleMouse();      break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleMouse(); break;
+        case STATES.SETTINGS: Scene_Settings.handleMouse(); break;
     }
 }
 
 function keyPressed() {
+    if (keyCode === GAME_CONFIG.CONTROLS.ESCAPE) {
+        if (soundManager) {
+            soundManager.play('confirm'); 
+        }
+    }
+    if (currentState !== STATES.PLAYING && currentState !== STATES.TUTORIAL) {
+        const { CONTROLS } = GAME_CONFIG;
+        const navKeys = [
+            CONTROLS.OPPONENT_UP, CONTROLS.OPPONENT_DOWN, 
+            CONTROLS.OPPONENT_LEFT, CONTROLS.OPPONENT_RIGHT,
+            CONTROLS.PLAYER_UP, CONTROLS.PLAYER_DOWN, 
+            CONTROLS.PLAYER_LEFT, CONTROLS.PLAYER_RIGHT
+        ];
+
+        if (navKeys.includes(keyCode)) {
+            if (soundManager) soundManager.play('select');
+        }
+
+        if (keyCode === CONTROLS.OPPONENT_ACTION) {
+            if (soundManager) soundManager.play('confirm');
+        }
+    }
+
     switch (currentState) {
         case STATES.MENU:        Scene_Menu.handleInput();       break;
         case STATES.CHAR_SELECT: Scene_CharSelect.handleInput(); break;
@@ -91,6 +141,7 @@ function keyPressed() {
         case STATES.TUTORIAL:    Scene_Tutorial.handleInput();   break;
         case STATES.PAUSED:      Scene_Pause.handleInput();      break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleInput(); break;
+        case STATES.SETTINGS: Scene_Settings.handleInput(); break;
     }
 }
 // handle window resizing

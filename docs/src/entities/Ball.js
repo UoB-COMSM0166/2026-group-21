@@ -5,9 +5,14 @@ class Ball {
         this.bounceCount = 0;
         this.lastHitter = null;
         this.reset(0, 0, 'PLAYER');
+        this.speedMultiplier = 1.0;
+        this.speedTimer = 0;
+        this.sizeTimer = 0;
+        this.isGigaShot = false;
     }
     //resets the ball to its starting state for a new serve
     reset(startX, startY, side) {
+        this.r = GAME_CONFIG.BALL.RADIUS;
         this.x = startX;
         this.y = startY;
         this.z = 0;
@@ -18,9 +23,23 @@ class Ball {
         this.isWaiting = true; // holding the ball before tossing
         this.isTossing = false; // ball is in the air but not yet hit
         this.serveSide = side; // track who is serving
+        this.isGigaShot = false;
     }
 
     update() {
+        if (this.speedTimer > 0) {
+            this.speedTimer--;
+            if (this.speedTimer === 0) {
+                this.speedMultiplier = 1.0;
+            }
+        }
+        if (this.sizeTimer > 0) {
+            this.sizeTimer--;
+            if (this.sizeTimer === 0) {
+                this.r = GAME_CONFIG.BALL.RADIUS;
+            }
+        }
+
         if (this.handleServeState()) return;
         this.applyPhysics();
         this.checkGroundCollision();
@@ -66,8 +85,8 @@ class Ball {
     }
     //calculates position, air resistance and gravity
     applyPhysics() {
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * this.speedMultiplier;
+        this.y += this.vy * this.speedMultiplier;
         this.z += this.vz;
         this.vx *= GAME_CONFIG.BALL.AIR_RESISTANCE;
         this.vy *= GAME_CONFIG.BALL.AIR_RESISTANCE;
@@ -128,6 +147,7 @@ class Ball {
         }
         if (!this.roundEnding) {
             this.roundEnding = true;
+
             if (scoreManager) {
                 scoreManager.recordPoint(winner);
             }
@@ -161,9 +181,14 @@ class Ball {
         const isHittable = p.swingTimer > 0 && !p.hasHit && this.z > HIT_MIN_Z && this.z < HIT_MAX_Z;
         if (!isHittable) return;
         // basic box-to-box collision detection
-        const hitX = this.x > p.x - p.w / 2 && this.x < p.x + p.w / 2;
+        const hitX = abs(this.x - p.x) < this.r + p.w / 2;
         const hitY = abs(this.y - p.y) < this.r + p.h / 2;
         if (hitX && hitY) {
+            if (this.isGigaShot) { 
+                p.stunTimer = 45;
+            }
+            this.r = GAME_CONFIG.BALL.RADIUS;
+            this.isGigaShot = false;
             this.vz = HIT_Z;
             this.vy = p.isBottom ? -HIT_Y : HIT_Y;
             //Change the ball's angle based on where it hits the player
@@ -176,8 +201,14 @@ class Ball {
                     this.vx = constrain(this.vx, SERVE_MIN_VX, SERVE_MAX_VX);
                 }
             }
+            //hit sound
+            if (typeof soundManager !== 'undefined') {
+                soundManager.play('hit'); 
+            }
+
             this.recordHit(p);
             p.hasHit = true;
+            SkillManager.triggerHitSkill(p, this);
             p.feedbackText = "PERFECT";
             p.feedbackTimer = GAME_CONFIG.FEEDBACK.DISPLAY_DURATION;
         }

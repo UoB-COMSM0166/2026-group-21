@@ -5,6 +5,7 @@ const GAME_CONFIG = {
         MAP_SELECT: 'MAP_SELECT',
         PLAYING: 'PLAYING',
         PAUSED: 'PAUSED',
+        SETTINGS: 'SETTINGS',
 
         TUTORIAL: 'TUTORIAL',
         DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
@@ -116,8 +117,8 @@ const GAME_CONFIG = {
         ],
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
-        COURT_IMG: 'assets/images/stadiumtest.png',
-        TUTORIAL_IMG: 'assets/images/game_key_instruction.png'
+        TUTORIAL_IMG: 'assets/images/game_key_instruction.png',
+        COURT_IMG: 'assets/images/bg_stadium.png'
     },
 
     CONTROLS: {
@@ -170,6 +171,12 @@ const GAME_CONFIG = {
         INDICATOR_HEIGHT: 15
     },
 
+    MAPS: [
+        { name: "Polar", bgPath: "assets/images/bg_polar.png", courtPath: "assets/images/bg_stadium.png" },
+        { name: "Egypt", bgPath: "assets/images/bg_egypt.png", courtPath: "assets/images/bg_stadium.png" },
+        { name: "Hard Court", bgPath: "assets/images/bg_hardcourt.png", courtPath: "assets/images/bg_stadium.png" }
+    ],
+
     CHARACTERS: [
         {
             name: "Cat",
@@ -194,7 +201,7 @@ const GAME_CONFIG = {
         {
             name: "Deer",
             speed: 6,
-            skillType: 'FEATHER_STORM',
+            skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
                 back: 'assets/images/player_deer_swing_back.png',
@@ -204,7 +211,7 @@ const GAME_CONFIG = {
         {
             name: "Bird",
             speed: 6,
-            skillType: 'FOREST_ZEN',
+            skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
                 back: 'assets/images/player_bird_swing_back.png',

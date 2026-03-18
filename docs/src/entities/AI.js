@@ -25,6 +25,11 @@ class AI {
     }
 
     update(ball) {
+        // if AI catch the gigaball, it should be stunned as well
+        if (this.player.stunTimer > 0) {
+            return; 
+        }
+
         this._reactionCounter++;
         if (this._reactionCounter >= this.reactionDelay) {
             this._reactionCounter = 0;
@@ -84,7 +89,7 @@ class AI {
             let yDiff = Math.abs(this.player.y - ball.y);
             if (xDiff < GAME_CONFIG.AI.RECEIVE_X_THRESHOLD &&
                  yDiff < GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD) {
-                this.player.swing();
+                this.player.swing(ball);
             }
         }
 
@@ -107,7 +112,7 @@ class AI {
                         ball.vz < 0 &&
                         ball.z > GAME_CONFIG.AI.SERVE_SWING_Z_MIN && 
                         ball.z < GAME_CONFIG.AI.SERVE_SWING_Z_MAX) {
-                this.player.swing();
+                this.player.swing(ball);
                 this.serveSwung = true;
             }
         }

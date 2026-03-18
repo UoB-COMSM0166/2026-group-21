@@ -8,7 +8,7 @@ class Player {
         this.isBottom = isBottom; //true for bottom player, false for opponent
         this.swingTimer = 0; //duration of the hit active window
         this.resetPosition(x); //initialize position to the starting baseline
-        this.skillCooldown = 0;
+        this.skillCooldown = this.maxCooldown;
         this.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
         this.currentFrame = 0;
         this.totalFrames = GAME_CONFIG.PLAYER.TOTAL_FRAMES;
@@ -17,6 +17,10 @@ class Player {
         this.spriteH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
         this.spriteCols = GAME_CONFIG.PLAYER.SPRITE_COLS;
         this.hasHit = false;
+        this.skillType = null; // This would be set after character selection
+        this.activeBuff = null;
+        this.stunTimer = 0;
+        this.isAI = false;
         this.feedbackText = "";
         this.feedbackTimer = 0;
         this.wasBallNearOnSwing = false;
@@ -27,8 +31,20 @@ class Player {
                (!this.isBottom && scoreManager.currentServer === 'OPPONENT');
     }
 
-    update(isAutoControlled = false) {
-        if (!isAutoControlled) {
+    resetState() {
+        this.activeBuff = null;
+        this.skillCooldown = this.maxCooldown;
+        this.stunTimer = 0;
+        this.swingTimer = 0;
+        this.hasHit = false;
+        this.wasBallNearOnSwing = false;
+        this.currentFrame = 0;
+        this.feedbackText = "";
+        this.feedbackTimer = 0;
+    }
+
+    update() {
+        if (!this.isAI) {
             this.handleInput();
         }
         this.updateTimers();
@@ -39,6 +55,12 @@ class Player {
         push();
         imageMode(CENTER);
         translate(this.x, this.y);
+        if (this.stunTimer > 0) {
+            this.drawStunStars();
+        }
+        if (this.activeBuff) {
+            this.drawBuffAura();
+        }
         this.drawSprite();
 
         const { FEEDBACK, COLORS } = GAME_CONFIG;
@@ -88,8 +110,11 @@ class Player {
 
     //enable the hit detection for a short period
     swing(ball) { 
+        if (this.swingTimer > 0) return;
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
+        soundManager.play('swing');
+
 
         if (ball) {
             let d = dist(this.x, this.y, ball.x, ball.y);
@@ -99,10 +124,14 @@ class Player {
         }
     }
     // handle skill and swing button
+    // player skill key would be Q (which is keyCode 81) and opponent skill key: / (keyCode 191)
     handleKeyPress(keyCode, ball) {
+        if (this.isAI) return;
         const { CONTROLS } = GAME_CONFIG;
         const actionKey = this.isBottom ? CONTROLS.PLAYER_ACTION : CONTROLS.OPPONENT_ACTION;
-        const skillKey = this.isBottom ? CONTROLS.PLAYER_SKILL : CONTROLS.OPPONENT_SKILL;
+        const skillKey = this.isBottom
+            ? (CONTROLS.PLAYER_SKILL != null ? CONTROLS.PLAYER_SKILL : 81)
+            : (CONTROLS.OPPONENT_SKILL != null ? CONTROLS.OPPONENT_SKILL : 191);
 
         if (keyCode === actionKey) {
             if (this.isServer && ball.isWaiting) ball.toss();
@@ -121,6 +150,9 @@ class Player {
         } else {
             this.y = layout.courtTop - serveBackDistance - this.h / 2;
         }
+        this.skillCooldown = this.maxCooldown;
+        this.activeBuff = null;
+        this.stunTimer = 0;
     }
 
     moveLeft() { this.x -= this.speed; }
@@ -129,6 +161,8 @@ class Player {
     moveDown() { this.y += this.speed; }
 
     handleInput() {
+        if (this.isAI) return;
+        if (this.stunTimer > 0) return;
         // handle keyboard inputs based on player role
         // left, right, up, down arrows
         if (this.isBottom) {
@@ -146,6 +180,10 @@ class Player {
     }
     // decrement hit window timer, skill cool down and calcu animation's frame
     updateTimers() {
+        if (this.stunTimer > 0) {
+            this.stunTimer--;
+            return;
+        }
         if (this.swingTimer > 0) {
             this.swingTimer--;
             this.currentFrame += this.animSpeed;
@@ -162,7 +200,9 @@ class Player {
         } else {
             this.currentFrame = 0;
         }
-        if (this.skillCooldown > 0) this.skillCooldown--;
+        if (this.skillCooldown > 0 && typeof ball !== 'undefined' && !ball.isWaiting) {
+            this.skillCooldown--;
+        }
 
         if (this.feedbackTimer > 0) {
             this.feedbackTimer--;
@@ -226,9 +266,9 @@ class Player {
     }
 
     useSkill(ball) {
+        if (ball.isWaiting || ball.isTossing) return;
         if (this.skillCooldown === 0) {
             SkillManager.execute(this, ball);
-            this.skillCooldown = this.maxCooldown;
         }
     }
     // temporarily skillbar placeholder
@@ -253,6 +293,43 @@ class Player {
         textSize(12);
         textAlign(LEFT, CENTER);
         text("SKILL", x + 5, y + h / 2);
+        pop();
+    }
+
+    drawBuffAura() {
+        push();
+        let pulse = sin(frameCount * 0.15) * 15; 
+        let baseSize = max(this.w, this.h) + 10;
+        let auraSize = baseSize + pulse;
+
+        let r = 255, g = 255, b = 255;
+
+        noFill();
+        
+        strokeWeight(6);
+        stroke(r, g, b, 80);
+        ellipse(0, 0, auraSize + 10, auraSize + 10);
+        
+        strokeWeight(3);
+        stroke(r, g, b, 200); 
+        ellipse(0, 0, auraSize, auraSize);
+        
+        pop();
+    }
+    drawStunStars() {
+        push();
+        translate(0, -this.h / 2 - 10); 
+        
+        let stars = 3;
+        for (let i = 0; i < stars; i++) {
+            let angle = frameCount * 0.2 + (TWO_PI / stars) * i;
+            let sx = cos(angle) * 20;
+            let sy = sin(angle) * 5;
+            
+            fill(255, 255, 0);
+            noStroke();
+            ellipse(sx, sy, 8, 8); 
+        }
         pop();
     }
 }

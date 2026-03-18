@@ -166,22 +166,14 @@ const Scene_DifficultySelect = {
     },
 
     confirmSelection: function () {
-        const levelKey = this.difficulties[this.focusedIndex].toUpperCase(); // "EASY" / "NORMAL" / "HARD"
-        const levelConfig = GAME_CONFIG.AI_LEVELS[levelKey];
-
-        // apply AI's difficulty 
-        if (opponentAI) {
-            opponentAI.difficulty = levelKey;
-            opponentAI.speedMult    = levelConfig.speedMult;
-            opponentAI.reactionDelay = levelConfig.reactionDelay;
-            opponentAI.errorRange   = levelConfig.errorRange;
-            opponentAI.prediction   = levelConfig.prediction;
-        }
-
+        selectedDifficulty = this.difficulties[this.focusedIndex].toUpperCase(); 
         currentState = GAME_CONFIG.STATES.MAP_SELECT;
     },
 
     goBack: function () {
+        if (!isMultiplayer) {
+            p1CharIndex = -1;
+        }
         p2CharIndex = -1;
         currentState = GAME_CONFIG.STATES.CHAR_SELECT;
     }

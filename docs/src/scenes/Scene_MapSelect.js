@@ -5,6 +5,9 @@ const Scene_MapSelect = {
         "Egypt: Sandstorm obscures vision every 30s",
         "Wimbledon: Classic tournament rules"
     ],
+    iconW: 180,
+    iconH: 100,
+    spacing: 30,
 
     draw: function () {
         if (!layout) return;
@@ -84,7 +87,7 @@ const Scene_MapSelect = {
 
         if (typeof mapImages !== 'undefined' && mapImages[selectedMap]) {
             imageMode(CENTER);
-            image(mapImages[selectedMap], x, imgY, imgAreaW, imgAreaH);
+            image(mapImages[selectedMap].preview, x, imgY, imgAreaW, imgAreaH);
         } else {
             noStroke();
             fill(180);
@@ -194,12 +197,16 @@ const Scene_MapSelect = {
     },
 
     confirmSelection: function () {
-        Scene_Game.restartGame();
+        Scene_Game.setup();
         currentState = GAME_CONFIG.STATES.PLAYING;
     },
-
+    
     goBack: function () {
-        p2CharIndex = -1;
-        currentState = GAME_CONFIG.STATES.CHAR_SELECT;
+        if (!isMultiplayer) {
+            currentState = GAME_CONFIG.STATES.DIFFICULTY_SELECT;
+        } else {
+            p2CharIndex = -1;
+            currentState = GAME_CONFIG.STATES.CHAR_SELECT;
+        }
     }
 };
