@@ -151,6 +151,8 @@ class Player {
             this.y = layout.courtTop - serveBackDistance - this.h / 2;
         }
         this.skillCooldown = this.maxCooldown;
+        this.activeBuff = null;
+        this.stunTimer = 0;
     }
 
     moveLeft() { this.x -= this.speed; }
