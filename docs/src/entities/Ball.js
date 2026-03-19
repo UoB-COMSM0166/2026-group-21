@@ -12,6 +12,11 @@ class Ball {
     }
     //resets the ball to its starting state for a new serve
     reset(startX, startY, side) {
+        if (this.roundTimer) {
+            clearTimeout(this.roundTimer);
+            this.roundTimer = null;
+        }
+        this.roundEnding = false;
         this.r = GAME_CONFIG.BALL.RADIUS;
         this.x = startX;
         this.y = startY;
@@ -47,6 +52,7 @@ class Ball {
     }
 
     display() {
+        push();
         const { COLORS, VISUALS } = GAME_CONFIG;
         let visualZ = max(0, this.z);
         // draw shadow
@@ -59,7 +65,9 @@ class Ball {
         // draw ball
         fill(COLORS.YELLOW);
         stroke(0);
+        strokeWeight(VISUALS.BASE_STROKE_WEIGHT || 2);
         ellipse(this.x, this.y - visualZ - this.r, this.r * 2);
+        pop();
     }
     // initialzie the serve toss
     toss() {
@@ -151,10 +159,10 @@ class Ball {
             if (scoreManager) {
                 scoreManager.recordPoint(winner);
             }
-            setTimeout(() => {
+            this.roundTimer = setTimeout(() => {
                 this.roundEnding = false;
                 if (scoreManager) scoreManager.prepareNextPoint();
-                if (currentState === GAME_CONFIG.STATES.PLAYING) {
+                if (typeof Scene_Game !== 'undefined' && typeof Scene_Game.nextRound === 'function') {
                     Scene_Game.nextRound();
                 }
             }, GAME_CONFIG.MATCH.ROUND_END_DELAY);

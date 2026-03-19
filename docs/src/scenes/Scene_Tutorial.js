@@ -80,6 +80,8 @@ const Scene_Tutorial = {
     },
 
     draw: function () {
+        strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT || 2);
+        stroke(0);
         background(backgroundImg);
         imageMode(CORNER);
         image(courtImg, layout.courtLeft, layout.courtTop, layout.COURT_W, layout.COURT_H);
@@ -217,7 +219,6 @@ const Scene_Tutorial = {
                     soundManager.sounds.victory.stop();
                 }
                 currentState = GAME_CONFIG.STATES.MENU;
-                this.setup();
                 return;
             }
             this.isPausedForIntro = false;
@@ -226,7 +227,6 @@ const Scene_Tutorial = {
         if (this.successPauseTimer > 0) return;
         if (keyCode === ESCAPE) {
             currentState = GAME_CONFIG.STATES.MENU;
-            this.setup();
             return;
         }
         player.handleKeyPress(keyCode, ball);
@@ -245,6 +245,8 @@ const Scene_Tutorial = {
     resetBallForServe: function () {
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
+        player.swingTimer = 0;
+        player.isSwinging = false;
 
         ball.reset(player.x, player.y, 'PLAYER');
         ball.vx = 0;
@@ -272,6 +274,8 @@ const Scene_Tutorial = {
 
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
+        player.swingTimer = 0;
+        player.isSwinging = false;
         
         if (opponentAI) {
             opponentAI.resetServeState(); 
@@ -490,6 +494,7 @@ const Scene_Tutorial = {
     displayTutorialUI: function (txt) {
         push();
         textAlign(CENTER, CENTER);
+        noStroke();
         fill(255, 255, 0);
         textSize(24);
         text(txt, width / 2, height * 0.2);
@@ -522,7 +527,7 @@ const Scene_Tutorial = {
 
         push();
         rectMode(CORNER);
-
+        noStroke();
         fill(0, 0, 0, 180);
         rect(0, 0, width, height);
 

@@ -104,7 +104,8 @@ const Scene_Game = {
     restartGame: function () {
         player.resetState();
         opponent.resetState();
-        if (soundManager && soundManager.sounds.victory) {
+        if (soundManager && soundManager.sounds.victory && 
+            soundManager.sounds.victory.isLoaded() && soundManager.sounds.victory.isPlaying()) {
             soundManager.sounds.victory.stop();
         }
         scoreManager.init();

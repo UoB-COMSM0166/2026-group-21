@@ -1,115 +1,245 @@
 const Scene_MapSelect = {
-    mapNames: ["Polar", "Egypt", "Hard Court"],
-
+    mapNames: ["Polar", "Egypt", "Wimbledon"],
+    mapEffects: [
+        "Polar: Characters frozen every 30s",
+        "Egypt: Sandstorm obscures vision every 30s",
+        "Wimbledon: Classic tournament rules"
+    ],
     iconW: 180,
     iconH: 100,
     spacing: 30,
 
     draw: function () {
-        const { centerX, centerY } = layout;
+        rectMode(CORNER);
+        imageMode(CORNER);
+        noStroke();
 
+        if (!layout) return;
+        const { centerX, centerY } = layout;
+        const w = width;
+        const h = height;
+
+        // Background
+        if (bgImg) {
+            imageMode(CORNER);
+            image(bgImg, 0, 0, w, h);
+        }
+        rectMode(CORNER);
+        fill(255, 200);
+        noStroke();
+        rect(0, 0, w, h);
+
+        // ESC
         push();
-        textAlign(LEFT, TOP);
-        fill(150);
-        textSize(16);
-        text("Press 'ESC' to Re-select Characters", 20, 20);
+        const escSize = w * 0.06;
+        const margin = 20;
+        if (typeof escImg !== 'undefined' && escImg) {
+            imageMode(CORNER);
+            image(escImg, margin, margin, escSize, escSize);
+        }
         pop();
 
+        // Title
         push();
         textAlign(CENTER, CENTER);
-        fill(0);
-        textSize(40);
-        text("Select Tournament Map", centerX, centerY - 150);
+        fill(255, 188, 31);
+        stroke(51, 44, 74);
+        strokeWeight(w * 0.008);
+        textStyle(BOLD);
+        textSize(w * 0.045);
+        text("Select Tournament Map", centerX, centerY - h * 0.3);
         pop();
 
-        let totalWidth = (this.mapNames.length * this.iconW) + ((this.mapNames.length - 1) * this.spacing);
-        let startX = centerX - totalWidth / 2 + this.iconW / 2;
+        // Map preview area
+        let pW = w * 0.4;
+        let pH = h * 0.5;
+        let triSize = w * 0.012;
+        let yPos = centerY + h * 0.05;
+        let currentHoverId = -1;
 
+        let leftArrowX = centerX - pW / 2 - triSize * 3;
+        let rightArrowX = centerX + pW / 2 + triSize * 3;
+        let arrowHitSize = triSize * 5;
+
+        let leftArrowLeftX = leftArrowX - (arrowHitSize / 2);
+        let rightArrowLeftX = rightArrowX - (arrowHitSize / 2);
+        let boxLeftX = centerX - (pW / 2);
+
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
+            currentHoverId = 0;
+        }
+
+        let isLeftHovered = UIManager.isMouseOver(leftArrowLeftX, yPos, arrowHitSize, arrowHitSize, true);
+        if (isLeftHovered) currentHoverId = 1;
+
+        let isRightHovered = UIManager.isMouseOver(rightArrowLeftX, yPos, arrowHitSize, arrowHitSize, true);
+        if (isRightHovered) currentHoverId = 2;
+
+        let isBoxHovered = UIManager.isMouseOver(boxLeftX, yPos, pW, pH, true);
+        if (isBoxHovered) currentHoverId = 3;
+
+        UIManager.updateHoverSound(currentHoverId);
+
+        this.drawPreviewArea(centerX, yPos, pW, pH, triSize, isLeftHovered, isRightHovered);
+    },
+
+    drawPreviewArea: function (x, y, pW, pH, triSize, isLeftHovered, isRightHovered) {
+        const w = width;
+        const h = height;
+
+        this.drawArrowButton(x - pW / 2 - triSize * 3, y, "LEFT", triSize, isLeftHovered);
+        this.drawArrowButton(x + pW / 2 + triSize * 3, y, "RIGHT", triSize, isRightHovered);
+
+        push();
         rectMode(CENTER);
 
-        for (let i = 0; i < this.mapNames.length; i++) {
-            push();
-            let x = startX + i * (this.iconW + this.spacing);
-            let y = centerY;
+        // Preview area
+        noFill();
+        stroke(0);
+        strokeWeight(width * 0.013);
+        rect(x, y, pW, pH, 15);
 
-            let isHovered = (mouseX > x - this.iconW / 2 && mouseX < x + this.iconW / 2 &&
-                mouseY > y - this.iconH / 2 && mouseY < y + this.iconH / 2);
-            if (isHovered) selectedMap = i;
+        stroke(255, 188, 31);
+        strokeWeight(width * 0.005);
+        fill(200, 30, 30);
+        rect(x, y, pW, pH, 15);
 
-            noFill();
-            strokeWeight(3);
-            rectMode(CENTER);
-            if (i === selectedMap) {
-                stroke(0, 255, 255);
-                strokeWeight(4);
-                fill(0, 255, 255, 30);
-                rect(x, y, this.iconW, this.iconH, 10);
-            } else {
-                stroke(100);
-                strokeWeight(2);
-                fill(0);
-                rect(x, y, this.iconW, this.iconH, 10);
-            }
+        // Picture
+        let imgAreaW = pW * 0.88;
+        let imgAreaH = pH * 0.58;
+        let imgY = y - pH * 0.12;
 
-            fill(255);
+        stroke(220);
+        strokeWeight(1);
+        fill(245);
+        rect(x, imgY, imgAreaW, imgAreaH, 5);
+
+        if (typeof mapImages !== 'undefined' && mapImages[selectedMap]) {
+            imageMode(CENTER);
+            image(mapImages[selectedMap].preview, x, imgY, imgAreaW, imgAreaH);
+        } else {
             noStroke();
+            fill(180);
             textAlign(CENTER, CENTER);
-            text(this.mapNames[i], x, y);
-            pop();
+            textSize(pW * 0.04);
+            text("( Map Image Preview )", x, imgY);
         }
 
         push();
-        fill(150);
-        textSize(16);
-        text("Arrows to Navigate, Enter to Start Match", centerX, centerY + 120);
+        rectMode(CENTER);
+        noFill();
+        stroke(0);
+        strokeWeight(width * 0.003);
+        rect(x, imgY, imgAreaW, imgAreaH, 5);
         pop();
+
+        // Map Name
+        fill(255, 188, 31);
+        stroke(0);
+        strokeWeight(w * 0.005);
+        textStyle(BOLD);
+        textAlign(CENTER, CENTER);
+        textSize(pW * 0.08);
+        text(this.mapNames[selectedMap], x, y + pH * 0.28);
+
+        // Map Effects Description
+        fill(255, 188, 31);
+        stroke(0);
+        strokeWeight(w * 0.002);
+        textStyle(BOLD);
+        textAlign(CENTER, CENTER);
+        textSize(pW * 0.035);
+        text(this.mapEffects[selectedMap], x, y + pH * 0.42);
+        pop();
+
+    },
+
+    drawArrowButton: function (x, y, direction, size, isHovered) {
+        let scaleFactor = isHovered ? 1.2 : 1.0;
+        let s = size * scaleFactor;
+
+        push();
+        stroke(0);
+        strokeWeight(width * 0.004);
+        fill(0);
+        this.drawTriangleShape(x, y, direction, s);
+
+        stroke(0);
+        strokeWeight(width * 0.003);
+        fill(255, 188, 31);
+        this.drawTriangleShape(x, y, direction, s);
+        pop();
+    },
+
+    drawTriangleShape: function (x, y, direction, s) {
+        if (direction === "LEFT") {
+            triangle(x - s, y, x + s * 0.5, y - s, x + s * 0.5, y + s);
+        } else {
+            triangle(x + s, y, x - s * 0.5, y - s, x - s * 0.5, y + s);
+        }
     },
 
     handleInput: function () {
-        if (keyCode === ESCAPE) {
-            this.goBack();
-            return;
-        }
-        if (keyCode === LEFT_ARROW) {
-            selectedMap = (selectedMap - 1 + this.mapNames.length) % this.mapNames.length;
-        } else if (keyCode === RIGHT_ARROW) {
-            selectedMap = (selectedMap + 1) % this.mapNames.length;
-        } else if (keyCode === ENTER) {
-            this.confirmSelection();
-        }
+        if (keyCode === ESCAPE) this.goBack();
+        if (keyCode === LEFT_ARROW) this.changeMap(-1);
+        if (keyCode === RIGHT_ARROW) this.changeMap(1);
+        if (keyCode === ENTER) this.confirmSelection();
     },
 
     handleMouse: function () {
-        if (mouseX < 200 && mouseY < 50) {
+        const { centerX, centerY } = layout;
+        const w = width;
+        const h = height;
+        const escSize = w * 0.06;
+        const margin = 20;
+
+        let pW = w * 0.4;
+        let pH = h * 0.5;
+        let triSize = w * 0.015;
+        let yPos = centerY + h * 0.05;
+
+        let leftArrowX = centerX - pW / 2 - triSize * 3;
+        let rightArrowX = centerX + pW / 2 + triSize * 3;
+        let arrowHitSize = triSize * 5;
+
+        let leftArrowLeftX = leftArrowX - (arrowHitSize / 2);
+        let rightArrowLeftX = rightArrowX - (arrowHitSize / 2);
+        let boxLeftX = centerX - (pW / 2);
+
+        if (UIManager.isMouseOver(margin, margin, escSize, escSize, false)) {
             this.goBack();
             return;
         }
 
-        const { centerX, centerY } = layout;
-        let totalWidth = (this.mapNames.length * this.iconW) + ((this.mapNames.length - 1) * this.spacing);
-        let startX = centerX - totalWidth / 2 + this.iconW / 2;
+        if (UIManager.isMouseOver(leftArrowLeftX, yPos, arrowHitSize, arrowHitSize, true)) {
+            this.changeMap(-1);
+            return;
+        }
 
-        for (let i = 0; i < this.mapNames.length; i++) {
-            let x = startX + i * (this.iconW + this.spacing);
-            let y = centerY;
-
-            let isOverMap = (mouseX > x - this.iconW / 2 && mouseX < x + this.iconW / 2 &&
-                mouseY > y - this.iconH / 2 && mouseY < y + this.iconH / 2);
-
-            if (isOverMap) {
-                selectedMap = i;
-                this.confirmSelection();
-                return;
-            }
+        if (UIManager.isMouseOver(rightArrowLeftX, yPos, arrowHitSize, arrowHitSize, true)) {
+            this.changeMap(1);
+            return;
+        }
+        
+        if (UIManager.isMouseOver(boxLeftX, yPos, pW, pH, true)) {
+            this.confirmSelection();
+            return;
         }
     },
 
+    changeMap: function (dir) {
+        if (soundManager) soundManager.play('select');
+        selectedMap = (selectedMap + dir + this.mapNames.length) % this.mapNames.length;
+    },
+
     confirmSelection: function () {
+        if (soundManager) soundManager.play('confirm');
         Scene_Game.setup();
         currentState = GAME_CONFIG.STATES.PLAYING;
     },
-    
+
     goBack: function () {
+        if (soundManager) soundManager.play('confirm');
         if (!isMultiplayer) {
             currentState = GAME_CONFIG.STATES.DIFFICULTY_SELECT;
         } else {

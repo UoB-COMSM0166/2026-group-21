@@ -11,6 +11,8 @@ let opponentAI;
 let mapImages = [];
 let characterImages = [];
 let tutorialManager;
+let difficultyImages = [];
+let tutorialImg;
 let soundManager;
 const STATES = GAME_CONFIG.STATES;
 let lastMusicState = null;
@@ -19,18 +21,33 @@ function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
-    GAME_CONFIG.MAPS.forEach((map, index) => {
-        mapImages[index] = {
-            bg: loadImage(map.bgPath),
-            court: loadImage(map.courtPath)
-        };
-    });
+    escImg = loadImage(GAME_CONFIG.ASSETS.ESC_IMG);
+    tutorialImg = loadImage(GAME_CONFIG.ASSETS.TUTORIAL_IMG);
+
+    if (GAME_CONFIG.ASSETS.DIFFICULTY_IMGS) {
+        GAME_CONFIG.ASSETS.DIFFICULTY_IMGS.forEach((path, index) => {
+            difficultyImages[index] = loadImage(path);
+        });
+    }
+
+    if (GAME_CONFIG.ASSETS.MAP_IMGS) {
+        GAME_CONFIG.MAPS.forEach((map, index) => {
+            mapImages[index] = {
+                bg: loadImage(map.bgPath),
+                court: loadImage(map.courtPath),
+                preview: loadImage(GAME_CONFIG.ASSETS.MAP_IMGS[index])
+            };
+        });
+    }
     // preload every character's sprite images
     GAME_CONFIG.CHARACTERS.forEach((char, index) => {
         characterImages[index] = {};
         if (char.assets) {
             if (char.assets.front) characterImages[index].front = loadImage(char.assets.front);
             if (char.assets.back) characterImages[index].back = loadImage(char.assets.back);
+            if (char.assets.portrait) {
+                characterImages[index].portrait = loadImage(char.assets.portrait);
+            }
         }
     });
     //load sound
@@ -129,6 +146,7 @@ function keyPressed() {
 }
 // handle window resizing
 function windowResized() {
+    if (player && opponent && ball && layout) {
     //calculate relative positions before resizing
     let relP = player.relativePos;
     let relO = opponent.relativePos;
@@ -140,4 +158,9 @@ function windowResized() {
     player.reposition(relP, layout);
     opponent.reposition(relO, layout);
     ball.reposition(relB, layout);
+    }
+    else{
+        resizeCanvas(windowWidth, windowHeight);
+        if (layout) layout.update();
+    }
 }

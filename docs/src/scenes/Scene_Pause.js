@@ -1,77 +1,181 @@
 const Scene_Pause = {
     selectedIndex: 0,
-    options: ["Resume", "Main Menu"],
-    btnW: 200,
-    btnH: 50,
+    options: ["Resume", "Restart", "Settings", "Main Menu"],
+    btnW: 0,
+    btnH: 0,
 
     draw: function() {
-        fill(0, 0, 0, 150);
         rectMode(CORNER);
-        rect(0, 0, width, height);
+        imageMode(CORNER);
+        noStroke();
 
+        if (!layout) return;
+        const w = width;
+        const h = height;
         const { centerX, centerY } = layout;
-        textAlign(CENTER, CENTER);
+
+        // Background
+        if (typeof bgImg !== 'undefined' && bgImg) {
+            imageMode(CORNER);
+            image(bgImg, 0, 0, w, h);
+        }
+        rectMode(CORNER);
+        fill(255, 200); 
+        noStroke();
+        rect(0, 0, w, h);
+
+        let blink = frameCount % 60 < 30;
+
+        // Title
+        push();
+        let titleX = w * 0.13; 
+        let titleY = h * 0.12;
+        let titleSize = w * 0.075;
+        let strokeSize = titleSize * 0.15;
         
-        fill(255);
-        textSize(48);
-        text("PAUSED", centerX, centerY - 80);
+        textAlign(LEFT, TOP);
+        textStyle(BOLD);
+        textSize(titleSize);
 
-        textSize(24);
+        stroke(56, 49, 78);
+        strokeWeight(strokeSize);
+        fill(0);
+        text("PAUSED", titleX + w * 0.005, titleY + w * 0.005);
+        
+        stroke(64, 57, 85);
+        strokeWeight(strokeSize);
+        fill(80);
+        text("PAUSED", titleX + w * 0.002, titleY + w * 0.002);
+
+        stroke(51, 44, 74);
+        strokeWeight(strokeSize);
+        fill(255, 188, 31);
+        text("PAUSED", titleX, titleY);
+        pop();
+
+        let contentY = centerY - h * 0.14; 
+        let btnX = w * 0.15;
+        let itemSpacing = h * 0.1;
+        let menuFontSize = w * 0.027;
+
+        let imgX = centerX + w * 0.2;
+        let imgY = contentY + h * 0.16;
+        let imgScale = 0.55;
+
+        let currentHoverId = -1;
+
+        // Pause Menu area
+        push();
+        textAlign(LEFT, CENTER);
+        textStyle(BOLD);
+        
         for (let i = 0; i < this.options.length; i++) {
-            let x = centerX;
-            let y = centerY + (i * 70);
+            let x = btnX; 
+            let y = contentY + (i * itemSpacing);
 
-            let isHovered = (mouseX > x - this.btnW/2 && mouseX < x + this.btnW/2 &&
-                             mouseY > y - this.btnH/2 && mouseY < y + this.btnH/2);
-            if (isHovered) this.selectedIndex = i;
-
-            push();
-            if (i === this.selectedIndex) {
-                fill(255, 255, 0);
-                stroke(255, 255, 0);
-                strokeWeight(2);
-                noFill();
-                rectMode(CENTER);
-                rect(x, y, this.btnW, this.btnH, 10);
-                fill(255, 255, 0);
-                noStroke();
-            } else {
-                fill(200);
+            let txt = this.options[i].toUpperCase();
+            textSize(menuFontSize);
+            let txtW = textWidth(txt);
+            
+            let isHovered = UIManager.isMouseOver(x, y, txtW + 20, menuFontSize * 1.2, true);
+            if (isHovered) {
+                this.selectedIndex = i;
+                currentHoverId = i;
             }
-            text(this.options[i], x, y);
+
+            // Arrow blinking
+            if (i === this.selectedIndex && blink) {
+                textSize(menuFontSize * 0.45);
+                stroke(51, 44, 74);
+                strokeWeight(w * 0.007);
+                fill(250);
+                text("▶", x - w * 0.03, y);
+            }
+
+            // Text
+            textSize(menuFontSize * 1.1);
+            stroke(51, 44, 74);
+            strokeWeight(w * 0.008);
+            fill(250);
+            text(txt, x, y);
+        }
+        pop();
+
+        UIManager.updateHoverSound(currentHoverId);
+
+        // Tutorial Picture
+        if (typeof tutorialImg !== 'undefined' && tutorialImg) {
+            push();
+            imageMode(CENTER);
+            let tW = w * imgScale; 
+            let aspectRatio = tutorialImg.height / tutorialImg.width;
+            let tH = tW * aspectRatio;
+
+            if (tH > h * 0.8) { 
+                tH = h * 0.8;
+                tW = tH / aspectRatio;
+            }
+
+            image(tutorialImg, imgX, imgY, tW, tH);
             pop();
         }
     },
 
     handleInput: function() {
         if (keyCode === UP_ARROW) {
+            if (soundManager) soundManager.play('select');
             this.selectedIndex = (this.selectedIndex - 1 + this.options.length) % this.options.length;
         } else if (keyCode === DOWN_ARROW) {
+            if (soundManager) soundManager.play('select');
             this.selectedIndex = (this.selectedIndex + 1) % this.options.length;
         } else if (keyCode === ENTER) {
             this.confirmSelection();
         } else if (keyCode === ESCAPE) {
+            if (soundManager) soundManager.play('confirm');
             currentState = GAME_CONFIG.STATES.PLAYING;
         }
     },
 
     handleMouse: function() {
+        const w = width;
+        const h = height;
         const { centerX, centerY } = layout;
+
+        let contentY = centerY - h * 0.14;
+        let btnX = w * 0.15;
+        let itemSpacing = h * 0.1;
+        let menuFontSize = w * 0.027;
+
         for (let i = 0; i < this.options.length; i++) {
-            let x = centerX;
-            let y = centerY + (i * 70);
-            if (mouseX > x - this.btnW/2 && mouseX < x + this.btnW/2 &&
-                mouseY > y - this.btnH/2 && mouseY < y + this.btnH/2) {
+            let x = btnX;
+            let y = contentY + (i * itemSpacing);
+
+            push();
+            textSize(menuFontSize * 1.2);
+            let txtW = textWidth(this.options[i].toUpperCase());
+            pop();
+
+            if (UIManager.isMouseOver(x, y, txtW + 20, menuFontSize * 1.2, true)) {
                 this.selectedIndex = i;
                 this.confirmSelection();
+                return;
             }
         }
     },
 
     confirmSelection: function() {
+        if (soundManager) soundManager.play('confirm');
         if (this.selectedIndex === 0) {
             currentState = GAME_CONFIG.STATES.PLAYING;
-        } else {
+        } else if(this.selectedIndex === 1){
+            if (typeof Scene_Game !== 'undefined' && Scene_Game.setup) {
+                Scene_Game.setup(); 
+            }
+            currentState = GAME_CONFIG.STATES.PLAYING;
+        } else if(this.selectedIndex === 2){
+            previousState = GAME_CONFIG.STATES.PAUSED; 
+            currentState = GAME_CONFIG.STATES.SETTINGS;
+        }  else {
             p1CharIndex = -1;
             p2CharIndex = -1;
             currentState = GAME_CONFIG.STATES.MENU;

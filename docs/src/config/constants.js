@@ -104,8 +104,20 @@ const GAME_CONFIG = {
 
     ASSETS: {
         MENU_BG: 'assets/images/menu_background_picture.png',
+        ESC_IMG: 'assets/images/esc.png',
+        DIFFICULTY_IMGS: [
+            'assets/images/easy_mode.png',
+            'assets/images/normal_mode.png',
+            'assets/images/hard_mode.png'
+        ],
+        MAP_IMGS: [
+            'assets/images/preview_polar_bg.png',
+            'assets/images/preview_eygpt_bg.png',
+            'assets/images/preview_wimbledon_bg.png'
+        ],
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
+        TUTORIAL_IMG: 'assets/images/game_key_instruction.png',
         COURT_IMG: 'assets/images/bg_stadium.png'
     },
 
@@ -172,7 +184,8 @@ const GAME_CONFIG = {
             skillType: 'SHADOW_TELEPORT',
             assets: {
                 front: 'assets/images/player_cat_swing_front.png',
-                back: 'assets/images/player_cat_swing_back.png'
+                back: 'assets/images/player_cat_swing_back.png',
+                portrait: 'assets/images/player_cat_front.png'
             }
         },
         {
@@ -181,7 +194,8 @@ const GAME_CONFIG = {
             skillType: 'GIGA_BALL',
             assets: {
                 front: 'assets/images/player_dog_swing_front.png',
-                back: 'assets/images/player_dog_swing_back.png'
+                back: 'assets/images/player_dog_swing_back.png',
+                portrait: 'assets/images/player_dog_front.png'
             }
         },
         {
@@ -190,7 +204,8 @@ const GAME_CONFIG = {
             skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
-                back: 'assets/images/player_deer_swing_back.png'
+                back: 'assets/images/player_deer_swing_back.png',
+                portrait: 'assets/images/player_deer_front.png'
             }
         },
         {
@@ -199,10 +214,11 @@ const GAME_CONFIG = {
             skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
-                back: 'assets/images/player_bird_swing_back.png'
+                back: 'assets/images/player_bird_swing_back.png',
+                portrait: 'assets/images/player_bird_front.png'
             }
         },
-        { name: "?", speed: 6, skillType: '?' }
+        { name: "?", speed: 6, skillType: '?', assets:{}}
     ],
 
     AI_LEVELS: {
