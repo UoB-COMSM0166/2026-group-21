@@ -9,6 +9,9 @@ const Scene_Tutorial = {
     skillTriggered: false,
     isPausedForIntro: false,
     scoringMessage: "",
+    pendingSuccessDelay: 0,
+    pendingSuccessMessage: "",
+    pendingSuccessPauseDuration: 0,
 
     setup: function () {
         player.isAI = false;
@@ -138,7 +141,6 @@ const Scene_Tutorial = {
             opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
 
             if (stepConfig.step === 4) {
-                player.skillCooldown = player.maxCooldown;
                 player.activeBuff = null;
             } else if (stepConfig.step === 5) {
                 if (scoreManager) scoreManager.init();
@@ -151,6 +153,7 @@ const Scene_Tutorial = {
 
     resetState: function (step) {
         this.initializedStep = step;
+        this.pendingSuccessDelay = 0;
         player.skillCooldown = player.maxCooldown;
         this.isSkillReady = false;
         this.ballResetTimer = 0;
@@ -190,12 +193,11 @@ const Scene_Tutorial = {
             opponent.display();
         }
         if (hasBall) {
-            ball.update();
-            // Hide the ball far away if waiting to serve after success
-            if (this.successPauseTimer > 0 && ball.isWaiting) ball.x = -9999;
-
-            if (!ball.isWaiting) ball.checkHit(player);
-            if (hasOpponent) ball.checkHit(opponent);
+            if (this.successPauseTimer === 0) {
+                ball.update();
+                if (!ball.isWaiting) ball.checkHit(player);
+                if (hasOpponent) ball.checkHit(opponent);
+            }
             ball.display();
         }
     },
@@ -257,6 +259,7 @@ const Scene_Tutorial = {
         this.ballResetTimer = 0;
         this.hasHitBall = false;
         this.needsReset = false;
+        this.pendingSuccessDelay = 0;
         player.skillCooldown = player.maxCooldown;
     },
 
@@ -294,10 +297,18 @@ const Scene_Tutorial = {
         this.hasHitBall = false;
         this.needsReset = false;
         this.successPauseTimer = 0;
+        this.pendingSuccessDelay = 0;
         this.skillTriggered = false;
         player.activeBuff = null;
-        player.skillCooldown = player.maxCooldown;
-        this.isSkillReady = false;
+
+        if (tutorialManager && tutorialManager.currentStep === 4) {
+            player.skillCooldown = 0;
+            this.isSkillReady = true;
+        } else {
+            player.skillCooldown = player.maxCooldown;
+            this.isSkillReady = false;
+        }
+
         this.lastPlayerScore = scoreManager.playerPoints;
         this.lastOpponentScore = scoreManager.opponentPoints;
     },
@@ -335,11 +346,13 @@ const Scene_Tutorial = {
         }
 
         // Check if player hit the ball over the net successfully
-        if (this.hasHitBall && ball.z <= 0 && ball.y < layout.netY) {
-            this.scoringMessage = "GREAT SERVE!";
-            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
-            return;
+        if (this.hasHitBall && ball.z <= 0 && ball.y < layout.netY && this.pendingSuccessDelay === 0 && this.successPauseTimer === 0) {
+            this.pendingSuccessMessage = "GREAT SERVE!";
+            this.pendingSuccessPauseDuration = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+            this.pendingSuccessDelay = 30;
         }
+
+        if (this.pendingSuccessDelay > 0) return;
 
         if (!this.needsReset) {
             // Player struck the ball
@@ -365,11 +378,13 @@ const Scene_Tutorial = {
         }
 
         // Check if player returned the ball over the net
-        if (this.hasHitBall && ball.y < layout.netY) {
-            this.scoringMessage = "GREAT RETURN!";
-            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
-            return;
+        if (this.hasHitBall && ball.y < layout.netY && this.pendingSuccessDelay === 0 && this.successPauseTimer === 0) {
+            this.pendingSuccessMessage = "GREAT RETURN!";
+            this.pendingSuccessPauseDuration = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+            this.pendingSuccessDelay = 20;
         }
+
+        if (this.pendingSuccessDelay > 0) return;
 
         if (!this.needsReset) {
             // Player successfully struck the ball
@@ -393,12 +408,14 @@ const Scene_Tutorial = {
         }
         let hasJustFiredSkill = this.isSkillReady && (player.skillCooldown > player.maxCooldown - 5);
 
-        if (hasJustFiredSkill && !this.skillTriggered) {
-            this.scoringMessage = "AMAZING SKILL!";
-            this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+        if (hasJustFiredSkill && !this.skillTriggered && this.pendingSuccessDelay === 0 && this.successPauseTimer === 0) {
+            this.pendingSuccessMessage = "AMAZING SKILL!";
+            this.pendingSuccessPauseDuration = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
+            this.pendingSuccessDelay = 30;
             this.skillTriggered = true;
-            return;
         }
+
+        if (this.pendingSuccessDelay > 0) return;
 
         if (!this.needsReset) {
             let status = this.getBallStatus();
@@ -456,6 +473,14 @@ const Scene_Tutorial = {
     },
 
     handleSuccessPause: function () {
+        if (this.pendingSuccessDelay > 0) {
+            this.pendingSuccessDelay--;
+            if (this.pendingSuccessDelay === 0) {
+                this.scoringMessage = this.pendingSuccessMessage;
+                this.successPauseTimer = this.pendingSuccessPauseDuration;
+            }
+        }
+
         if (this.successPauseTimer <= 0) return false;
         const { PAUSE_MINOR, PAUSE_MAJOR } = GAME_CONFIG.TUTORIAL;
     

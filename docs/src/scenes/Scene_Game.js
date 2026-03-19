@@ -1,4 +1,6 @@
 const Scene_Game = {
+    isShowingScore: false,
+
     setup: function() {
         const p1Config = GAME_CONFIG.CHARACTERS[p1CharIndex];
         const p2Config = GAME_CONFIG.CHARACTERS[p2CharIndex];
@@ -48,19 +50,21 @@ const Scene_Game = {
             scoreManager.displayGameOver();
             return;
         }
-        player.update();
-        player.display();
-        if (isMultiplayer) {
-            opponent.update();
-        } else {
-            opponentAI.update(ball);
-            opponent.update();
+        if (!this.isShowingScore) {
+            player.update();
+            if (isMultiplayer) {
+                opponent.update();
+            } else {
+                opponentAI.update(ball);
+                opponent.update();
+            }
+            ball.update();
+            ball.checkHit(player);
+            ball.checkHit(opponent);
         }
+        player.display();
         opponent.display();
-        ball.update();
         MapManager.update(player, opponent, ball);
-        ball.checkHit(player);
-        ball.checkHit(opponent);
         ball.display();
         MapManager.draw();
         scoreManager.display();
@@ -82,6 +86,10 @@ const Scene_Game = {
             barWidth,
             barHeight
         );
+
+        if (this.isShowingScore) {
+            this.drawScoreOverlay();
+        }
     },
     // handle keyboard triggers for player action, esc and restart
     handleInput: function () {
@@ -90,6 +98,7 @@ const Scene_Game = {
             if (currentState === GAME_CONFIG.STATES.PLAYING) currentState = GAME_CONFIG.STATES.PAUSED;
             return;
         }
+        if (this.isShowingScore) return;
         if (scoreManager.isMatchOver) {
             if (key.toLowerCase() === CONTROLS.RESTART) {
                 if (soundManager) soundManager.play('confirm');
@@ -128,5 +137,53 @@ const Scene_Game = {
             player.resetPosition(receiverX);
             ball.reset(opponent.x, opponent.y, 'OPPONENT');
         }
+    },
+
+    drawScoreOverlay: function() {
+        push();
+        fill(0, 0, 0, 200);
+        rectMode(CORNER);
+        rect(0, 0, width, height);
+        textAlign(CENTER, CENTER);
+        let p1Name = player.name || player.charName || "PLAYER 1";
+        let p2Name = opponent.name || opponent.charName || "PLAYER 2";
+
+        const centerX = width / 2;
+        const centerY = height / 2 - 20;
+
+        fill(255);
+        textSize(80);
+        text(`${scoreManager.opponentGames} - ${scoreManager.playerGames}`, centerX, centerY);
+        
+        textSize(24);
+        fill(150);
+        text("GAMES", centerX, centerY + 60);
+
+        let srcW = 100;
+        let srcH = 64;
+        let drawW = 100 * 1.5;
+        let drawH = 64 * 1.5;
+
+        if (opponent && opponent.img) {
+            imageMode(CENTER);
+            image(opponent.img, centerX - 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH); 
+            fill(255, 100, 100); 
+            textSize(24);
+            text(p2Name.toUpperCase(), centerX - 180, centerY + 90);
+        }
+
+        if (player && player.img) {
+            imageMode(CENTER);
+            image(player.img, centerX + 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH);
+            fill(100, 200, 255); 
+            textSize(24);
+            text(p1Name.toUpperCase(), centerX + 180, centerY + 90);
+        }
+
+        fill(0, 255, 0);
+        textSize(26);
+        let serverName = (scoreManager.currentServer === 'PLAYER') ? p1Name : p2Name;
+        text(`Next Serve: ${serverName.toUpperCase()}`, centerX, centerY + 150);
+        pop();
     }
 };
