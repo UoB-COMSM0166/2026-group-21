@@ -58,9 +58,11 @@ const Scene_Game = {
         }
         opponent.display();
         ball.update();
+        MapManager.update(player, opponent, ball);
         ball.checkHit(player);
         ball.checkHit(opponent);
         ball.display();
+        MapManager.draw();
         scoreManager.display();
         // temporarily skillbar placeholder
         const barWidth = 150;
@@ -109,6 +111,7 @@ const Scene_Game = {
             soundManager.sounds.victory.stop();
         }
         scoreManager.init();
+        MapManager.reset();
         this.nextRound();
     },
     // transition between rounds and switch service sides
