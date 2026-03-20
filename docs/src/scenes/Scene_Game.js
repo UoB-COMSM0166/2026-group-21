@@ -44,10 +44,15 @@ const Scene_Game = {
         strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT);
         stroke(GAME_CONFIG.COLORS.BLACK);
         background(backgroundImg);
+        
+        push();
+        scale(layout.scaleFactor);
+        
         imageMode(CORNER);
         image(courtImg, layout.courtLeft, layout.courtTop, layout.COURT_W, layout.COURT_H);
         if (scoreManager.isMatchOver) {
             scoreManager.displayGameOver();
+            pop();
             return;
         }
         if (!this.isShowingScore) {
@@ -74,8 +79,8 @@ const Scene_Game = {
         const margin = 20;
 
         player.displaySkillBar(
-            width - barWidth - margin,
-            height - barHeight - margin,
+            layout.VIRTUAL_W - barWidth - margin,
+            layout.VIRTUAL_H - barHeight - margin,
             barWidth,
             barHeight
         );
@@ -90,6 +95,7 @@ const Scene_Game = {
         if (this.isShowingScore) {
             this.drawScoreOverlay();
         }
+        pop();
     },
     // handle keyboard triggers for player action, esc and restart
     handleInput: function () {
@@ -146,13 +152,13 @@ const Scene_Game = {
         push();
         fill(0, 0, 0, 200);
         rectMode(CORNER);
-        rect(0, 0, width, height);
+        rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
         textAlign(CENTER, CENTER);
         let p1Name = player.name || player.charName || "PLAYER 1";
         let p2Name = opponent.name || opponent.charName || "PLAYER 2";
 
-        const centerX = width / 2;
-        const centerY = height / 2 - 20;
+        const centerX = layout.VIRTUAL_W / 2;
+        const centerY = layout.VIRTUAL_H / 2 - 20;
 
         fill(255);
         textSize(80);

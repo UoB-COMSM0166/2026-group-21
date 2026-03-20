@@ -12,7 +12,8 @@ const Scene_Pause = {
         if (!layout) return;
         const w = width;
         const h = height;
-        const { centerX, centerY } = layout;
+        const centerX = w / 2;
+        const centerY = h / 2;
 
         // Background
         if (typeof bgImg !== 'undefined' && bgImg) {
@@ -139,7 +140,8 @@ const Scene_Pause = {
     handleMouse: function() {
         const w = width;
         const h = height;
-        const { centerX, centerY } = layout;
+        const centerX = w / 2;
+        const centerY = h / 2;
 
         let contentY = centerY - h * 0.14;
         let btnX = w * 0.15;

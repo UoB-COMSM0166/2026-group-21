@@ -18,9 +18,10 @@ const Scene_DifficultySelect = {
         noStroke();
 
         if (!layout) return;
-        const { centerX, centerY } = layout;
         const w = width;
         const h = height;
+        const centerX = w / 2;
+        const centerY = h / 2;
 
         // Background
         if (bgImg) {
@@ -152,9 +153,10 @@ const Scene_DifficultySelect = {
     },
 
     handleMouse: function () {
-        const { centerX, centerY } = layout;
         const w = width;
         const h = height;
+        const centerX = w / 2;
+        const centerY = h / 2;
         const escSize = w * 0.06;
         const margin = 20;
 

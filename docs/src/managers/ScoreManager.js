@@ -115,13 +115,13 @@ class ScoreManager {
     }
 
     displayGameOver() {
-        const { centerX, centerY } = layout;
+        const { centerX, centerY, VIRTUAL_W, VIRTUAL_H } = layout;
         const { COLORS, UI } = GAME_CONFIG;
         push();
         fill(COLORS.DARK_GRAY);
         noStroke();
         rectMode(CENTER);
-        rect(width / 2, height / 2, width, height);
+        rect(VIRTUAL_W / 2, VIRTUAL_H / 2, VIRTUAL_W, VIRTUAL_H);
         textAlign(CENTER, CENTER);
         strokeWeight(UI.OVERLAY_TEXT_STROKE);
         fill(COLORS.GOLD);

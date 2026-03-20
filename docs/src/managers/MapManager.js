@@ -75,7 +75,7 @@ const MapManager = {
             push();
             fill(200, 150, 50, 25);
             rectMode(CORNER);
-            rect(0, 0, width, height);
+            rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
             pop();
             this.drawWindParticles();
         }
@@ -89,12 +89,12 @@ const MapManager = {
             let speed = this.windForce * 60;
 
             let xJiggle = random(-20, 20);
-            let x = (frameCount * speed + (i * 111) + xJiggle) % width;
-            if (x < 0) x += width;
+            let x = (frameCount * speed + (i * 111) + xJiggle) % layout.VIRTUAL_W;
+            if (x < 0) x += layout.VIRTUAL_W;
 
             let wave = sin(frameCount * 0.08 + i * 0.5) * 20;
             let yJiggle = random(-15, 15);
-            let y = (i * (height / 180)) + wave + yJiggle;
+            let y = (i * (layout.VIRTUAL_H / 180)) + wave + yJiggle;
 
             fill(230, 190, 100, random(150, 230));
 

@@ -86,6 +86,10 @@ const Scene_Tutorial = {
         strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT || 2);
         stroke(0);
         background(backgroundImg);
+        
+        push();
+        scale(layout.scaleFactor);
+        
         imageMode(CORNER);
         image(courtImg, layout.courtLeft, layout.courtTop, layout.COURT_W, layout.COURT_H);
 
@@ -93,6 +97,7 @@ const Scene_Tutorial = {
             player.display();
             ball.display();
             this.drawTransitionOverlay();
+            pop();
             return;
         }
 
@@ -105,7 +110,7 @@ const Scene_Tutorial = {
 
         const step = tutorialManager.currentStep;
         if (step >= 4) {
-            player.displaySkillBar(width - 170, height - 40, 150, 20);
+            player.displaySkillBar(layout.VIRTUAL_W - 170, layout.VIRTUAL_H - 40, 150, 20);
         }
         this.handleStepInitialization(step);
 
@@ -123,6 +128,8 @@ const Scene_Tutorial = {
             this.drawTargetZone(tutorialManager.targetX, tutorialManager.targetY);
         }
         this.handleSuccessPause();
+        
+        pop();
     },
 
     // Sets up the players, score manager, and ball state for specific tutorial steps
@@ -507,7 +514,7 @@ const Scene_Tutorial = {
         else if (this.scoringMessage.includes("GREAT")) fill(255, 255, 0);
         else fill(0, 255, 0);
 
-        text(this.scoringMessage, width / 2, height / 2);
+        text(this.scoringMessage, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2);
         pop();
 
         if (this.successPauseTimer === 0) {
@@ -523,7 +530,7 @@ const Scene_Tutorial = {
         noStroke();
         fill(255, 255, 0);
         textSize(24);
-        text(txt, width / 2, height * 0.2);
+        text(txt, layout.VIRTUAL_W / 2, layout.VIRTUAL_H * 0.2);
         pop();
     },
 
@@ -555,22 +562,22 @@ const Scene_Tutorial = {
         rectMode(CORNER);
         noStroke();
         fill(0, 0, 0, 180);
-        rect(0, 0, width, height);
+        rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
 
         textAlign(CENTER, CENTER);
         fill(255, 255, 0);
         textSize(48);
-        text(intro.title, width / 2, height / 2 - 60);
+        text(intro.title, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2 - 60);
 
         fill(255);
         textSize(22);
-        text(intro.desc, width / 2, height / 2 + 20);
+        text(intro.desc, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2 + 20);
 
         fill(200);
         textSize(16);
         if (frameCount % 60 < 30) {
             let actionText = tutorialManager.currentStep > 5 ? "Press ANY KEY to Return to Menu" : "Press ANY KEY to Start";
-            text(actionText, width / 2, height / 2 + 120);
+            text(actionText, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2 + 120);
         }
         pop();
     }

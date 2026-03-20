@@ -189,8 +189,8 @@ class Ball {
     // safe mechanism to reset game if ball is outside the playable area
     checkSafetyBounds() {
         const limit = GAME_CONFIG.MATCH.SAFETY_LIMIT;
-        const isOut = (this.y < -limit || this.y > height + limit ||
-            this.x < -limit || this.x > width + limit);
+        const isOut = (this.y < -limit || this.y > layout.VIRTUAL_H + limit ||
+            this.x < -limit || this.x > layout.VIRTUAL_W + limit);
         if (isOut && !this.roundEnding) {
             const hitter = this.lastHitter;
             const winner = hitter
