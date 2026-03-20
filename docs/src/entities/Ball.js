@@ -152,10 +152,10 @@ class Ball {
     terminateRound(winner) {
         this.vz = 0; this.vx = 0; this.vy = 0;
         if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
-            if (scoreManager) {
+            if (scoreManager && !this.roundEnding) {
+                this.roundEnding = true;
                 scoreManager.recordPoint(winner); 
             }
-            this.roundEnding = false;
             return; 
         }
         if (!this.roundEnding) {

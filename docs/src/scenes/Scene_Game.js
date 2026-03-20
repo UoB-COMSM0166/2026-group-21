@@ -95,7 +95,10 @@ const Scene_Game = {
     handleInput: function () {
         const { CONTROLS } = GAME_CONFIG;
         if (keyCode === CONTROLS.ESCAPE) {
-            if (currentState === GAME_CONFIG.STATES.PLAYING) currentState = GAME_CONFIG.STATES.PAUSED;
+            if (currentState === GAME_CONFIG.STATES.PLAYING) {
+                pausedFromState = GAME_CONFIG.STATES.PLAYING;
+                currentState = GAME_CONFIG.STATES.PAUSED;
+            }
             return;
         }
         if (this.isShowingScore) return;

@@ -228,7 +228,8 @@ const Scene_Tutorial = {
         }
         if (this.successPauseTimer > 0) return;
         if (keyCode === ESCAPE) {
-            currentState = GAME_CONFIG.STATES.MENU;
+            pausedFromState = GAME_CONFIG.STATES.TUTORIAL;
+            currentState = GAME_CONFIG.STATES.PAUSED;
             return;
         }
         player.handleKeyPress(keyCode, ball);
@@ -459,8 +460,8 @@ const Scene_Tutorial = {
                     winner = (ball.y < layout.netY) ? 'PLAYER' : 'OPPONENT';
                 }
 
-                if (!ball.isWaiting && scoreManager) {
-                    scoreManager.recordPoint(winner);
+                if (!ball.isWaiting && !ball.roundEnding) {
+                    ball.terminateRound(winner);
                 }
                 this.needsReset = true;
             }

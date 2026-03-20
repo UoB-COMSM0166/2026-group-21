@@ -106,9 +106,12 @@ class ScoreManager {
             if (p > opp) return LABEL_AD;
             return LABEL_EMPTY;
         }
-        // Prevent undefined score label if points exceed map length somehow
-        const safeIndex = min(p, this.scoreMap.length - 1);
-        return this.scoreMap[safeIndex];
+        // Avoid hiding potential scoring bugs gracefully
+        if (p < this.scoreMap.length) {
+            return this.scoreMap[p];
+        }
+        // Return raw point count with ERR prefix if it somehow exceeds normal rules
+        return `ERR(${p})`;
     }
 
     displayGameOver() {

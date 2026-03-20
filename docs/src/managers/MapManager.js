@@ -46,17 +46,27 @@ const MapManager = {
 
         p1.x += this.p1Vel.x;
         p1.y += this.p1Vel.y;
+        if (typeof p1.applyConstraints === 'function') p1.applyConstraints();
 
         this.p2Vel.x *= this.friction;
         this.p2Vel.y *= this.friction;
 
-        if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.p2Vel.x -= 0.4;
-        if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.p2Vel.x += 0.4;
-        if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.p2Vel.y -= 0.4;
-        if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.p2Vel.y += 0.4;
+        if (!p2.isAI) {
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_LEFT)) this.p2Vel.x -= 0.4;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.p2Vel.x += 0.4;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.p2Vel.y -= 0.4;
+            if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.p2Vel.y += 0.4;
+        } else {
+            if (typeof opponentAI !== 'undefined' && opponentAI) {
+                let dx = opponentAI.targetX - p2.x;
+                if (dx < -3) this.p2Vel.x -= 0.4;
+                else if (dx > 3) this.p2Vel.x += 0.4;
+            }
+        }
 
         p2.x += this.p2Vel.x;
         p2.y += this.p2Vel.y;
+        if (typeof p2.applyConstraints === 'function') p2.applyConstraints();
 
     },
 

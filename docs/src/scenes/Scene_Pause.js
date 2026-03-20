@@ -132,7 +132,7 @@ const Scene_Pause = {
             this.confirmSelection();
         } else if (keyCode === ESCAPE) {
             if (soundManager) soundManager.play('confirm');
-            currentState = GAME_CONFIG.STATES.PLAYING;
+            currentState = pausedFromState || GAME_CONFIG.STATES.PLAYING;
         }
     },
 
@@ -166,12 +166,19 @@ const Scene_Pause = {
     confirmSelection: function() {
         if (soundManager) soundManager.play('confirm');
         if (this.selectedIndex === 0) {
-            currentState = GAME_CONFIG.STATES.PLAYING;
+            currentState = pausedFromState || GAME_CONFIG.STATES.PLAYING;
         } else if(this.selectedIndex === 1){
-            if (typeof Scene_Game !== 'undefined' && Scene_Game.setup) {
-                Scene_Game.setup(); 
+            if (pausedFromState === GAME_CONFIG.STATES.TUTORIAL) {
+                if (typeof Scene_Tutorial !== 'undefined' && Scene_Tutorial.setup) {
+                    Scene_Tutorial.setup();
+                }
+                currentState = GAME_CONFIG.STATES.TUTORIAL;
+            } else {
+                if (typeof Scene_Game !== 'undefined' && Scene_Game.setup) {
+                    Scene_Game.setup(); 
+                }
+                currentState = GAME_CONFIG.STATES.PLAYING;
             }
-            currentState = GAME_CONFIG.STATES.PLAYING;
         } else if(this.selectedIndex === 2){
             previousState = GAME_CONFIG.STATES.PAUSED; 
             currentState = GAME_CONFIG.STATES.SETTINGS;

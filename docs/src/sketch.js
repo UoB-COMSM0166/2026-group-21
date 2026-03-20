@@ -16,6 +16,8 @@ let tutorialImg;
 let soundManager;
 const STATES = GAME_CONFIG.STATES;
 let lastMusicState = null;
+let previousState = null;
+let pausedFromState = null;
 
 function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
