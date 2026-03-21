@@ -17,7 +17,7 @@ class LayoutManager {
 
     update() {
         const TARGET_W = 1000;
-        const TARGET_H = 800;
+        const TARGET_H = 900;
         this.scaleFactor = min(width / TARGET_W, height / TARGET_H);
         
         this.VIRTUAL_W = width / this.scaleFactor;

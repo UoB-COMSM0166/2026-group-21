@@ -84,21 +84,26 @@ const MapManager = {
     drawWindParticles: function () {
         push();
         noStroke();
-        fill(230, 190, 100, 180);
-        for (let i = 0; i < 180; i++) {
-            let speed = this.windForce * 60;
-
+        // Precalculate variables outside the loop to save CPU cycles
+        let vw = layout.VIRTUAL_W;
+        let vh = layout.VIRTUAL_H;
+        let speed = this.windForce * 60;
+        let baseWave = frameCount * 0.08;
+        let baseSpeed = frameCount * speed;
+        
+        // Reduced from 180 to 120 (hardly noticeable visually, massive CPU saving)
+        for (let i = 0; i < 120; i++) {
             let xJiggle = random(-20, 20);
-            let x = (frameCount * speed + (i * 111) + xJiggle) % layout.VIRTUAL_W;
-            if (x < 0) x += layout.VIRTUAL_W;
+            let x = (baseSpeed + (i * 111) + xJiggle) % vw;
+            if (x < 0) x += vw;
 
-            let wave = sin(frameCount * 0.08 + i * 0.5) * 20;
+            let wave = sin(baseWave + i * 0.5) * 20;
             let yJiggle = random(-15, 15);
-            let y = (i * (layout.VIRTUAL_H / 180)) + wave + yJiggle;
+            let y = (i * (vh / 120)) + wave + yJiggle;
 
             fill(230, 190, 100, random(150, 230));
-
-            ellipse(x, y, random(15, 30), random(1.5, 3));
+            // rect is significantly faster to render than ellipse on unaccelerated canvas
+            rect(x, y, random(15, 30), random(1.5, 3));
         }
         pop();
     },
