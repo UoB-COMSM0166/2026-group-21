@@ -21,10 +21,68 @@
         canvas {
             display: block;
         }
+
+        #p5_loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #38314e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: sans-serif;
+        }
+
+        .loader-container {
+            text-align: center;
+        }
+
+        .tennis-ball {
+            font-size: 80px;
+            animation: bounce 0.4s infinite alternate cubic-bezier(0.5, 0.05, 1, 0.5);
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-80px);
+            }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #FFD700;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0.3;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div id="p5_loading">
+        <div class="loader-container">
+            <div class="tennis-ball">🎾</div>
+            <div class="loading-text">LOADING...</div>
+        </div>
+    </div>
     <script src="src/scenes/Scene_Menu.js"></script>
     <script src="src/scenes/Scene_CharSelect.js"></script>
     <script src="src/scenes/Scene_Pause.js"></script>
@@ -40,6 +98,7 @@
     <script src="src/managers/SoundManager.js"></script>
     <script src="src/managers/TutorialManager.js"></script>
     <script src="src/managers/UIManager.js"></script>
+    <script src="src/managers/MapManager.js"></script>
     <script src="src/entities/Player.js"></script>
     <script src="src/entities/Ball.js"></script>
     <script src="src/entities/AI.js"></script>

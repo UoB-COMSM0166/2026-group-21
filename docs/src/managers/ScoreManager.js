@@ -42,10 +42,10 @@ class ScoreManager {
 
         // Disable game winning logic in tutorial
         if (typeof tutorialManager !== 'undefined' && tutorialManager.currentStep === 5) {
-            return;
+            return false;
         }
 
-        this.checkGameWin();
+        return this.checkGameWin();
     }
     // switch the serve side between points
     prepareNextPoint() {
@@ -62,13 +62,16 @@ class ScoreManager {
         const { POINTS_TO_WIN, POINT_GAP, WINNING_GAMES } = GAME_CONFIG.MATCH;
         const p1 = this.playerPoints;
         const p2 = this.opponentPoints;
+        let gameWonThisTurn = false;
         // check for game win
         if (p1 >= POINTS_TO_WIN && (p1 - p2) >= POINT_GAP) {
             this.playerGames++;
             this.resetPoints();
+            gameWonThisTurn = true;
         } else if (p2 >= POINTS_TO_WIN && (p2 - p1) >= POINT_GAP) {
             this.opponentGames++;
             this.resetPoints();
+            gameWonThisTurn = true;
         }
         // check for match win
         if (this.playerGames >= WINNING_GAMES) {
@@ -78,13 +81,13 @@ class ScoreManager {
             this.isMatchOver = true;
             this.matchWinner = "OPPONENT";
         }
-
         if (this.isMatchOver && !this.victorySoundPlayed) {
             if (typeof soundManager !== 'undefined' && soundManager) {
                 soundManager.play('victory'); 
             } 
             this.victorySoundPlayed = true;
         }
+        return gameWonThisTurn;
     }
     // resets points for a new game and rotates the server role
     resetPoints() {
@@ -103,19 +106,22 @@ class ScoreManager {
             if (p > opp) return LABEL_AD;
             return LABEL_EMPTY;
         }
-        // Prevent undefined score label if points exceed map length somehow
-        const safeIndex = min(p, this.scoreMap.length - 1);
-        return this.scoreMap[safeIndex];
+        // Avoid hiding potential scoring bugs gracefully
+        if (p < this.scoreMap.length) {
+            return this.scoreMap[p];
+        }
+        // Return raw point count with ERR prefix if it somehow exceeds normal rules
+        return `ERR(${p})`;
     }
 
     displayGameOver() {
-        const { centerX, centerY } = layout;
+        const { centerX, centerY, VIRTUAL_W, VIRTUAL_H } = layout;
         const { COLORS, UI } = GAME_CONFIG;
         push();
         fill(COLORS.DARK_GRAY);
         noStroke();
         rectMode(CENTER);
-        rect(width / 2, height / 2, width, height);
+        rect(VIRTUAL_W / 2, VIRTUAL_H / 2, VIRTUAL_W, VIRTUAL_H);
         textAlign(CENTER, CENTER);
         strokeWeight(UI.OVERLAY_TEXT_STROKE);
         fill(COLORS.GOLD);

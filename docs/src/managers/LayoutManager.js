@@ -2,6 +2,9 @@ class LayoutManager {
     constructor() {
         this.COURT_W = GAME_CONFIG.COURT.WIDTH;
         this.COURT_H = GAME_CONFIG.COURT.HEIGHT;
+        this.VIRTUAL_W = 0;
+        this.VIRTUAL_H = 0;
+        this.scaleFactor = 1;
         this.courtLeft = 0;
         this.courtRight = 0;
         this.courtTop = 0;
@@ -13,13 +16,20 @@ class LayoutManager {
     }
 
     update() {
+        const TARGET_W = 1000;
+        const TARGET_H = 900;
+        this.scaleFactor = min(width / TARGET_W, height / TARGET_H);
+        
+        this.VIRTUAL_W = width / this.scaleFactor;
+        this.VIRTUAL_H = height / this.scaleFactor;
+
         // center the court horizontally
-        this.courtLeft = (width - this.COURT_W) / 2;
-        this.courtRight = (width + this.COURT_W) / 2;
+        this.courtLeft = (this.VIRTUAL_W - this.COURT_W) / 2;
+        this.courtRight = (this.VIRTUAL_W + this.COURT_W) / 2;
         this.centerX = (this.courtLeft + this.courtRight) / 2;
          //layout optimization for different size of screen
-        let extraHeight = height - this.COURT_H;
-        if (height > GAME_CONFIG.COURT.TALL_SCREEN_THRESHOLD) {
+        let extraHeight = this.VIRTUAL_H - this.COURT_H;
+        if (this.VIRTUAL_H > GAME_CONFIG.COURT.TALL_SCREEN_THRESHOLD) {
             this.courtTop = GAME_CONFIG.COURT.TALL_SCREEN_TOP;
         } else {
             this.courtTop = max(GAME_CONFIG.COURT.MIN_TOP_MARGIN, extraHeight / 2);

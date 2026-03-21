@@ -16,6 +16,13 @@ class Ball {
             clearTimeout(this.roundTimer);
             this.roundTimer = null;
         }
+        if (this.scoreTimer) {
+            clearTimeout(this.scoreTimer);
+            this.scoreTimer = null;
+        }
+        if (typeof Scene_Game !== 'undefined' && Scene_Game.isShowingScore) {
+            Scene_Game.isShowingScore = false;
+        }
         this.roundEnding = false;
         this.r = GAME_CONFIG.BALL.RADIUS;
         this.x = startX;
@@ -145,34 +152,45 @@ class Ball {
     terminateRound(winner) {
         this.vz = 0; this.vx = 0; this.vy = 0;
         if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
-            if (scoreManager) {
+            if (scoreManager && !this.roundEnding) {
+                this.roundEnding = true;
                 scoreManager.recordPoint(winner); 
             }
-            this.roundEnding = false;
-            
-            this.isWaiting = true; 
             return; 
         }
         if (!this.roundEnding) {
             this.roundEnding = true;
 
-            if (scoreManager) {
-                scoreManager.recordPoint(winner);
+            if (currentState === GAME_CONFIG.STATES.PLAYING) {
+                this.roundTimer = setTimeout(() => {
+                    let gameWon = false;
+                    if (scoreManager) {
+                        gameWon = scoreManager.recordPoint(winner);
+                        scoreManager.prepareNextPoint();
+                    }
+                    
+                    if (gameWon && !scoreManager.isMatchOver) {
+                        Scene_Game.isShowingScore = true;
+                        
+                        this.scoreTimer = setTimeout(() => {
+                            Scene_Game.nextRound();
+                            this.roundEnding = false;
+                            Scene_Game.isShowingScore = false;
+                        }, 3000);
+                        
+                    } else {
+                        Scene_Game.nextRound();
+                        this.roundEnding = false;
+                    }
+                }, GAME_CONFIG.MATCH.ROUND_END_DELAY);
             }
-            this.roundTimer = setTimeout(() => {
-                this.roundEnding = false;
-                if (scoreManager) scoreManager.prepareNextPoint();
-                if (typeof Scene_Game !== 'undefined' && typeof Scene_Game.nextRound === 'function') {
-                    Scene_Game.nextRound();
-                }
-            }, GAME_CONFIG.MATCH.ROUND_END_DELAY);
         }
     }
     // safe mechanism to reset game if ball is outside the playable area
     checkSafetyBounds() {
         const limit = GAME_CONFIG.MATCH.SAFETY_LIMIT;
-        const isOut = (this.y < -limit || this.y > height + limit ||
-            this.x < -limit || this.x > width + limit);
+        const isOut = (this.y < -limit || this.y > layout.VIRTUAL_H + limit ||
+            this.x < -limit || this.x > layout.VIRTUAL_W + limit);
         if (isOut && !this.roundEnding) {
             const hitter = this.lastHitter;
             const winner = hitter

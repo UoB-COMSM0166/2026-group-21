@@ -5,7 +5,7 @@ class AI {
         this.fidgetSpeed = GAME_CONFIG.AI.FIDGET_SPEED;
         this.serveDelayTimer = -1;
         this.serveTargetX = -1;
-        this.targetX = width / 2;
+        this.targetX = layout ? layout.centerX : 450;
         this.serveSwung = false; 
 
         const defaultLevel = GAME_CONFIG.AI_LEVELS.NORMAL;

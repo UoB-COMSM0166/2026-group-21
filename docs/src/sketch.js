@@ -16,6 +16,8 @@ let tutorialImg;
 let soundManager;
 const STATES = GAME_CONFIG.STATES;
 let lastMusicState = null;
+let previousState = null;
+let pausedFromState = null;
 
 function preload() {
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
@@ -57,6 +59,10 @@ function preload() {
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
+    
+    // Force pixel destiny to 1 to prevent severe lag on high-DPI/Retina screens with weak GPUs
+    pixelDensity(1);
+
     layout = new LayoutManager();
     player = new Player(layout.sideRight, null, true);
     opponent = new Player(layout.sideLeft, null, false);
@@ -142,6 +148,19 @@ function keyPressed() {
         case STATES.PAUSED:      Scene_Pause.handleInput();      break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleInput(); break;
         case STATES.SETTINGS: Scene_Settings.handleInput(); break;
+    }
+
+    // Prevent default browser behaviors (like Quick Find for '/' or scrolling for Space/Arrows)
+    const { CONTROLS } = GAME_CONFIG;
+    const gameKeys = [
+        CONTROLS.ESCAPE, CONTROLS.OPPONENT_ACTION, CONTROLS.OPPONENT_LEFT, 
+        CONTROLS.OPPONENT_RIGHT, CONTROLS.OPPONENT_UP, CONTROLS.OPPONENT_DOWN, 
+        CONTROLS.PLAYER_ACTION, CONTROLS.PLAYER_LEFT, CONTROLS.PLAYER_RIGHT, 
+        CONTROLS.PLAYER_UP, CONTROLS.PLAYER_DOWN, CONTROLS.OPPONENT_SKILL, 
+        CONTROLS.PLAYER_SKILL, 32 // spacebar fallback
+    ];
+    if (gameKeys.includes(keyCode) || [UP_ARROW, DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, ENTER].includes(keyCode)) {
+        return false;
     }
 }
 // handle window resizing

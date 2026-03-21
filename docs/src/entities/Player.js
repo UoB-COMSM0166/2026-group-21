@@ -218,7 +218,7 @@ class Player {
         const hh = this.h / 2;
         let minX, maxX, minY, maxY;
         if (this.isBottom) {
-            maxY = min(height - hh, courtBottom + COURT.MOVE_PADDING_Y);
+            maxY = min(layout.VIRTUAL_H - hh, courtBottom + COURT.MOVE_PADDING_Y);
         } else {
             minY = max(hh, courtTop - COURT.MOVE_PADDING_Y);
         }
@@ -240,7 +240,7 @@ class Player {
             //standard mode boundaries
         } else {
             minX = max(hw, courtLeft - COURT.MOVE_PADDING_X);
-            maxX = min(width - hw, courtRight + COURT.MOVE_PADDING_X);
+            maxX = min(layout.VIRTUAL_W - hw, courtRight + COURT.MOVE_PADDING_X);
             if (this.isBottom) {
                 minY = netY + PLAYER.NET_MARGIN + hh;
             } else {

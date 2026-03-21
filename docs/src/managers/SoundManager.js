@@ -6,7 +6,8 @@ class SoundManager {
         this.targetVolume = 0.3;  //volume
         this.sfxVolume = 0.5;
         this.isFading = false;
-        this.fadeTimeouts = [];
+        this.fadeOutTimeouts = [];
+        this.loopTimeouts = [];
         this.lastPlayTime = {};
         this.needsMusicStateReset = false;
 
@@ -69,10 +70,14 @@ class SoundManager {
         if (!nextBGM || !nextBGM.isLoaded()) return;
         if (this.currentBGM === nextBGM && nextBGM.isPlaying()) return;
 
-        if (this.fadeTimeouts) {
-            this.fadeTimeouts.forEach(t => clearTimeout(t));
+        if (this.fadeOutTimeouts) {
+            this.fadeOutTimeouts.forEach(t => clearTimeout(t));
         }
-        this.fadeTimeouts = [];
+        this.fadeOutTimeouts = [];
+        if (this.loopTimeouts) {
+            this.loopTimeouts.forEach(t => clearTimeout(t));
+        }
+        this.loopTimeouts = [];
 
         this.isFading = true;
         const fadeTime = 1.5;
@@ -85,7 +90,7 @@ class SoundManager {
                     oldBGM.stop();
                 }
             }, fadeTime * 1000);
-            this.fadeTimeouts.push(t1);
+            this.fadeOutTimeouts.push(t1);
         }
 
         this.currentBGM = nextBGM;
@@ -98,9 +103,9 @@ class SoundManager {
                 let t3 = setTimeout(() => {
                     this.isFading = false;
                 }, fadeTime * 1000);
-                this.fadeTimeouts.push(t3);
+                this.loopTimeouts.push(t3);
             }, 100);
-            this.fadeTimeouts.push(t2);
+            this.loopTimeouts.push(t2);
         } else {
             this.isFading = false;
             if (oldBGM && oldBGM.isLoaded() && oldBGM.isPlaying()) {
@@ -114,10 +119,14 @@ class SoundManager {
             if (this.currentBGM && this.currentBGM.isLoaded() && this.currentBGM.isPlaying() && this.currentBGM !== newBGM) {
                 this.currentBGM.stop();
             }
-            if (this.fadeTimeouts) {
-                this.fadeTimeouts.forEach(t => clearTimeout(t));
+            if (this.fadeOutTimeouts) {
+                this.fadeOutTimeouts.forEach(t => clearTimeout(t));
             }
-            this.fadeTimeouts = [];
+            this.fadeOutTimeouts = [];
+            if (this.loopTimeouts) {
+                this.loopTimeouts.forEach(t => clearTimeout(t));
+            }
+            this.loopTimeouts = [];
 
             this.currentBGM = newBGM;
             this.playBGMWithFadeLoop(this.currentBGM, fadeTime);
@@ -129,10 +138,10 @@ class SoundManager {
         if (!bgm || !bgm.isLoaded()) return;
 
         bgm.stop();
-        if (this.fadeTimeouts) {
-            this.fadeTimeouts.forEach(t => clearTimeout(t));
+        if (this.loopTimeouts) {
+            this.loopTimeouts.forEach(t => clearTimeout(t));
         }
-        this.fadeTimeouts = [];
+        this.loopTimeouts = [];
 
         bgm.setVolume(0);
 
@@ -144,7 +153,7 @@ class SoundManager {
                 bgm.setVolume(this.targetVolume, fadeTime);
             }
         }, 100);
-        this.fadeTimeouts.push(tFadeIn);
+        this.loopTimeouts.push(tFadeIn);
 
         let dur = bgm.duration();
         if (dur > fadeTime * 2.5) {
@@ -158,10 +167,10 @@ class SoundManager {
                             this.playBGMWithFadeLoop(bgm, fadeTime);
                         }
                     }, fadeTime * 1000);
-                    this.fadeTimeouts.push(restartTimeout);
+                    this.loopTimeouts.push(restartTimeout);
                 }
             }, fadeOutStart);
-            this.fadeTimeouts.push(loopTimeout);
+            this.loopTimeouts.push(loopTimeout);
         } else {
             bgm.loop();
             bgm.setVolume(this.targetVolume, fadeTime);
