@@ -242,6 +242,22 @@ const GAME_CONFIG = {
         }
     },
 
+    // AI: {
+    //     FIDGET_SPEED: 0.015,        // Speed of lateral sway while receiving
+    //     HOME_X_DIVISOR: 4,          // Court ratio for receive home pos
+    //     FIDGET_RANGE_DIVISOR: 8,    // Court ratio for  lateral sway range
+    //     RECEIVE_X_THRESHOLD: 70,    
+    //     RECEIVE_Y_THRESHOLD: 100,
+    //     SERVE_DELAY_MIN: 90,
+    //     SERVE_DELAY_MAX: 160,
+    //     LERP_FACTOR_NORMAL: 0.2,
+    //     LERP_FACTOR_SERVE: 0.1,
+    //     SERVE_POS_PADDING: 10,
+    //     SERVE_DIST_THRESHOLD: 20,
+    //     SERVE_SWING_Z_MIN: 10,      // Min z height to swing during serve
+    //     SERVE_SWING_Z_MAX: 40       // Max z height to swing during serve
+    // }
+
     AI: {
         FIDGET_SPEED: 0.015,        // Speed of lateral sway while receiving
         HOME_X_DIVISOR: 4,          // Court ratio for receive home pos
@@ -255,6 +271,9 @@ const GAME_CONFIG = {
         SERVE_POS_PADDING: 10,
         SERVE_DIST_THRESHOLD: 20,
         SERVE_SWING_Z_MIN: 10,      // Min z height to swing during serve
-        SERVE_SWING_Z_MAX: 40       // Max z height to swing during serve
+        SERVE_SWING_Z_MAX: 40,       // Max z height to swing during serve
+        SERVE_LINE_RATIO: 0.18,    // Service line position ratio from court top
+        BOUNCE_DISTANCE: 140,       // Estimated Y distance ball travels after bounce
+        MOVE_DEADZONE: 3           // Minimum movement delta to apply motion
     }
 };

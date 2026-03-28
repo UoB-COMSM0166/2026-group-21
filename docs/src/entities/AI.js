@@ -6,7 +6,10 @@ class AI {
         this.serveDelayTimer = -1;
         this.serveTargetX = -1;
         this.targetX = layout ? layout.centerX : 450;
-        this.serveSwung = false; 
+        this.targetY = null;
+        this.serveSwung = false;
+        this._prevBounceCount = 0;
+        this._skillUseTimer = -1;
 
         const defaultLevel = GAME_CONFIG.AI_LEVELS.NORMAL;
         this.difficulty     = 'NORMAL';
@@ -22,12 +25,14 @@ class AI {
         this.serveDelayTimer = -1;
         this.serveTargetX = -1;
         this.serveSwung = false;
+        this.targetY = null;
+        this._prevBounceCount = 0;
+        this._skillUseTimer = -1;
     }
 
     update(ball) {
-        // if AI catch the gigaball, it should be stunned as well
         if (this.player.stunTimer > 0) {
-            return; 
+            return;
         }
 
         this._reactionCounter++;
@@ -47,6 +52,7 @@ class AI {
                 } else {
                     this.targetX = this.calculateServePosition();
                 }
+                this.targetY = null;
             } else {
                 let error = random(-this.errorRange, this.errorRange);
                 this.targetX = ball.x + (ball.vx * this.prediction) + error;
@@ -55,20 +61,50 @@ class AI {
             }
         }
 
+        this.updateTargetY(ball);
         this.applySmoothMovement();
         this.handleActions(ball);
     }
 
+    updateTargetY(ball) {
+        const serveLineY = layout.courtTop + layout.COURT_H * GAME_CONFIG.AI.SERVE_LINE_RATIO;
+
+        if (ball.bounceCount === 1 && this._prevBounceCount === 0 && !ball.isTossing) {
+            if (ball.y > serveLineY && ball.y < layout.netY) {
+                this.targetY = ball.y - GAME_CONFIG.AI.BOUNCE_DISTANCE;
+            }
+        }
+
+        if (ball.bounceCount === 0 && this._prevBounceCount > 0) {
+            this.targetY = null;
+        }
+
+        this._prevBounceCount = ball.bounceCount;
+    }
+
     applySmoothMovement() {
+        const AI = GAME_CONFIG.AI;
+        const baseline = layout.courtTop - GAME_CONFIG.PLAYER.SERVE_OFFSET - this.player.h / 2;
+
+        // X軸移動
         let dx = this.targetX - this.player.x;
-        if (Math.abs(dx) < 3) return;
-        let lerpFactor = (scoreManager.currentServer === 'PLAYER' && !ball.isWaiting) 
-            ? GAME_CONFIG.AI.LERP_FACTOR_NORMAL 
-            : GAME_CONFIG.AI.LERP_FACTOR_SERVE;
-        let moveStep = dx * lerpFactor;
-        moveStep = constrain(moveStep, -this.player.speed * this.speedMult,
-            this.player.speed * this.speedMult);
-        this.player.x += moveStep;
+        if (Math.abs(dx) >= AI.MOVE_DEADZONE) {
+            let lerpFactor = (scoreManager.currentServer === 'PLAYER' && !ball.isWaiting)
+                ? AI.LERP_FACTOR_NORMAL
+                : AI.LERP_FACTOR_SERVE;
+            let moveStep = dx * lerpFactor;
+            moveStep = constrain(moveStep, -this.player.speed * this.speedMult, this.player.speed * this.speedMult);
+            this.player.x += moveStep;
+        }
+
+        // Y軸移動
+        let destY = (this.targetY !== null) ? this.targetY : baseline;
+        let dy = destY - this.player.y;
+        if (Math.abs(dy) >= AI.MOVE_DEADZONE) {
+            let moveStep = dy * AI.LERP_FACTOR_NORMAL;
+            moveStep = constrain(moveStep, -this.player.speed * this.speedMult, this.player.speed * this.speedMult);
+            this.player.y += moveStep;
+        }
     }
 
     calculateServePosition() {
@@ -88,14 +124,26 @@ class AI {
             let xDiff = Math.abs(this.player.x - ball.x);
             let yDiff = Math.abs(this.player.y - ball.y);
             if (xDiff < GAME_CONFIG.AI.RECEIVE_X_THRESHOLD &&
-                 yDiff < GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD) {
+                yDiff < GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD) {
                 this.player.swing(ball);
+                this.targetY = null;
             }
+        }
+
+        // スキル発動ロジック
+        if (this.player.skillCooldown === 0 && this._skillUseTimer === -1) {
+            this._skillUseTimer = int(random(60, 300));
+        }
+        if (this._skillUseTimer > 0) {
+            this._skillUseTimer--;
+        } else if (this._skillUseTimer === 0 && !ball.isWaiting && !ball.isTossing) {
+            this.player.useSkill(ball);
+            this._skillUseTimer = -1;
         }
 
         if (scoreManager.currentServer === 'OPPONENT') {
             if (ball.isWaiting) {
-                this.serveSwung = false; 
+                this.serveSwung = false;
                 if (this.serveDelayTimer === -1) {
                     this.serveDelayTimer = int(random(
                         GAME_CONFIG.AI.SERVE_DELAY_MIN,
@@ -108,10 +156,10 @@ class AI {
                     ball.toss();
                     this.serveDelayTimer = -1;
                 }
-            } else if (ball.isTossing && !this.serveSwung && 
-                        ball.vz < 0 &&
-                        ball.z > GAME_CONFIG.AI.SERVE_SWING_Z_MIN && 
-                        ball.z < GAME_CONFIG.AI.SERVE_SWING_Z_MAX) {
+            } else if (ball.isTossing && !this.serveSwung &&
+                       ball.vz < 0 &&
+                       ball.z > GAME_CONFIG.AI.SERVE_SWING_Z_MIN &&
+                       ball.z < GAME_CONFIG.AI.SERVE_SWING_Z_MAX) {
                 this.player.swing(ball);
                 this.serveSwung = true;
             }
