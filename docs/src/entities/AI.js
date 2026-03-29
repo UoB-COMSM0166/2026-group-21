@@ -86,7 +86,7 @@ class AI {
         const AI = GAME_CONFIG.AI;
         const baseline = layout.courtTop - GAME_CONFIG.PLAYER.SERVE_OFFSET - this.player.h / 2;
 
-        // X軸移動
+
         let dx = this.targetX - this.player.x;
         if (Math.abs(dx) >= AI.MOVE_DEADZONE) {
             let lerpFactor = (scoreManager.currentServer === 'PLAYER' && !ball.isWaiting)
@@ -97,7 +97,7 @@ class AI {
             this.player.x += moveStep;
         }
 
-        // Y軸移動
+
         let destY = (this.targetY !== null) ? this.targetY : baseline;
         let dy = destY - this.player.y;
         if (Math.abs(dy) >= AI.MOVE_DEADZONE) {
@@ -130,7 +130,7 @@ class AI {
             }
         }
 
-        // スキル発動ロジック
+
         if (this.player.skillCooldown === 0 && this._skillUseTimer === -1) {
             this._skillUseTimer = int(random(60, 300));
         }
