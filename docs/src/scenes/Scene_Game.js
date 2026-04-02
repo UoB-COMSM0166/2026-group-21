@@ -33,6 +33,11 @@ const Scene_Game = {
             opponentAI.reactionDelay = levelConfig.reactionDelay;
             opponentAI.errorRange    = levelConfig.errorRange;
             opponentAI.prediction    = levelConfig.prediction;
+            if (typeof opponentAI.setPersonality === 'function') {
+                // Single mode only: random personality per match
+                const personalities = ['basic', 'attacker', 'wide'];
+                opponentAI.setPersonality(random(personalities));
+            }
             opponentAI.resetServeState();
         } else {
             opponent.isAI = false;
@@ -124,6 +129,12 @@ const Scene_Game = {
     restartGame: function () {
         player.resetState();
         opponent.resetState();
+        // New match start: re-roll personality (single mode AI only)
+        if (!isMultiplayer && opponentAI && typeof opponentAI.setPersonality === 'function') {
+            const personalities = ['basic', 'attacker', 'wide'];
+            opponentAI.setPersonality(random(personalities));
+            opponentAI.resetServeState();
+        }
         if (soundManager && soundManager.sounds.victory && 
             soundManager.sounds.victory.isLoaded() && soundManager.sounds.victory.isPlaying()) {
             soundManager.sounds.victory.stop();

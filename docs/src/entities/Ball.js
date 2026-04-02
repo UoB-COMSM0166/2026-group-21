@@ -4,6 +4,7 @@ class Ball {
         this.gravity = GAME_CONFIG.BALL.GRAVITY;
         this.bounceCount = 0;
         this.lastHitter = null;
+        this.justServed = false; // true only between serve-hit and receiver's first return
         this.reset(0, 0, 'PLAYER');
         this.speedMultiplier = 1.0;
         this.speedTimer = 0;
@@ -36,6 +37,7 @@ class Ball {
         this.isTossing = false; // ball is in the air but not yet hit
         this.serveSide = side; // track who is serving
         this.isGigaShot = false;
+        this.justServed = false;
     }
 
     update() {
@@ -221,10 +223,70 @@ class Ball {
             this.vx = (this.x - p.x) * DIRECTION_MULT;
             // forces the ball to fly diagonally to the opposite side during a serve
             if (this.isTossing) {
+                this.justServed = true;
                 if (scoreManager.currentSide === 'RIGHT') {
                     this.vx = constrain(this.vx, -SERVE_MAX_VX, -SERVE_MIN_VX);
                 } else {
                     this.vx = constrain(this.vx, SERVE_MIN_VX, SERVE_MAX_VX);
+                }
+            }
+
+            // Single mode AI personality: "wide" forces big left/right split shots.
+            // Guarded so it never affects humans or multiplayer.
+            if (!this.isTossing &&
+                typeof isMultiplayer !== 'undefined' && !isMultiplayer &&
+                p && p.isAI &&
+                typeof opponent !== 'undefined' && p === opponent &&
+                typeof opponentAI !== 'undefined' && opponentAI &&
+                opponentAI.personality === 'wide') {
+                
+                const minVx = opponentAI.wideVxMin ?? 4;
+                const maxVx = opponentAI.wideVxMax ?? 10;
+                const extremeProb = opponentAI.wideExtremeProb ?? 0.7;
+                const aimAwayProb = opponentAI.wideAimAwayProb ?? 0.7;
+                const applyProb = opponentAI.wideApplyProb ?? 0.65;
+
+                // Not every shot needs wide-angle intent.
+                if (random(1) >= applyProb) {
+                    // Keep default vx from standard hit logic.
+                } else {
+
+                    // Choose direction: often aim away from player's x (make player run).
+                    let sign;
+                    if (random(1) < aimAwayProb && typeof player !== 'undefined') {
+                        sign = (player.x < this.x) ? 1 : -1;
+                    } else {
+                        sign = (random(1) < 0.5) ? -1 : 1;
+                    }
+
+                    // Choose magnitude: bias toward extremes.
+                    let mag;
+                    if (random(1) < extremeProb) {
+                        mag = random(max(minVx, maxVx * 0.8), maxVx);
+                    } else {
+                        mag = random(minVx, maxVx);
+                    }
+
+                    // Keep the 1st bounce roughly in-court by capping vx based on a simple prediction.
+                    // (Uses airtime from HIT_Z and air resistance sum.)
+                    const g = GAME_CONFIG.BALL.GRAVITY;
+                    const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
+                    const t = max(8, floor((2 * HIT_Z) / max(0.01, g))); // frames until z returns ~0
+                    const sum = (1 - pow(air, t)) / max(0.0001, (1 - air)); // \sum air^i
+
+                    // Add an inward margin so "wide" still spreads but doesn't hug the lines too much.
+                    const safetyMargin = 20;
+                    const minX = layout.courtLeft + this.r + safetyMargin;
+                    const maxX = layout.courtRight - this.r - safetyMargin;
+
+                    const maxVxPos = (maxX - this.x) / sum;
+                    const maxVxNeg = (this.x - minX) / sum;
+                    const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
+
+                    // Keep some risk (not 100% in), but reduce frequent outs by not using the full limit.
+                    const limitScale = 0.85;
+                    const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * limitScale));
+                    this.vx = sign * cappedMag;
                 }
             }
             //hit sound
@@ -245,6 +307,14 @@ class Ball {
         this.lastHitter = p;
         this.isTossing = false;
         this.roundEnding = false;
+
+        // After the receiver returns the serve once, we're no longer in "serve return" phase.
+        if (this.justServed && typeof scoreManager !== 'undefined' && scoreManager) {
+            const server = (scoreManager.currentServer === 'PLAYER') ? player : opponent;
+            if (p !== server) {
+                this.justServed = false;
+            }
+        }
     }
     //normalizes position to a 0-1 scale to maintain alignment during resizing
     get relativePos() {
