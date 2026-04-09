@@ -16,6 +16,9 @@ const Scene_Tutorial = {
     setup: function () {
         player.isAI = false;
         opponent.isAI = true;
+        if (typeof opponentAI !== 'undefined' && opponentAI) {
+            opponentAI.setPersonality('basic');
+        }
         tutorialManager = new TutorialManager();
         this.victorySoundPlayedInTutorial = false;
         if (scoreManager) {

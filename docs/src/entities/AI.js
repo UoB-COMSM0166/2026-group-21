@@ -9,6 +9,7 @@ class AI {
         this.targetY = null;
         this.serveSwung = false;
         this._prevBounceCount = 0;
+        this._prevHitStatus = false;
         this._skillUseTimer = -1;
         this.personality = 'basic';
         this._attackerYRepositionTimer = -1;
@@ -145,6 +146,7 @@ class AI {
         this.serveSwung = false;
         this.targetY = null;
         this._prevBounceCount = 0;
+        this._prevHitStatus = false;
         this._skillUseTimer = -1;
         this._attackerYRepositionTimer = -1;
         this._attackerYTarget = null;
@@ -174,7 +176,8 @@ class AI {
                 }
                 this.targetY = null;
             } else {
-                let error = random(-this.errorRange, this.errorRange);
+                // Use smooth noise instead of random jumping to prevent jitter
+                let error = (noise(frameCount * 0.05, this.noiseOffset) - 0.5) * 2 * this.errorRange;
                 this.targetX = ball.x + (ball.vx * this.prediction) + error;
                 this.serveDelayTimer = -1;
                 this.serveTargetX = -1;
@@ -247,12 +250,25 @@ class AI {
 
         if (ball.bounceCount === 1 && this._prevBounceCount === 0 && !ball.isTossing) {
             if (ball.y > serveLineY && ball.y < layout.netY) {
+                // Calculate dynamic bounce distance based on ball speed multiplier
+                const speedFactor = ball.speedMultiplier !== undefined ? ball.speedMultiplier : 1.0;
+                // If it's a slow ball, reduce distance (but keep a small minimum to avoid standing on the ball)
+                const dynamicBounceDist = Math.max(
+                    GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * 0.5, 
+                    GAME_CONFIG.AI.BOUNCE_DISTANCE * speedFactor
+                );
+
                 if (this.personality === 'attacker') {
                     // Move up toward service line / net more aggressively
-                    const preferNet = (Math.abs(ball.y - layout.netY) < GAME_CONFIG.AI.BOUNCE_DISTANCE * 0.45);
+                    const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * 0.45);
                     this.targetY = preferNet ? this.getNetFrontY() : this.getServiceLineY();
+
+                    // Force attacker to get close enough if ball is critically short
+                    if (this.targetY > ball.y - dynamicBounceDist + GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * 0.8) {
+                        this.targetY = ball.y - dynamicBounceDist;
+                    }
                 } else {
-                    this.targetY = ball.y - GAME_CONFIG.AI.BOUNCE_DISTANCE;
+                    this.targetY = ball.y - dynamicBounceDist;
                 }
             }
         }
@@ -317,21 +333,25 @@ class AI {
                 // (Only applies during the serve-return phase, not normal rallies/volleys.)
                 if (!(ball.justServed && scoreManager.currentServer === 'PLAYER' && ball.bounceCount === 0)) {
                     this.player.swing(ball);
-                    this.targetY = null;
-                    // After hitting, attacker should often recover backward a bit.
-                    if (this.personality === 'attacker') {
-                        // Not always full retreat: sometimes stay around service line.
-                        this._attackerYTarget = (random(1) < this.attackerAfterHitRetreatProb)
-                            ? this.getBaselineY()
-                            : this.getServiceLineY();
-                        this._attackerYRepositionTimer = int(
-                            random(this.attackerAfterHitMin, this.attackerAfterHitMax)
-                        );
-                    }
                 }
             }
         }
 
+        // Only retreat and reset targetY AFTER genuinely hitting the ball
+        if (this.player.hasHit && !this._prevHitStatus) {
+            this.targetY = null;
+            // After hitting, attacker should often recover backward a bit.
+            if (this.personality === 'attacker') {
+                // Not always full retreat: sometimes stay around service line.
+                this._attackerYTarget = (random(1) < this.attackerAfterHitRetreatProb)
+                    ? this.getBaselineY()
+                    : this.getServiceLineY();
+                this._attackerYRepositionTimer = int(
+                    random(this.attackerAfterHitMin, this.attackerAfterHitMax)
+                );
+            }
+        }
+        this._prevHitStatus = this.player.hasHit;
 
         if (this.player.skillCooldown === 0 && this._skillUseTimer === -1) {
             this._skillUseTimer = int(random(this.skillUseMinFrames, this.skillUseMaxFrames));
