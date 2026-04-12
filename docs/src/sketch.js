@@ -13,6 +13,8 @@ let characterImages = [];
 let tutorialManager;
 let difficultyImages = [];
 let tutorialImg;
+let gearImg;
+let scoreImages = {}; 
 let soundManager;
 const STATES = GAME_CONFIG.STATES;
 let lastMusicState = null;
@@ -20,11 +22,39 @@ let previousState = null;
 let pausedFromState = null;
 
 function preload() {
+    // score
+    const path = GAME_CONFIG.ASSETS.SCORE_PATH;
+    const labels = ["0", "15", "30", "40", "ad"];
+
+    // load basic ui images
     courtImg = loadImage(GAME_CONFIG.ASSETS.COURT_IMG);
     backgroundImg = loadImage(GAME_CONFIG.ASSETS.BACKGROUND_IMG);
     bgImg = loadImage(GAME_CONFIG.ASSETS.MENU_BG);
     escImg = loadImage(GAME_CONFIG.ASSETS.ESC_IMG);
     tutorialImg = loadImage(GAME_CONFIG.ASSETS.TUTORIAL_IMG);
+    gearImg = loadImage(GAME_CONFIG.ASSETS.GEAR_IMG);
+
+    // deuce and AD
+    scoreImages["deuce"] = loadImage(path + 'deuce.png');
+    scoreImages["ad_40"] = loadImage(path + 'ad_40.png');
+    scoreImages["40_ad"] = loadImage(path + '40_ad.png');
+
+    for (let p1 of labels) {
+        for (let p2 of labels) {
+            if ((p1 === "ad" && p2 !== "40") || (p2 === "ad" && p1 !== "40")) continue;
+            if (p1 === "ad" && p2 === "ad") continue; 
+            if (p1 === "40" && p2 === "40") continue;
+            
+            let key = `${p1}_${p2}`;
+            scoreImages[key] = loadImage(path + key + '.png', 
+                () => console.log("Loaded: " + key),
+                () => {
+                    console.warn("Missing image: " + key + ".png");
+                    scoreImages[key] = scoreImages["0_0"];
+                }
+            );
+        }
+    }
 
     if (GAME_CONFIG.ASSETS.DIFFICULTY_IMGS) {
         GAME_CONFIG.ASSETS.DIFFICULTY_IMGS.forEach((path, index) => {
@@ -112,6 +142,7 @@ function mousePressed() {
         case STATES.PAUSED:      Scene_Pause.handleMouse();      break;
         case STATES.DIFFICULTY_SELECT: Scene_DifficultySelect.handleMouse(); break;
         case STATES.SETTINGS: Scene_Settings.handleMouse(); break;
+        case STATES.PLAYING:     Scene_Game.handleMouse();       break;
     }
 }
 

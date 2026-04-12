@@ -110,7 +110,11 @@ const Scene_Tutorial = {
 
         const step = tutorialManager.currentStep;
         if (step >= 4) {
-            player.displaySkillBar(layout.VIRTUAL_W - 170, layout.VIRTUAL_H - 40, 150, 20);
+            this.drawCircularSkillUI(
+                layout.VIRTUAL_W - 500, 
+                layout.VIRTUAL_H - 250, 
+                player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100)
+            );
         }
         this.handleStepInitialization(step);
 
@@ -525,19 +529,27 @@ const Scene_Tutorial = {
     },
 
     displayTutorialUI: function (txt) {
+        const goldColor = color(255, 188, 31);
         push();
-        textAlign(CENTER, CENTER);
-        noStroke();
-        fill(255, 255, 0);
-        textSize(24);
-        text(txt, layout.VIRTUAL_W / 2, layout.VIRTUAL_H * 0.2);
+        textAlign(CENTER, TOP);
+        textStyle(BOLD);
+        stroke(0);
+        strokeWeight(4);
+        fill(goldColor);
+        textSize(36);
+        let boxW = 950;
+        let boxX = (layout.VIRTUAL_W - boxW) / 2;
+        let boxY = layout.VIRTUAL_H * 0.85;
+
+        text(txt, boxX, boxY, boxW, 300);
         pop();
     },
 
     drawTargetZone: function (x, y) {
+        const goldColor = [255, 188, 31];
         push();
         noFill();
-        stroke(255, 255, 0, 150);
+        stroke(goldColor);
         strokeWeight(5);
         ellipse(x, y, 60, 30);
 
@@ -550,6 +562,7 @@ const Scene_Tutorial = {
 
     drawTransitionOverlay: function () {
         let intro = tutorialManager.getStepIntro();
+        const goldColor = color(255, 188, 31);
 
         if (tutorialManager.currentStep > 5) {
             if (soundManager && !this.victorySoundPlayedInTutorial) {
@@ -559,26 +572,65 @@ const Scene_Tutorial = {
         }
 
         push();
-        rectMode(CORNER);
-        noStroke();
-        fill(0, 0, 0, 180);
+        fill(0, 0, 0, 200);
         rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
 
         textAlign(CENTER, CENTER);
-        fill(255, 255, 0);
-        textSize(48);
-        text(intro.title, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2 - 60);
+        textStyle(BOLD);
+
+        // title
+        fill(goldColor);
+        textSize(64);
+        text(intro.title, layout.VIRTUAL_W / 2, layout.VIRTUAL_H * 0.3);
 
         fill(255);
-        textSize(22);
-        text(intro.desc, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2 + 20);
+        textSize(32);
+        let descW = 700;
+        text(intro.desc, layout.VIRTUAL_W / 3.4, layout.VIRTUAL_H * 0.32, descW, 300);
 
         fill(200);
-        textSize(16);
+        textSize(24);
         if (frameCount % 60 < 30) {
             let actionText = tutorialManager.currentStep > 5 ? "Press ANY KEY to Return to Menu" : "Press ANY KEY to Start";
-            text(actionText, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2 + 120);
+            text(actionText, layout.VIRTUAL_W / 2, layout.VIRTUAL_H * 0.69);
         }
+        pop();
+    },
+
+    drawCircularSkillUI: function(x, y, energy) {
+        const size = 80;         
+        const strokeW = 8;       
+        const progress = (energy || 0) / 100; 
+        const goldColor = color(255, 188, 31); 
+
+        push();
+        translate(x, y);
+        noStroke();
+        fill(40, 40, 45); 
+        circle(0, 0, size);
+
+        fill(goldColor);
+        beginShape();
+        vertex(5, -25); vertex(-12, 5); vertex(-2, 5); 
+        vertex(-5, 25); vertex(12, -5); vertex(2, -5); 
+        endShape(CLOSE);
+
+        noFill();
+        stroke(60, 60, 65, 150);
+        strokeWeight(strokeW);
+        ellipse(0, 0, size + strokeW + 4);
+
+        if (energy >= 100) {
+            stroke(255, 255, 200); 
+            drawingContext.shadowBlur = 15;
+            drawingContext.shadowColor = goldColor;
+        } else {
+            stroke(goldColor);
+        }
+        strokeWeight(strokeW);
+        strokeCap(ROUND);
+        let endAngle = map(progress, 0, 1, 0, TWO_PI);
+        arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
         pop();
     }
 };

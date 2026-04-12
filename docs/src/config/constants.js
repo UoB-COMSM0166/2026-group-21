@@ -118,7 +118,9 @@ const GAME_CONFIG = {
         PLAYER_IMG: 'assets/images/player_bird_back.png',
         BACKGROUND_IMG: 'assets/images/bg_polar.png',
         TUTORIAL_IMG: 'assets/images/game_key_instruction.png',
-        COURT_IMG: 'assets/images/bg_stadium.png'
+        COURT_IMG: 'assets/images/bg_stadium.png',
+        GEAR_IMG: 'assets/images/settings.png',
+        SCORE_PATH: 'assets/images/'
     },
 
     CONTROLS: {

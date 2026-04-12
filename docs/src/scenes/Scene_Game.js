@@ -72,31 +72,34 @@ const Scene_Game = {
         MapManager.update(player, opponent, ball);
         ball.display();
         MapManager.draw();
-        scoreManager.display();
-        // temporarily skillbar placeholder
-        const barWidth = 150;
-        const barHeight = 15;
-        const margin = 20;
 
-        player.displaySkillBar(
-            layout.VIRTUAL_W - barWidth - margin,
-            layout.VIRTUAL_H - barHeight - margin,
-            barWidth,
-            barHeight
+        // score board
+        this.drawCustomScoreboard();
+
+        // skillbar placeholder
+        // p1
+        this.drawCircularSkillUI(
+            layout.VIRTUAL_W - 500, 
+            layout.VIRTUAL_H - 250, 
+            player.skillEnergy
         );
 
-        opponent.displaySkillBar(
-            margin,
-            margin,
-            barWidth,
-            barHeight
+        // p2 or opponent
+        this.drawCircularSkillUI(
+            500, 
+            250, 
+            opponent.skillEnergy
         );
+
+        // gear
+        this.drawPauseButton();
 
         if (this.isShowingScore) {
             this.drawScoreOverlay();
         }
         pop();
     },
+
     // handle keyboard triggers for player action, esc and restart
     handleInput: function () {
         const { CONTROLS } = GAME_CONFIG;
@@ -119,6 +122,173 @@ const Scene_Game = {
         if (isMultiplayer) {
             opponent.handleKeyPress(keyCode, ball);
         }
+    },
+
+    handleMouse: function() {
+        if (this.isShowingScore) return;
+
+        // gear
+        const margin = 60;
+        const size = 72;
+        const gearX = layout.VIRTUAL_W - margin;
+        const gearY = margin;
+
+        let mx = mouseX / layout.scaleFactor;
+        let my = mouseY / layout.scaleFactor;
+
+        if (dist(mx, my, gearX, gearY) < size/2) {
+            if (currentState === GAME_CONFIG.STATES.PLAYING) {
+                if (soundManager) soundManager.play('confirm');
+                pausedFromState = GAME_CONFIG.STATES.PLAYING;
+                currentState = GAME_CONFIG.STATES.PAUSED;
+            }
+        }
+    },
+
+    drawCustomScoreboard: function() {
+        push();
+        if (!scoreManager || scoreManager.playerScoreLabel == null || scoreManager.opponentScoreLabel == null) {
+            return;
+        }
+        const boardW = 360; 
+        const boardH = 300; 
+        const marginX = 120;
+        const marginY = 0;
+        const x = marginX;
+        const y = layout.VIRTUAL_H - marginY - boardH;
+        
+        let scoreKey = "";
+        let p1 = (scoreManager?.playerScoreLabel ?? "0").toString().toLowerCase();
+        let p2 = (scoreManager?.opponentScoreLabel ?? "0").toString().toLowerCase();
+
+        if (p1 === "40" && p2 === "40") {
+            scoreKey = "deuce";
+        }
+        else if (p1 === "ad") {
+            scoreKey = "ad_40";
+        } 
+        else if (p2 === "ad") {
+            scoreKey = "40_ad";
+        }
+        else {
+            scoreKey = `${p1}_${p2}`;
+        }
+        
+        let img = scoreImages[scoreKey];
+        
+        if (img && img.width && img.height) {
+            image(img, x, y, boardW, boardH);
+        }
+        else {
+            // backup scoring version
+            noStroke();
+            fill(30, 30, 30, 200);
+            rect(x, y, boardW, boardH, 15);
+
+            stroke(255, 50);
+            strokeWeight(2);
+            line(x + 20, y + boardH/2, x + boardW - 20, y + boardH/2);
+            
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textStyle(BOLD);
+            
+            fill(255, 100, 100);
+            textSize(32);
+            text(scoreManager.opponentScoreLabel ?? "0", x + boardW/2, y + boardH * 0.3);
+            
+            fill(100, 200, 255);
+            textSize(32);
+            text(scoreManager.playerScoreLabel ?? "0", x + boardW/2, y + boardH * 0.7);
+        }
+            
+        const customGold = color(255, 188, 31);
+        textAlign(CENTER, CENTER);
+        textStyle(BOLD);
+        noStroke();
+        fill(customGold);
+        textSize(22);
+
+        let displayP1 = (p1 === "40" && p2 === "40") ? "DEUCE" : p1.toUpperCase();
+        let displayP2 = (p1 === "40" && p2 === "40") ? "DEUCE" : p2.toUpperCase();
+        
+        text(`${scoreManager.opponentGames} : ${scoreManager.playerGames}`, x + boardW / 2 + 18, y + 225);
+
+        pop();
+    },
+
+
+    drawPauseButton: function() {
+        const margin = 60;
+        const size = 72;
+        const x = layout.VIRTUAL_W - margin;
+        const y = margin;
+
+        push();
+        imageMode(CENTER);
+        let mx = mouseX / layout.scaleFactor;
+        let my = mouseY / layout.scaleFactor;
+        
+        if (dist(mx, my, x, y) < size/2) {
+            tint(185, 185, 182);
+            cursor(HAND);
+        } else {
+            noTint();
+        }
+
+        if (gearImg) {
+            image(gearImg, x, y, size, size);
+        }
+        pop();
+    },
+
+    drawCircularSkillUI: function(x, y, energy) {
+        const size = 80;         
+        const strokeW = 8;       
+        const radius = size / 2;
+        const progress = (energy || 0) / 100; 
+        const goldColor = color(255, 188, 31); 
+
+        push();
+        translate(x, y);
+
+        // gray circle
+        noStroke();
+        fill(40, 40, 45); 
+        circle(0, 0, size);
+
+        // yellow thunder
+        fill(goldColor);
+        noStroke();
+        beginShape();
+        vertex(5, -28);
+        vertex(-15, 5);
+        vertex(-2, 5);
+        vertex(-8, 28);
+        vertex(15, -5);
+        vertex(2, -5);
+        endShape(CLOSE);
+
+        // skill bar outer ring
+        noFill();
+        stroke(60, 60, 65, 150);
+        strokeWeight(strokeW);
+        ellipse(0, 0, size + strokeW + 4);
+
+        // skill bar progress
+        if (energy >= 100) {
+            stroke(255, 255, 200); 
+            drawingContext.shadowBlur = 15;
+            drawingContext.shadowColor = goldColor;
+        } else {
+            stroke(goldColor);
+        }
+        strokeWeight(strokeW);
+        strokeCap(ROUND);
+        let endAngle = map(progress, 0, 1, 0, TWO_PI);
+        arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
+
+        pop();
     },
 
     restartGame: function () {

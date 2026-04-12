@@ -6,6 +6,8 @@ class ScoreManager {
     }
 
     init() {
+        this.playerScoreLabel = "0";
+        this.opponentScoreLabel = "0";
         this.playerPoints = 0;
         this.opponentPoints = 0;
         this.playerGames = 0;
@@ -44,7 +46,10 @@ class ScoreManager {
         if (typeof tutorialManager !== 'undefined' && tutorialManager.currentStep === 5) {
             return false;
         }
-
+        
+        this.playerScoreLabel = this.getDisplayScore(this.playerPoints, this.opponentPoints);
+        this.opponentScoreLabel = this.getDisplayScore(this.opponentPoints, this.playerPoints);
+        
         return this.checkGameWin();
     }
     // switch the serve side between points
@@ -93,6 +98,8 @@ class ScoreManager {
     resetPoints() {
         this.playerPoints = 0;
         this.opponentPoints = 0;
+        this.playerScoreLabel = "0";
+        this.opponentScoreLabel = "0";
         this.currentServer = (this.currentServer === 'PLAYER') ? 'OPPONENT' : 'PLAYER';
         this.currentSide = 'RIGHT';
         this.gameWasJustReset = true;
