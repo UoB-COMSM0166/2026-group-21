@@ -231,6 +231,78 @@ class Ball {
                 }
             }
 
+            // Single mode AI personality: "wall" returns deep through the center.
+            // Guarded so it never affects humans or multiplayer.
+            if (!this.isTossing &&
+                typeof isMultiplayer !== 'undefined' && !isMultiplayer &&
+                p && p.isAI &&
+                typeof opponent !== 'undefined' && p === opponent &&
+                typeof opponentAI !== 'undefined' && opponentAI &&
+                opponentAI.personality === 'wall') {
+
+                // Center returns minimize risk with the game's fixed shot power.
+                const g = GAME_CONFIG.BALL.GRAVITY;
+                const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
+                const t = max(8, floor((2 * HIT_Z) / max(0.01, g))); // frames until z returns ~0
+                const sum = (1 - pow(air, t)) / max(0.0001, (1 - air)); // \sum air^i
+                const targetCenterX = layout.centerX + random(
+                    -(opponentAI.wallReturnSpread ?? 26),
+                    (opponentAI.wallReturnSpread ?? 26)
+                );
+                const desiredVx = (targetCenterX - this.x) / sum;
+                const safetyMargin = 36;
+                const minX = layout.courtLeft + this.r + safetyMargin;
+                const maxX = layout.courtRight - this.r - safetyMargin;
+                const maxVxPos = (maxX - this.x) / sum;
+                const maxVxNeg = (this.x - minX) / sum;
+                const maxAbsForSign = (desiredVx >= 0) ? maxVxPos : maxVxNeg;
+                const clampScale = opponentAI.wallReturnClampScale ?? 0.72;
+                const safeAbs = max(0, maxAbsForSign * clampScale);
+                this.vx = constrain(desiredVx, -safeAbs, safeAbs);
+            }
+
+            // Single mode AI personality: "attacker" adds only a mild angle bias.
+            // Guarded so it never affects humans or multiplayer.
+            if (!this.isTossing &&
+                typeof isMultiplayer !== 'undefined' && !isMultiplayer &&
+                p && p.isAI &&
+                typeof opponent !== 'undefined' && p === opponent &&
+                typeof opponentAI !== 'undefined' && opponentAI &&
+                opponentAI.personality === 'attacker') {
+
+                const minVx = opponentAI.attackerAngleVxMin ?? 1.5;
+                const maxVx = opponentAI.attackerAngleVxMax ?? 4;
+                const applyProb = opponentAI.attackerAngleApplyProb ?? 0.55;
+                const aimAwayProb = opponentAI.attackerAngleAimAwayProb ?? 0.7;
+
+                // Not every shot needs angle pressure.
+                if (random(1) < applyProb) {
+                    let sign;
+                    if (random(1) < aimAwayProb && typeof player !== 'undefined') {
+                        sign = (player.x < this.x) ? 1 : -1;
+                    } else {
+                        sign = (this.vx < 0) ? -1 : 1;
+                        if (Math.abs(this.vx) < 0.25) sign = (random(1) < 0.5) ? -1 : 1;
+                    }
+
+                    // Keep attacker angles modest and in-bounds; this is support for pressure,
+                    // not the large split-shot identity used by the "wide" personality.
+                    const g = GAME_CONFIG.BALL.GRAVITY;
+                    const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
+                    const t = max(8, floor((2 * HIT_Z) / max(0.01, g))); // frames until z returns ~0
+                    const sum = (1 - pow(air, t)) / max(0.0001, (1 - air)); // \sum air^i
+                    const safetyMargin = 32;
+                    const minX = layout.courtLeft + this.r + safetyMargin;
+                    const maxX = layout.courtRight - this.r - safetyMargin;
+                    const maxVxPos = (maxX - this.x) / sum;
+                    const maxVxNeg = (this.x - minX) / sum;
+                    const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
+                    const mag = random(minVx, maxVx);
+                    const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * 0.78));
+                    this.vx = sign * max(Math.abs(this.vx), cappedMag);
+                }
+            }
+
             // Single mode AI personality: "wide" forces big left/right split shots.
             // Guarded so it never affects humans or multiplayer.
             if (!this.isTossing &&

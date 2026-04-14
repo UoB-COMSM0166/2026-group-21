@@ -19,6 +19,12 @@ class AI {
         this.attackerDeepBallThreshold = 0.35; // court-height ratio from top
         this.attackerPreferNetProb = 0.75; // when ball is near net
         this.attackerNormalNetProb = 0.45; // default net preference
+        this.attackerFrontCourtRatio = 0.25; // safest aggressive line for fixed-power returns
+        this.attackerHitSafeCourtRatio = 0.16; // furthest forward contact line before fixed-power shots become unsafe
+        this.attackerAngleVxMin = 1.5; // mild horizontal spread so attacker pressures without becoming "wide"
+        this.attackerAngleVxMax = 4;
+        this.attackerAngleApplyProb = 0.55;
+        this.attackerAngleAimAwayProb = 0.7;
         this.attackerRepositionMin = 12;
         this.attackerRepositionMax = 26;
         this.attackerRetreatRepositionMin = 16;
@@ -26,6 +32,10 @@ class AI {
         this.attackerAfterHitRetreatProb = 0.55;
         this.attackerAfterHitMin = 18;
         this.attackerAfterHitMax = 40;
+        this.wallTrackRatio = 0.65; // how far wall drifts from center toward the ball
+        this.wallCenterJitter = 18; // small offset so wall doesn't feel robotic
+        this.wallReturnSpread = 26; // target spread around court center on returns
+        this.wallReturnClampScale = 0.72; // extra safety factor for center returns
 
         // "wide" (big left/right split shots) tuning (difficulty-adjusted in setPersonality)
         this.wideVxMin = 4;
@@ -77,6 +87,12 @@ class AI {
                 this.attackerDeepBallThreshold = 0.42;
                 this.attackerPreferNetProb = 0.42;
                 this.attackerNormalNetProb = 0.18;
+                this.attackerFrontCourtRatio = 0.26;
+                this.attackerHitSafeCourtRatio = 0.15;
+                this.attackerAngleVxMin = 1.2;
+                this.attackerAngleVxMax = 3;
+                this.attackerAngleApplyProb = 0.42;
+                this.attackerAngleAimAwayProb = 0.58;
                 this.attackerRepositionMin = 18;
                 this.attackerRepositionMax = 34;
                 this.attackerRetreatRepositionMin = 20;
@@ -90,6 +106,12 @@ class AI {
                 this.attackerDeepBallThreshold = 0.3;
                 this.attackerPreferNetProb = 0.72;
                 this.attackerNormalNetProb = 0.42;
+                this.attackerFrontCourtRatio = 0.32;
+                this.attackerHitSafeCourtRatio = 0.18;
+                this.attackerAngleVxMin = 2.2;
+                this.attackerAngleVxMax = 5.5;
+                this.attackerAngleApplyProb = 0.72;
+                this.attackerAngleAimAwayProb = 0.82;
                 this.attackerRepositionMin = 8;
                 this.attackerRepositionMax = 18;
                 this.attackerRetreatRepositionMin = 12;
@@ -104,6 +126,12 @@ class AI {
                 this.attackerDeepBallThreshold = 0.35;
                 this.attackerPreferNetProb = 0.58;
                 this.attackerNormalNetProb = 0.3;
+                this.attackerFrontCourtRatio = 0.29;
+                this.attackerHitSafeCourtRatio = 0.16;
+                this.attackerAngleVxMin = 1.7;
+                this.attackerAngleVxMax = 4.2;
+                this.attackerAngleApplyProb = 0.58;
+                this.attackerAngleAimAwayProb = 0.72;
                 this.attackerRepositionMin = 12;
                 this.attackerRepositionMax = 26;
                 this.attackerRetreatRepositionMin = 16;
@@ -111,6 +139,27 @@ class AI {
                 this.attackerAfterHitRetreatProb = 0.68;
                 this.attackerAfterHitMin = 18;
                 this.attackerAfterHitMax = 40;
+            }
+        }
+
+        // Difficulty-based tuning for "wall" behavior
+        if (p === 'wall') {
+            if (diff === 'EASY') {
+                this.wallTrackRatio = 0.5;
+                this.wallCenterJitter = 32;
+                this.wallReturnSpread = 42;
+                this.wallReturnClampScale = 0.64;
+            } else if (diff === 'HARD') {
+                this.wallTrackRatio = 0.82;
+                this.wallCenterJitter = 10;
+                this.wallReturnSpread = 14;
+                this.wallReturnClampScale = 0.82;
+            } else {
+                // NORMAL
+                this.wallTrackRatio = 0.68;
+                this.wallCenterJitter = 22;
+                this.wallReturnSpread = 26;
+                this.wallReturnClampScale = 0.74;
             }
         }
 
@@ -178,7 +227,14 @@ class AI {
             } else {
                 // Use smooth noise instead of random jumping to prevent jitter
                 let error = (noise(frameCount * 0.05, this.noiseOffset) - 0.5) * 2 * this.errorRange;
-                this.targetX = ball.x + (ball.vx * this.prediction) + error;
+                if (this.personality === 'wall') {
+                    // Wall keeps a central base and only shades toward the incoming ball.
+                    const predictedX = ball.x + (ball.vx * this.prediction);
+                    const centerOffset = (noise(frameCount * 0.03, this.noiseOffset) - 0.5) * 2 * this.wallCenterJitter;
+                    this.targetX = layout.centerX + ((predictedX - layout.centerX) * this.wallTrackRatio) + centerOffset;
+                } else {
+                    this.targetX = ball.x + (ball.vx * this.prediction) + error;
+                }
                 this.serveDelayTimer = -1;
                 this.serveTargetX = -1;
             }
@@ -203,13 +259,39 @@ class AI {
         return layout.courtTop - GAME_CONFIG.PLAYER.SERVE_OFFSET - this.player.h / 2;
     }
 
+    getWallHomeX() {
+        return layout.centerX;
+    }
+
+    getAttackerFrontY() {
+        // Keep attacker aggressive, but not so close to the net that fixed-power shots frequently sail long.
+        const ratioFrontY = layout.courtTop + layout.COURT_H * this.attackerFrontCourtRatio;
+        return min(this.getNetFrontY(), ratioFrontY);
+    }
+
+    getAttackerHitSafeY() {
+        // Waiting position can be forward, but actual contact should stay on a safer line.
+        const ratioSafeY = layout.courtTop + layout.COURT_H * this.attackerHitSafeCourtRatio;
+        return min(this.getAttackerFrontY(), ratioSafeY);
+    }
+
+    isServeReceivePhase(ball) {
+        return ball && ball.justServed && scoreManager.currentServer === 'PLAYER';
+    }
+
     updateAttackerY(ball) {
         if (this.personality !== 'attacker') return;
         if (!ball || ball.isWaiting || ball.isTossing) return;
 
         // On serve receive: do NOT come forward before the first bounce.
-        if (ball.justServed && scoreManager.currentServer === 'PLAYER' && ball.bounceCount === 0) {
+        if (this.isServeReceivePhase(ball)) {
             this._attackerYTarget = this.getBaselineY();
+            return;
+        }
+
+        // After attacking, hold the chosen lane while the ball is on the player's side
+        // so the AI doesn't fidget vertically waiting for the next return.
+        if (ball.lastHitter === this.player && ball.y >= layout.netY) {
             return;
         }
 
@@ -224,7 +306,7 @@ class AI {
         if (this._attackerYRepositionTimer > 0) return;
 
         const serviceY = this.getServiceLineY();
-        const netFrontY = this.getNetFrontY();
+        const netFrontY = this.getAttackerFrontY();
         const baselineY = this.getBaselineY();
 
         const preferNet = (Math.abs(ball.y - layout.netY) < GAME_CONFIG.AI.BOUNCE_DISTANCE * 0.45);
@@ -247,6 +329,18 @@ class AI {
 
     updateTargetY(ball) {
         const serveLineY = layout.courtTop + layout.COURT_H * GAME_CONFIG.AI.SERVE_LINE_RATIO;
+        const isServeReceive = this.isServeReceivePhase(ball);
+
+        if (ball.roundEnding) {
+            this.targetY = this.getBaselineY();
+            this._prevBounceCount = ball.bounceCount;
+            return;
+        }
+
+        if (this.personality === 'wall' && !ball.isWaiting && !ball.isTossing) {
+            // Wall recovers back to the baseline instead of creeping forward in rallies.
+            this.targetY = this.getBaselineY();
+        }
 
         if (ball.bounceCount === 1 && this._prevBounceCount === 0 && !ball.isTossing) {
             if (ball.y > serveLineY && ball.y < layout.netY) {
@@ -258,15 +352,18 @@ class AI {
                     GAME_CONFIG.AI.BOUNCE_DISTANCE * speedFactor
                 );
 
-                if (this.personality === 'attacker') {
+                if (this.personality === 'attacker' && !isServeReceive) {
                     // Move up toward service line / net more aggressively
                     const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * 0.45);
-                    this.targetY = preferNet ? this.getNetFrontY() : this.getServiceLineY();
+                    this.targetY = preferNet ? this.getAttackerHitSafeY() : min(this.getServiceLineY(), this.getAttackerHitSafeY());
 
                     // Force attacker to get close enough if ball is critically short
                     if (this.targetY > ball.y - dynamicBounceDist + GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * 0.8) {
-                        this.targetY = ball.y - dynamicBounceDist;
+                        this.targetY = min(this.getAttackerHitSafeY(), ball.y - dynamicBounceDist);
                     }
+                } else if (this.personality === 'wall') {
+                    // Wall prefers depth and stability, so even on short balls it avoids stepping in.
+                    this.targetY = this.getBaselineY();
                 } else {
                     this.targetY = ball.y - dynamicBounceDist;
                 }
@@ -283,30 +380,48 @@ class AI {
     applySmoothMovement() {
         const AI = GAME_CONFIG.AI;
         const baseline = layout.courtTop - GAME_CONFIG.PLAYER.SERVE_OFFSET - this.player.h / 2;
+        const isServeReceive = this.isServeReceivePhase(ball);
+        const isRoundEnding = !!ball.roundEnding;
 
-        if (this.personality === 'attacker') {
+        if (this.personality === 'attacker' && !isServeReceive && !isRoundEnding) {
             this.updateAttackerY(ball);
         }
 
-        let dx = this.targetX - this.player.x;
+        // During point-end recovery, don't reserve a serve target yet.
+        // Otherwise attacker can carry a stale serveTargetX into the next point and never toss.
+        const targetX = isRoundEnding
+            ? this.player.x
+            : (this.personality === 'wall' && !ball.isWaiting && !ball.isTossing
+                ? this.targetX
+                : this.targetX);
+        let dx = targetX - this.player.x;
         if (Math.abs(dx) >= AI.MOVE_DEADZONE) {
-            let lerpFactor = (scoreManager.currentServer === 'PLAYER' && !ball.isWaiting)
-                ? AI.LERP_FACTOR_NORMAL
-                : AI.LERP_FACTOR_SERVE;
+            let lerpFactor = isRoundEnding
+                ? AI.LERP_FACTOR_SERVE
+                : ((scoreManager.currentServer === 'PLAYER' && !ball.isWaiting)
+                    ? AI.LERP_FACTOR_NORMAL
+                    : AI.LERP_FACTOR_SERVE);
             let moveStep = dx * lerpFactor;
-            moveStep = constrain(moveStep, -this.player.speed * this.speedMult, this.player.speed * this.speedMult);
+            const maxSpeed = isRoundEnding
+                ? this.player.speed * this.speedMult * 0.7
+                : this.player.speed * this.speedMult;
+            moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
             this.player.x += moveStep;
         }
 
 
         let destY = (this.targetY !== null) ? this.targetY : baseline;
-        if (this.personality === 'attacker' && this.targetY == null && !ball.isWaiting && !ball.isTossing) {
+        if (this.personality === 'attacker' && !isServeReceive && !isRoundEnding && this.targetY == null && !ball.isWaiting && !ball.isTossing) {
             destY = this._attackerYTarget ?? destY;
         }
         let dy = destY - this.player.y;
         if (Math.abs(dy) >= AI.MOVE_DEADZONE) {
-            let moveStep = dy * AI.LERP_FACTOR_NORMAL;
-            moveStep = constrain(moveStep, -this.player.speed * this.speedMult, this.player.speed * this.speedMult);
+            let lerpFactor = isRoundEnding ? AI.LERP_FACTOR_SERVE : AI.LERP_FACTOR_NORMAL;
+            let moveStep = dy * lerpFactor;
+            const maxSpeed = isRoundEnding
+                ? this.player.speed * this.speedMult * 0.7
+                : this.player.speed * this.speedMult;
+            moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
             this.player.y += moveStep;
         }
     }
@@ -329,6 +444,13 @@ class AI {
             let yDiff = Math.abs(this.player.y - ball.y);
             if (xDiff < GAME_CONFIG.AI.RECEIVE_X_THRESHOLD &&
                 yDiff < GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD) {
+                // Attacker can wait forward, but should step back to a safe hit line
+                // before swinging so fixed-power returns stay playable.
+                if (this.personality === 'attacker' &&
+                    !this.isServeReceivePhase(ball) &&
+                    this.player.y > this.getAttackerHitSafeY() + GAME_CONFIG.AI.MOVE_DEADZONE) {
+                    return;
+                }
                 // On serve receive, always wait for 1 bounce before returning.
                 // (Only applies during the serve-return phase, not normal rallies/volleys.)
                 if (!(ball.justServed && scoreManager.currentServer === 'PLAYER' && ball.bounceCount === 0)) {

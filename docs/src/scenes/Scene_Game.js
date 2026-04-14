@@ -36,7 +36,7 @@ const Scene_Game = {
             opponentAI.prediction    = levelConfig.prediction;
             if (typeof opponentAI.setPersonality === 'function') {
                 // Single mode only: random personality per match
-                const personalities = ['basic', 'attacker', 'wide'];
+                const personalities = ['basic', 'attacker', 'wide', 'wall'];
                 opponentAI.setPersonality(random(personalities));
             }
             opponentAI.resetServeState();
@@ -144,7 +144,7 @@ const Scene_Game = {
                 return;
             }
             if (key === '2') {
-                const personalities = ['basic', 'attacker', 'wide'];
+                const personalities = ['basic', 'attacker', 'wide', 'wall'];
                 let idx = personalities.indexOf(opponentAI.personality);
                 let nextP = personalities[(idx + 1) % personalities.length];
                 opponentAI.setPersonality(nextP);
@@ -171,7 +171,7 @@ const Scene_Game = {
         opponent.resetState();
         // New match start: re-roll personality (single mode AI only)
         if (!isMultiplayer && opponentAI && typeof opponentAI.setPersonality === 'function') {
-            const personalities = ['basic', 'attacker', 'wide'];
+            const personalities = ['basic', 'attacker', 'wide', 'wall'];
             opponentAI.setPersonality(random(personalities));
             opponentAI.resetServeState();
         }
