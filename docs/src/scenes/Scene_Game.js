@@ -78,17 +78,19 @@ const Scene_Game = {
 
         // skillbar placeholder
         // p1
+        let p1Energy = player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100);
         this.drawCircularSkillUI(
             layout.VIRTUAL_W - 500, 
             layout.VIRTUAL_H - 250, 
-            player.skillEnergy
+            p1Energy
         );
 
         // p2 or opponent
+        let p2Energy = opponent.skillCooldown === 0 ? 100 : map(opponent.skillCooldown, opponent.maxCooldown, 0, 0, 100);
         this.drawCircularSkillUI(
             500, 
             250, 
-            opponent.skillEnergy
+            p2Energy
         );
 
         // gear
