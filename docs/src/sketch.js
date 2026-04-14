@@ -106,6 +106,8 @@ function setup() {
 }
 
 function draw() {
+    strokeJoin(ROUND);
+    
     background(GAME_CONFIG.COLORS.WHITE);
     
     //if change the BGM

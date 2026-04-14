@@ -150,75 +150,88 @@ const Scene_Game = {
     drawCustomScoreboard: function() {
         push();
         if (!scoreManager || scoreManager.playerScoreLabel == null || scoreManager.opponentScoreLabel == null) {
+            pop();
             return;
         }
-        const boardW = 360; 
-        const boardH = 300; 
-        const marginX = 120;
-        const marginY = 0;
-        const x = marginX;
-        const y = layout.VIRTUAL_H - marginY - boardH;
+
+        const customGold = color(255, 188, 31);
+
+        // pic
+        const imgW = 360; 
+        const imgH = 300; 
+        const imgX = 120;
+        const imgY = layout.VIRTUAL_H - imgH + 30;
         
-        let scoreKey = "";
+        // back up
+        const backupW = 280;
+        const backupH = 165;
+        const backupX = 180;
+        const backupY = layout.VIRTUAL_H - backupH - 15;
+        const dividerX = backupX + backupW / 2;
+
         let p1 = (scoreManager?.playerScoreLabel ?? "0").toString().toLowerCase();
         let p2 = (scoreManager?.opponentScoreLabel ?? "0").toString().toLowerCase();
 
-        if (p1 === "40" && p2 === "40") {
-            scoreKey = "deuce";
-        }
-        else if (p1 === "ad") {
-            scoreKey = "ad_40";
-        } 
-        else if (p2 === "ad") {
-            scoreKey = "40_ad";
-        }
-        else {
-            scoreKey = `${p1}_${p2}`;
-        }
-        
+        const isDeuce = (p1 === "40" && p2 === "40") || p1 === "deuce" || p2 === "deuce";
+        const isP1Ad = (p1 === "ad");
+        const isP2Ad = (p2 === "ad");
+
+        let scoreKey = isDeuce ? "deuce" : (isP1Ad ? "ad_40" : (isP2Ad ? "40_ad" : `${p1}_${p2}`));
         let img = scoreImages[scoreKey];
         
         if (img && img.width && img.height) {
-            image(img, x, y, boardW, boardH);
+            image(img, imgX, imgY, imgW, imgH);
         }
         else {
-            // backup scoring version
+            // backup scoring design
+            push();
             noStroke();
-            fill(30, 30, 30, 200);
-            rect(x, y, boardW, boardH, 15);
+            fill(20, 20, 25, 220);
+            rect(backupX, backupY, backupW, backupH, 20);
 
-            stroke(255, 50);
-            strokeWeight(2);
-            line(x + 20, y + boardH/2, x + boardW - 20, y + boardH/2);
-            
-            noStroke();
             textAlign(CENTER, CENTER);
             textStyle(BOLD);
+
+            if (isDeuce) {
+                fill(customGold);
+                textSize(50);
+                text("DEUCE", dividerX, backupY + 75);
+            }
+            else{
+                stroke(255, 255, 255, 60);
+                strokeWeight(2);
+                line(dividerX, backupY + 45, dividerX, backupY + 110);
+                noStroke();
+                
+                textSize(54);
+                // p1
+                fill(255, 100, 100);
+                let p1Display = isP1Ad ? "AD" : (isP2Ad ? "40" : p1.toUpperCase());
+                text(p1Display, dividerX - 65, backupY + 75);
+
+                // p2
+                fill(100, 200, 255);
+                let p2Display = isP2Ad ? "AD" : (isP1Ad ? "40" : p2.toUpperCase());
+                text(p2Display, dividerX + 65, backupY + 75);
             
-            fill(255, 100, 100);
-            textSize(32);
-            text(scoreManager.opponentScoreLabel ?? "0", x + boardW/2, y + boardH * 0.3);
-            
-            fill(100, 200, 255);
-            textSize(32);
-            text(scoreManager.playerScoreLabel ?? "0", x + boardW/2, y + boardH * 0.7);
+                textSize(12);
+                fill(255, 120);
+                text("P1", dividerX - 65, backupY + 30);
+                text("P2", dividerX + 65, backupY + 30);
+            }
+            pop();
         }
             
-        const customGold = color(255, 188, 31);
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
         noStroke();
         fill(customGold);
         textSize(22);
-
-        let displayP1 = (p1 === "40" && p2 === "40") ? "DEUCE" : p1.toUpperCase();
-        let displayP2 = (p1 === "40" && p2 === "40") ? "DEUCE" : p2.toUpperCase();
         
-        text(`${scoreManager.opponentGames} : ${scoreManager.playerGames}`, x + boardW / 2 + 18, y + 225);
+        text(`${scoreManager.playerGames} : ${scoreManager.opponentGames}`, dividerX, backupY + 135);
 
         pop();
     },
-
 
     drawPauseButton: function() {
         const margin = 60;
@@ -334,7 +347,7 @@ const Scene_Game = {
 
         fill(255);
         textSize(80);
-        text(`${scoreManager.opponentGames} - ${scoreManager.playerGames}`, centerX, centerY);
+        text(`${scoreManager.playerGames} - ${scoreManager.opponentGames}`, centerX, centerY);
         
         textSize(24);
         fill(150);
@@ -345,20 +358,20 @@ const Scene_Game = {
         let drawW = 100 * 1.5;
         let drawH = 64 * 1.5;
 
-        if (opponent && opponent.img) {
-            imageMode(CENTER);
-            image(opponent.img, centerX - 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH); 
-            fill(255, 100, 100); 
-            textSize(24);
-            text(p2Name.toUpperCase(), centerX - 180, centerY + 90);
-        }
-
         if (player && player.img) {
             imageMode(CENTER);
-            image(player.img, centerX + 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH);
+            image(player.img, centerX - 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH); 
+            fill(255, 100, 100); 
+            textSize(24);
+            text(p1Name.toUpperCase(), centerX - 180, centerY + 90);
+        }
+
+        if (opponent && opponent.img) {
+            imageMode(CENTER);
+            image(opponent.img, centerX + 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH);
             fill(100, 200, 255); 
             textSize(24);
-            text(p1Name.toUpperCase(), centerX + 180, centerY + 90);
+            text(p2Name.toUpperCase(), centerX + 180, centerY + 90);
         }
 
         fill(0, 255, 0);
