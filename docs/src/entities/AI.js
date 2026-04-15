@@ -36,7 +36,6 @@ class AI {
         this.wallCenterJitter = 18; // small offset so wall doesn't feel robotic
         this.wallReturnSpread = 26; // target spread around court center on returns
         this.wallReturnClampScale = 0.72; // extra safety factor for center returns
-
         // "wide" (big left/right split shots) tuning (difficulty-adjusted in setPersonality)
         this.wideVxMin = 4;
         this.wideVxMax = 10;
@@ -337,11 +336,6 @@ class AI {
             return;
         }
 
-        if (this.personality === 'wall' && !ball.isWaiting && !ball.isTossing) {
-            // Wall recovers back to the baseline instead of creeping forward in rallies.
-            this.targetY = this.getBaselineY();
-        }
-
         if (ball.bounceCount === 1 && this._prevBounceCount === 0 && !ball.isTossing) {
             if (ball.y > serveLineY && ball.y < layout.netY) {
                 // Calculate dynamic bounce distance based on ball speed multiplier
@@ -361,9 +355,6 @@ class AI {
                     if (this.targetY > ball.y - dynamicBounceDist + GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * 0.8) {
                         this.targetY = min(this.getAttackerHitSafeY(), ball.y - dynamicBounceDist);
                     }
-                } else if (this.personality === 'wall') {
-                    // Wall prefers depth and stability, so even on short balls it avoids stepping in.
-                    this.targetY = this.getBaselineY();
                 } else {
                     this.targetY = ball.y - dynamicBounceDist;
                 }
