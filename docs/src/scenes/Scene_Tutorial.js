@@ -29,6 +29,7 @@ const Scene_Tutorial = {
         }
 
         player.skillType = 'FEATHER_STORM';
+        player.charName = 'bird';
 
         this.resetState(0);
         this.isPausedForIntro = true;
@@ -110,10 +111,11 @@ const Scene_Tutorial = {
 
         const step = tutorialManager.currentStep;
         if (step >= 4) {
-            this.drawCircularSkillUI(
+            Scene_Game.drawCircularSkillUI(
                 layout.VIRTUAL_W - 500, 
                 layout.VIRTUAL_H - 250, 
-                player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100)
+                player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100),
+                player.charName
             );
         }
         this.handleStepInitialization(step);
@@ -597,7 +599,7 @@ const Scene_Tutorial = {
         pop();
     },
 
-    drawCircularSkillUI: function(x, y, energy) {
+    /* drawCircularSkillUI: function(x, y, energy) {
         const size = 80;         
         const strokeW = 8;       
         const progress = (energy || 0) / 100; 
@@ -632,5 +634,5 @@ const Scene_Tutorial = {
         let endAngle = map(progress, 0, 1, 0, TWO_PI);
         arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
         pop();
-    }
+    } */
 };

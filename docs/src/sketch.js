@@ -15,6 +15,7 @@ let difficultyImages = [];
 let tutorialImg;
 let gearImg;
 let scoreImages = {}; 
+let skillButtonImages = {};
 let soundManager;
 const STATES = GAME_CONFIG.STATES;
 let lastMusicState = null;
@@ -82,9 +83,17 @@ function preload() {
             }
         }
     });
-    //load sound
+    // load sound
     soundManager = new SoundManager();
     soundManager.loadSounds();
+
+    // skill button
+    if (GAME_CONFIG && GAME_CONFIG.ASSETS && GAME_CONFIG.ASSETS.SKILL_ICONS) {
+        const icons = GAME_CONFIG.ASSETS.SKILL_ICONS;
+        for (let role in icons) {
+            skillButtonImages[role] = loadImage(icons[role]);
+        }
+    }
 }
 
 function setup() {

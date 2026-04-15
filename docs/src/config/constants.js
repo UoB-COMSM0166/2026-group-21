@@ -120,7 +120,13 @@ const GAME_CONFIG = {
         TUTORIAL_IMG: 'assets/images/game_key_instruction.png',
         COURT_IMG: 'assets/images/bg_stadium.png',
         GEAR_IMG: 'assets/images/settings.png',
-        SCORE_PATH: 'assets/images/'
+        SCORE_PATH: 'assets/images/',
+        SKILL_ICONS:{
+            cat: 'assets/images/cat_skill_button.png',
+            dog: 'assets/images/dog_skill_button.png',
+            deer: 'assets/images/deer_skill_button.png',
+            bird: 'assets/images/bird_skill_button.png'
+        }
     },
 
     CONTROLS: {
@@ -158,7 +164,11 @@ const GAME_CONFIG = {
         OVERLAY_TEXT_STROKE: 4,
         WINNER_Y_OFFSET: 50,        // winner text vertical offset from center
         RESTART_Y_OFFSET: 50,       // restart hint vertical offset from center
-        SCORE_MARGIN_TOP: 10        // safety margin from top edge
+        SCORE_MARGIN_TOP: 10,       // safety margin from top edge
+        SKILL_BUTTON_SIZE: 100,
+        SKILL_MASK_OPACITY: 180,
+        SKILL_MASK_INSET: 8,
+        GOLD_COLOR: [255, 188, 31, 200]
     },
 
     FEEDBACK: {
@@ -182,6 +192,7 @@ const GAME_CONFIG = {
     CHARACTERS: [
         {
             name: "Cat",
+            charName: "cat",
             speed: 6,
             skillType: 'SHADOW_TELEPORT',
             assets: {
@@ -192,6 +203,7 @@ const GAME_CONFIG = {
         },
         {
             name: "Dog",
+            charName: "dog",
             speed: 6,
             skillType: 'GIGA_BALL',
             assets: {
@@ -202,6 +214,7 @@ const GAME_CONFIG = {
         },
         {
             name: "Deer",
+            charName: "deer",
             speed: 6,
             skillType: 'FOREST_ZEN',
             assets: {
@@ -212,6 +225,7 @@ const GAME_CONFIG = {
         },
         {
             name: "Bird",
+            charName: "bird",
             speed: 6,
             skillType: 'FEATHER_STORM',
             assets: {

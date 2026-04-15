@@ -9,6 +9,7 @@ const Scene_Game = {
             player.speed = p1Config.speed;
             player.skillType = p1Config.skillType;
             player.name = p1Config.name;
+            player.charName = p1Config.charName || p1Config.name.toLowerCase();
             if (characterImages[p1CharIndex]) player.img = characterImages[p1CharIndex].back;
         }
 
@@ -16,6 +17,7 @@ const Scene_Game = {
             opponent.speed = p2Config.speed;
             opponent.skillType = p2Config.skillType;
             opponent.name = p2Config.name;
+            opponent.charName = p2Config.charName || p2Config.name.toLowerCase();
             if (characterImages[p2CharIndex]) opponent.img = characterImages[p2CharIndex].front;
         }
 
@@ -82,7 +84,8 @@ const Scene_Game = {
         this.drawCircularSkillUI(
             layout.VIRTUAL_W - 500, 
             layout.VIRTUAL_H - 250, 
-            p1Energy
+            p1Energy,
+            player.charName
         );
 
         // p2 or opponent
@@ -90,7 +93,8 @@ const Scene_Game = {
         this.drawCircularSkillUI(
             500, 
             250, 
-            p2Energy
+            p2Energy,
+            opponent.charName
         );
 
         // gear
@@ -257,52 +261,80 @@ const Scene_Game = {
         pop();
     },
 
-    drawCircularSkillUI: function(x, y, energy) {
-        const size = 80;         
-        const strokeW = 8;       
-        const radius = size / 2;
+    drawCircularSkillUI: function(x, y, energy, roleName) {
+        const ui = GAME_CONFIG.UI;
+        const size = ui.SKILL_BUTTON_SIZE;         
+        const strokeW = 8;
         const progress = (energy || 0) / 100; 
         const goldColor = color(255, 188, 31); 
 
         push();
         translate(x, y);
+        imageMode(CENTER);
 
-        // gray circle
-        noStroke();
-        fill(40, 40, 45); 
-        circle(0, 0, size);
+        // skill button pics
+        let roleKey = roleName ? roleName.toLowerCase() : "";
+        let img = skillButtonImages[roleKey];
+        //img = null;
 
-        // yellow thunder
-        fill(goldColor);
-        noStroke();
-        beginShape();
-        vertex(5, -28);
-        vertex(-15, 5);
-        vertex(-2, 5);
-        vertex(-8, 28);
-        vertex(15, -5);
-        vertex(2, -5);
-        endShape(CLOSE);
+        if (img && img.width > 0) {
+            image(img, 0, 0, size, size);
+            
+            // fan-shaped mask
+            if (progress < 1) {
+                fill(0, 0, 0, ui.SKILL_MASK_OPACITY);
+                noStroke();
 
-        // skill bar outer ring
-        noFill();
-        stroke(60, 60, 65, 150);
-        strokeWeight(strokeW);
-        ellipse(0, 0, size + strokeW + 4);
-
-        // skill bar progress
-        if (energy >= 100) {
-            stroke(255, 255, 200); 
-            drawingContext.shadowBlur = 15;
-            drawingContext.shadowColor = goldColor;
-        } else {
-            stroke(goldColor);
+                let maskSize =  size - ui.SKILL_MASK_INSET;
+                let angle = map(progress, 0, 1, TWO_PI, 0);
+                arc(0, 0, maskSize, maskSize, -HALF_PI, -HALF_PI + angle, PIE);
+            }
         }
-        strokeWeight(strokeW);
-        strokeCap(ROUND);
-        let endAngle = map(progress, 0, 1, 0, TWO_PI);
-        arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
+        else{
+            //gray circle
+            noStroke();
+            fill(40, 40, 45); 
+            circle(0, 0, size);
+            
+            // yellow thunder
+            fill(goldColor);
+            noStroke();
+            beginShape();
+            vertex(5, -28);
+            vertex(-15, 5);
+            vertex(-2, 5);
+            vertex(-8, 28);
+            vertex(15, -5);
+            vertex(2, -5);
+            endShape(CLOSE);
 
+            // skill bar outer ring
+            noFill();
+            stroke(60, 60, 65, 150);
+            strokeWeight(strokeW);
+            ellipse(0, 0, size + strokeW + 4);
+
+            // skill bar progress
+            if (energy >= 100) {
+                stroke(255, 255, 200); 
+                drawingContext.shadowBlur = 15;
+                drawingContext.shadowColor = goldColor;
+            } else {
+                stroke(goldColor);
+            }
+            strokeWeight(strokeW);
+            strokeCap(ROUND);
+            let endAngle = map(progress, 0, 1, 0, TWO_PI);
+            arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
+        }
+
+        // full energy effects
+        if (progress >= 1) {
+            noFill();
+            stroke(...ui.GOLD_COLOR);
+            strokeWeight(5);
+            circle(0, 0, size + 8);
+        }
         pop();
     },
 
