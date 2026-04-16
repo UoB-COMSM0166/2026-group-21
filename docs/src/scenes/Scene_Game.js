@@ -1,5 +1,6 @@
 const Scene_Game = {
     isShowingScore: false,
+    isDevMode: false,
 
     setup: function() {
         const p1Config = GAME_CONFIG.CHARACTERS[p1CharIndex];
@@ -33,6 +34,11 @@ const Scene_Game = {
             opponentAI.reactionDelay = levelConfig.reactionDelay;
             opponentAI.errorRange    = levelConfig.errorRange;
             opponentAI.prediction    = levelConfig.prediction;
+            if (typeof opponentAI.setPersonality === 'function') {
+                // Single mode only: random personality per match
+                const personalities = ['basic', 'attacker', 'wide', 'wall'];
+                opponentAI.setPersonality(random(personalities));
+            }
             opponentAI.resetServeState();
         } else {
             opponent.isAI = false;
@@ -95,6 +101,10 @@ const Scene_Game = {
         if (this.isShowingScore) {
             this.drawScoreOverlay();
         }
+        
+        if (this.isDevMode) {
+            this.drawDevMenu();
+        }
         pop();
     },
     // handle keyboard triggers for player action, esc and restart
@@ -108,6 +118,41 @@ const Scene_Game = {
             return;
         }
         if (this.isShowingScore) return;
+        
+        // Developer Mode Toggles
+        if (key === '9') {
+            this.isDevMode = !this.isDevMode;
+            if (soundManager) soundManager.play('select');
+            return;
+        }
+        
+        if (this.isDevMode && !isMultiplayer && typeof opponentAI !== 'undefined' && opponentAI) {
+            if (key === '1') {
+                const diffs = ['EASY', 'NORMAL', 'HARD'];
+                let idx = diffs.indexOf(opponentAI.difficulty);
+                let nextDiff = diffs[(idx + 1) % diffs.length];
+
+                const levelConfig = GAME_CONFIG.AI_LEVELS[nextDiff];
+                opponentAI.difficulty    = nextDiff;
+                opponentAI.speedMult     = levelConfig.speedMult;
+                opponentAI.reactionDelay = levelConfig.reactionDelay;
+                opponentAI.errorRange    = levelConfig.errorRange;
+                opponentAI.prediction    = levelConfig.prediction;
+                // Keep the wide/attacker tuning matching the difficulty
+                opponentAI.setPersonality(opponentAI.personality);
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+            if (key === '2') {
+                const personalities = ['basic', 'attacker', 'wide', 'wall'];
+                let idx = personalities.indexOf(opponentAI.personality);
+                let nextP = personalities[(idx + 1) % personalities.length];
+                opponentAI.setPersonality(nextP);
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+        }
+
         if (scoreManager.isMatchOver) {
             if (key.toLowerCase() === CONTROLS.RESTART) {
                 if (soundManager) soundManager.play('confirm');
@@ -124,6 +169,12 @@ const Scene_Game = {
     restartGame: function () {
         player.resetState();
         opponent.resetState();
+        // New match start: re-roll personality (single mode AI only)
+        if (!isMultiplayer && opponentAI && typeof opponentAI.setPersonality === 'function') {
+            const personalities = ['basic', 'attacker', 'wide', 'wall'];
+            opponentAI.setPersonality(random(personalities));
+            opponentAI.resetServeState();
+        }
         if (soundManager && soundManager.sounds.victory && 
             soundManager.sounds.victory.isLoaded() && soundManager.sounds.victory.isPlaying()) {
             soundManager.sounds.victory.stop();
@@ -193,6 +244,29 @@ const Scene_Game = {
         textSize(26);
         let serverName = (scoreManager.currentServer === 'PLAYER') ? p1Name : p2Name;
         text(`Next Serve: ${serverName.toUpperCase()}`, centerX, centerY + 150);
+        pop();
+    },
+
+    drawDevMenu: function() {
+        if (!opponentAI || isMultiplayer) return;
+        push();
+        fill(0, 0, 0, 180);
+        noStroke();
+        rect(10, 10, 280, 120, 10);
+        
+        fill(255, 255, 0);
+        textSize(16);
+        textAlign(LEFT, TOP);
+        text("DEVELOPER MODE", 20, 20);
+        
+        fill(255);
+        textSize(14);
+        text(`[1] AI Difficulty : ${opponentAI.difficulty}`, 20, 50);
+        text(`[2] AI Personality: ${(opponentAI.personality || 'basic').toUpperCase()}`, 20, 75);
+        
+        fill(200, 200, 200);
+        textSize(12);
+        text("Press '9' to Toggle Dev Mode", 20, 105);
         pop();
     }
 };

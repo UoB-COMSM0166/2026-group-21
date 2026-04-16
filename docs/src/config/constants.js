@@ -72,6 +72,29 @@ const GAME_CONFIG = {
         SERVE_MAX_VX: 12
     },
 
+    BALL_HIT_BEHAVIOR: {
+        SCORE_DISPLAY_DURATION: 3000,  // ms: duration to show game score after winning | ↓: faster between-game transitions
+        GIGA_SHOT_STUN: 45,            // frames: stun duration when hit by giga shot | ↑: opponent stunned longer
+        MIN_VX_FOR_SIGN: 0.25,         // minimum vx to determine shot direction | ↑: requires faster ball to detect direction
+        AIRTIME_CALC_MIN_FRAMES: 8,    // minimum frames for airtime calculation | ↑: assumes longer flight time
+        GRAVITY_MIN: 0.01,             // minimum gravity value for calculations | ↑: prevents division errors
+        AIR_RESISTANCE_MIN: 0.0001,    // minimum air resistance for calculations | ↑: prevents division errors
+        
+        // Wall personality shot physics
+        WALL_RETURN_SPREAD_DEFAULT: 26,    // ↓: tighter center returns
+        WALL_RETURN_CLAMP_DEFAULT: 0.72,   // ↑: more risky returns (closer to lines)
+        WALL_SAFETY_MARGIN: 36,            // ↓: allows shots closer to sidelines
+        
+        // Attacker personality shot physics
+        ATTACKER_SAFETY_MARGIN: 32,        // ↓: allows shots closer to sidelines
+        ATTACKER_MAX_ABS_SCALE: 0.78,      // ↑: more aggressive angles
+        ATTACKER_EXTREME_MULT: 0.8,        // multiplier for extreme angle shots | ↑: more extreme angles
+        
+        // Wide personality shot physics
+        WIDE_SAFETY_MARGIN: 20,            // ↓: allows shots even closer to sidelines
+        WIDE_LIMIT_SCALE: 0.85             // ↑: more risky wide shots
+    },
+
     COLORS: {
         WHITE: [255, 255, 255],
         BLACK: [0, 0, 0],
@@ -223,38 +246,205 @@ const GAME_CONFIG = {
 
     AI_LEVELS: {
         EASY: {
-            speedMult: 0.7,     // Directly proportional
-            reactionDelay: 13,  // Inversely proportional
-            errorRange: 45,     // Inversely proportional
-            prediction: 4       // Directly proportional
+            speedMult: 0.7,     // ↑: AI moves faster
+            reactionDelay: 13,  // ↓: AI reacts quicker to ball
+            errorRange: 45,     // ↓: more accurate positioning
+            prediction: 4       // ↑: better at predicting ball trajectory
         },
         NORMAL: {
-            speedMult: 0.8,
-            reactionDelay: 8,
-            errorRange: 25,
-            prediction: 8
+            speedMult: 0.8,     // ↑: AI moves faster
+            reactionDelay: 8,   // ↓: AI reacts quicker to ball
+            errorRange: 25,     // ↓: more accurate positioning
+            prediction: 8       // ↑: better at predicting ball trajectory
         },
         HARD: {
-            speedMult: 0.89,
-            reactionDelay: 5,
-            errorRange: 15,
-            prediction: 10
+            speedMult: 0.89,    // ↑: AI moves faster
+            reactionDelay: 5,   // ↓: AI reacts quicker to ball
+            errorRange: 15,     // ↓: more accurate positioning
+            prediction: 10      // ↑: better at predicting ball trajectory
         }
     },
 
     AI: {
-        FIDGET_SPEED: 0.015,        // Speed of lateral sway while receiving
-        HOME_X_DIVISOR: 4,          // Court ratio for receive home pos
-        FIDGET_RANGE_DIVISOR: 8,    // Court ratio for  lateral sway range
-        RECEIVE_X_THRESHOLD: 70,    
-        RECEIVE_Y_THRESHOLD: 100,
-        SERVE_DELAY_MIN: 90,
-        SERVE_DELAY_MAX: 160,
-        LERP_FACTOR_NORMAL: 0.2,
-        LERP_FACTOR_SERVE: 0.1,
-        SERVE_POS_PADDING: 10,
-        SERVE_DIST_THRESHOLD: 20,
-        SERVE_SWING_Z_MIN: 10,      // Min z height to swing during serve
-        SERVE_SWING_Z_MAX: 40       // Max z height to swing during serve
+        FIDGET_SPEED: 0.015,        // Speed of lateral sway while receiving | ↑: more side-to-side wobble
+        HOME_X_DIVISOR: 4,          // Court ratio for receive home pos | ↑: stands closer to sideline
+        FIDGET_RANGE_DIVISOR: 8,    // Court ratio for lateral sway range | ↓: wider sway range
+        RECEIVE_X_THRESHOLD: 70,    // ↑: AI starts moving to ball earlier (more responsive)
+        RECEIVE_Y_THRESHOLD: 100,   // ↑: AI moves forward earlier after bounce
+        SERVE_DELAY_MIN: 90,        // ↓: faster serves (less thinking time)
+        SERVE_DELAY_MAX: 160,       // ↓: faster serves (less variation)
+        LERP_FACTOR_NORMAL: 0.2,    // ↑: snappier movement during rallies (less smooth)
+        LERP_FACTOR_SERVE: 0.1,     // ↑: faster serve positioning
+        SERVE_POS_PADDING: 10,      // ↑: AI positions farther from target serve spot
+        SERVE_DIST_THRESHOLD: 20,   // ↑: AI tosses from farther away (sloppier serves)
+        SERVE_SWING_Z_MIN: 10,      // Min z height to swing during serve | ↓: hits toss earlier
+        SERVE_SWING_Z_MAX: 40,      // Max z height to swing during serve | ↑: more patient with high tosses
+        SERVE_LINE_RATIO: 0.18,     // Service line position ratio from court top | ↑: service line moves back
+        BOUNCE_DISTANCE: 140,       // Estimated Y distance ball travels after bounce | ↑: AI stands farther back
+        MOVE_DEADZONE: 3,           // Minimum movement delta to apply motion | ↑: less micro-adjustments (more robotic)
+        BOUNCE_DISTANCE_FACTOR: 0.5, // Multiplier for minimum bounce distance | ↑: AI keeps more distance on slow balls
+        BOUNCE_POSITION_FACTOR: 0.45, // Factor for preferring net position | ↑: AI rushes net more aggressively
+        RECEIVE_Y_FACTOR: 0.8,      // Factor for attacker Y positioning | ↑: attacker moves up even more
+        SERVE_SPEED_MULT: 0.7       // Speed multiplier during serve/round ending | ↑: faster recovery between points
+    },
+
+    AI_PERSONALITIES: {
+        // Default initialization values for constructor
+        DEFAULT_INIT: {
+            NOISE_OFFSET_MAX: 1000,
+            TARGET_X_FALLBACK: 450,
+            SKILL_USE_MIN_FRAMES: 60,
+            SKILL_USE_MAX_FRAMES: 300
+        },
+
+        // Basic personality (used as fallback)
+        BASIC: {
+            SKILL_USE_MIN_FRAMES: { EASY: 100, NORMAL: 60, HARD: 35 },
+            SKILL_USE_MAX_FRAMES: { EASY: 360, NORMAL: 300, HARD: 180 }
+        },
+
+        // Attacker personality: aggressive net play
+        ATTACKER: {
+            EASY: {
+                CHOOSE_BASELINE_PROB: 0.52,         // ↑: retreats to baseline more often
+                BASELINE_WHEN_BALL_DEEP_PROB: 0.78, // ↑: more likely to retreat when pressured
+                DEEP_BALL_THRESHOLD: 0.42,          // ↑: considers ball "deep" from further up court
+                PREFER_NET_PROB: 0.42,              // ↑: rushes net more aggressively
+                NORMAL_NET_PROB: 0.18,              // ↑: default net aggression
+                FRONT_COURT_RATIO: 0.26,            // ↑: plays farther back (safer)
+                HIT_SAFE_COURT_RATIO: 0.16,         // ↑: willing to hit from deeper in court
+                ANGLE_VX_MIN: 1.2,                  // ↑: minimum angle shot speed
+                ANGLE_VX_MAX: 3,                    // ↑: maximum angle shot speed
+                ANGLE_APPLY_PROB: 0.42,             // ↑: uses angle shots more often
+                ANGLE_AIM_AWAY_PROB: 0.58,          // ↑: aims away from opponent more
+                REPOSITION_MIN: 18,                 // ↓: faster repositioning
+                REPOSITION_MAX: 34,                 // ↓: faster repositioning
+                RETREAT_REPOSITION_MIN: 20,         // ↓: faster retreat speed
+                RETREAT_REPOSITION_MAX: 40,         // ↓: faster retreat speed
+                AFTER_HIT_RETREAT_PROB: 0.8,        // ↑: retreats after hitting more often
+                AFTER_HIT_MIN: 22,                  // ↓: starts retreat sooner
+                AFTER_HIT_MAX: 44                   // ↓: starts retreat sooner
+            },
+            NORMAL: {
+                CHOOSE_BASELINE_PROB: 0.38,
+                BASELINE_WHEN_BALL_DEEP_PROB: 0.66,
+                DEEP_BALL_THRESHOLD: 0.35,
+                PREFER_NET_PROB: 0.58,
+                NORMAL_NET_PROB: 0.3,
+                FRONT_COURT_RATIO: 0.29,
+                HIT_SAFE_COURT_RATIO: 0.16,
+                ANGLE_VX_MIN: 1.7,
+                ANGLE_VX_MAX: 4.2,
+                ANGLE_APPLY_PROB: 0.58,
+                ANGLE_AIM_AWAY_PROB: 0.72,
+                REPOSITION_MIN: 12,
+                REPOSITION_MAX: 26,
+                RETREAT_REPOSITION_MIN: 16,
+                RETREAT_REPOSITION_MAX: 34,
+                AFTER_HIT_RETREAT_PROB: 0.68,
+                AFTER_HIT_MIN: 18,
+                AFTER_HIT_MAX: 40
+            },
+            HARD: {
+                CHOOSE_BASELINE_PROB: 0.28,
+                BASELINE_WHEN_BALL_DEEP_PROB: 0.48,
+                DEEP_BALL_THRESHOLD: 0.3,
+                PREFER_NET_PROB: 0.72,
+                NORMAL_NET_PROB: 0.42,
+                FRONT_COURT_RATIO: 0.32,
+                HIT_SAFE_COURT_RATIO: 0.18,
+                ANGLE_VX_MIN: 2.2,
+                ANGLE_VX_MAX: 5.5,
+                ANGLE_APPLY_PROB: 0.72,
+                ANGLE_AIM_AWAY_PROB: 0.82,
+                REPOSITION_MIN: 8,
+                REPOSITION_MAX: 18,
+                RETREAT_REPOSITION_MIN: 12,
+                RETREAT_REPOSITION_MAX: 24,
+                AFTER_HIT_RETREAT_PROB: 0.55,
+                AFTER_HIT_MIN: 12,
+                AFTER_HIT_MAX: 26
+            },
+            DEFAULT: {
+                CHOOSE_BASELINE_PROB: 0.25,
+                BASELINE_WHEN_BALL_DEEP_PROB: 0.55,
+                DEEP_BALL_THRESHOLD: 0.35,
+                PREFER_NET_PROB: 0.75,
+                NORMAL_NET_PROB: 0.45,
+                FRONT_COURT_RATIO: 0.25,
+                HIT_SAFE_COURT_RATIO: 0.16,
+                ANGLE_VX_MIN: 1.5,
+                ANGLE_VX_MAX: 4,
+                ANGLE_APPLY_PROB: 0.55,
+                ANGLE_AIM_AWAY_PROB: 0.7,
+                REPOSITION_MIN: 12,
+                REPOSITION_MAX: 26,
+                RETREAT_REPOSITION_MIN: 16,
+                RETREAT_REPOSITION_MAX: 34,
+                AFTER_HIT_RETREAT_PROB: 0.55,
+                AFTER_HIT_MIN: 18,
+                AFTER_HIT_MAX: 40
+            }
+        },
+
+        // Wall personality: defensive center play
+        WALL: {
+            EASY: {
+                TRACK_RATIO: 0.5,           // ↑: follows ball more (drifts from center)
+                CENTER_JITTER: 32,          // ↓: less random positioning (more robotic)
+                RETURN_SPREAD: 42,          // ↓: tighter shots to center
+                RETURN_CLAMP_SCALE: 0.64    // ↑: takes more risk (shots closer to lines)
+            },
+            NORMAL: {
+                TRACK_RATIO: 0.68,
+                CENTER_JITTER: 22,
+                RETURN_SPREAD: 26,
+                RETURN_CLAMP_SCALE: 0.74
+            },
+            HARD: {
+                TRACK_RATIO: 0.82,
+                CENTER_JITTER: 10,
+                RETURN_SPREAD: 14,
+                RETURN_CLAMP_SCALE: 0.82
+            },
+            DEFAULT: {
+                TRACK_RATIO: 0.65,
+                CENTER_JITTER: 18,
+                RETURN_SPREAD: 26,
+                RETURN_CLAMP_SCALE: 0.72
+            }
+        },
+
+        // Wide personality: extreme angle shots
+        WIDE: {
+            EASY: {
+                VX_MIN: 2,              // ↑: faster minimum angle shots
+                VX_MAX: 5,              // ↑: faster maximum angle shots
+                EXTREME_PROB: 0.2,      // ↑: uses max angle more often
+                AIM_AWAY_PROB: 0.35,    // ↑: aims away from opponent more
+                APPLY_PROB: 0.35        // ↑: uses wide shots more frequently
+            },
+            NORMAL: {
+                VX_MIN: 4,
+                VX_MAX: 10,
+                EXTREME_PROB: 0.7,
+                AIM_AWAY_PROB: 0.7,
+                APPLY_PROB: 0.65
+            },
+            HARD: {
+                VX_MIN: 6,
+                VX_MAX: 14,
+                EXTREME_PROB: 0.88,
+                AIM_AWAY_PROB: 0.85,
+                APPLY_PROB: 0.82
+            },
+            DEFAULT: {
+                VX_MIN: 4,
+                VX_MAX: 10,
+                EXTREME_PROB: 0.7,
+                AIM_AWAY_PROB: 0.7,
+                APPLY_PROB: 0.65
+            }
+        }
     }
 };

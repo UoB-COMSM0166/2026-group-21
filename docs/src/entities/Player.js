@@ -54,7 +54,8 @@ class Player {
     display() {
         push();
         imageMode(CENTER);
-        translate(this.x, this.y);
+        // Round rendering coordinates to prevent float sub-pixel tearing
+        translate(Math.round(this.x), Math.round(this.y));
         if (this.stunTimer > 0) {
             this.drawStunStars();
         }
