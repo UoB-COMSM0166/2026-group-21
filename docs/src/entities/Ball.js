@@ -178,7 +178,7 @@ class Ball {
                             Scene_Game.nextRound();
                             this.roundEnding = false;
                             Scene_Game.isShowingScore = false;
-                        }, 3000);
+                        }, GAME_CONFIG.BALL_HIT_BEHAVIOR.SCORE_DISPLAY_DURATION);
                         
                     } else {
                         Scene_Game.nextRound();
@@ -213,7 +213,7 @@ class Ball {
         const hitY = abs(this.y - p.y) < this.r + p.h / 2;
         if (hitX && hitY) {
             if (this.isGigaShot) { 
-                p.stunTimer = 45;
+                p.stunTimer = GAME_CONFIG.BALL_HIT_BEHAVIOR.GIGA_SHOT_STUN;
             }
             this.r = GAME_CONFIG.BALL.RADIUS;
             this.isGigaShot = false;
@@ -243,20 +243,20 @@ class Ball {
                 // Center returns minimize risk with the game's fixed shot power.
                 const g = GAME_CONFIG.BALL.GRAVITY;
                 const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
-                const t = max(8, floor((2 * HIT_Z) / max(0.01, g))); // frames until z returns ~0
-                const sum = (1 - pow(air, t)) / max(0.0001, (1 - air)); // \sum air^i
+                const t = max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.GRAVITY_MIN, g)));
+                const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
                 const targetCenterX = layout.centerX + random(
-                    -(opponentAI.wallReturnSpread ?? 26),
-                    (opponentAI.wallReturnSpread ?? 26)
+                    -(opponentAI.wallReturnSpread ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_SPREAD_DEFAULT),
+                    (opponentAI.wallReturnSpread ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_SPREAD_DEFAULT)
                 );
                 const desiredVx = (targetCenterX - this.x) / sum;
-                const safetyMargin = 36;
+                const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_SAFETY_MARGIN;
                 const minX = layout.courtLeft + this.r + safetyMargin;
                 const maxX = layout.courtRight - this.r - safetyMargin;
                 const maxVxPos = (maxX - this.x) / sum;
                 const maxVxNeg = (this.x - minX) / sum;
                 const maxAbsForSign = (desiredVx >= 0) ? maxVxPos : maxVxNeg;
-                const clampScale = opponentAI.wallReturnClampScale ?? 0.72;
+                const clampScale = opponentAI.wallReturnClampScale ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_CLAMP_DEFAULT;
                 const safeAbs = max(0, maxAbsForSign * clampScale);
                 this.vx = constrain(desiredVx, -safeAbs, safeAbs);
             }
@@ -270,10 +270,11 @@ class Ball {
                 typeof opponentAI !== 'undefined' && opponentAI &&
                 opponentAI.personality === 'attacker') {
 
-                const minVx = opponentAI.attackerAngleVxMin ?? 1.5;
-                const maxVx = opponentAI.attackerAngleVxMax ?? 4;
-                const applyProb = opponentAI.attackerAngleApplyProb ?? 0.55;
-                const aimAwayProb = opponentAI.attackerAngleAimAwayProb ?? 0.7;
+                const attackerDefaults = GAME_CONFIG.AI_PERSONALITIES.ATTACKER.DEFAULT;
+                const minVx = opponentAI.attackerAngleVxMin ?? attackerDefaults.ANGLE_VX_MIN;
+                const maxVx = opponentAI.attackerAngleVxMax ?? attackerDefaults.ANGLE_VX_MAX;
+                const applyProb = opponentAI.attackerAngleApplyProb ?? attackerDefaults.ANGLE_APPLY_PROB;
+                const aimAwayProb = opponentAI.attackerAngleAimAwayProb ?? attackerDefaults.ANGLE_AIM_AWAY_PROB;
 
                 // Not every shot needs angle pressure.
                 if (random(1) < applyProb) {
@@ -282,23 +283,23 @@ class Ball {
                         sign = (player.x < this.x) ? 1 : -1;
                     } else {
                         sign = (this.vx < 0) ? -1 : 1;
-                        if (Math.abs(this.vx) < 0.25) sign = (random(1) < 0.5) ? -1 : 1;
+                        if (Math.abs(this.vx) < GAME_CONFIG.BALL_HIT_BEHAVIOR.MIN_VX_FOR_SIGN) sign = (random(1) < 0.5) ? -1 : 1;
                     }
 
                     // Keep attacker angles modest and in-bounds; this is support for pressure,
                     // not the large split-shot identity used by the "wide" personality.
                     const g = GAME_CONFIG.BALL.GRAVITY;
                     const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
-                    const t = max(8, floor((2 * HIT_Z) / max(0.01, g))); // frames until z returns ~0
-                    const sum = (1 - pow(air, t)) / max(0.0001, (1 - air)); // \sum air^i
-                    const safetyMargin = 32;
+                    const t = max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.GRAVITY_MIN, g)));
+                    const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
+                    const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_SAFETY_MARGIN;
                     const minX = layout.courtLeft + this.r + safetyMargin;
                     const maxX = layout.courtRight - this.r - safetyMargin;
                     const maxVxPos = (maxX - this.x) / sum;
                     const maxVxNeg = (this.x - minX) / sum;
                     const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
                     const mag = random(minVx, maxVx);
-                    const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * 0.78));
+                    const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_MAX_ABS_SCALE));
                     this.vx = sign * max(Math.abs(this.vx), cappedMag);
                 }
             }
@@ -312,11 +313,12 @@ class Ball {
                 typeof opponentAI !== 'undefined' && opponentAI &&
                 opponentAI.personality === 'wide') {
                 
-                const minVx = opponentAI.wideVxMin ?? 4;
-                const maxVx = opponentAI.wideVxMax ?? 10;
-                const extremeProb = opponentAI.wideExtremeProb ?? 0.7;
-                const aimAwayProb = opponentAI.wideAimAwayProb ?? 0.7;
-                const applyProb = opponentAI.wideApplyProb ?? 0.65;
+                const wideDefaults = GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
+                const minVx = opponentAI.wideVxMin ?? wideDefaults.VX_MIN;
+                const maxVx = opponentAI.wideVxMax ?? wideDefaults.VX_MAX;
+                const extremeProb = opponentAI.wideExtremeProb ?? wideDefaults.EXTREME_PROB;
+                const aimAwayProb = opponentAI.wideAimAwayProb ?? wideDefaults.AIM_AWAY_PROB;
+                const applyProb = opponentAI.wideApplyProb ?? wideDefaults.APPLY_PROB;
 
                 // Not every shot needs wide-angle intent.
                 if (random(1) >= applyProb) {
@@ -334,7 +336,7 @@ class Ball {
                     // Choose magnitude: bias toward extremes.
                     let mag;
                     if (random(1) < extremeProb) {
-                        mag = random(max(minVx, maxVx * 0.8), maxVx);
+                        mag = random(max(minVx, maxVx * GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_EXTREME_MULT), maxVx);
                     } else {
                         mag = random(minVx, maxVx);
                     }
@@ -343,11 +345,11 @@ class Ball {
                     // (Uses airtime from HIT_Z and air resistance sum.)
                     const g = GAME_CONFIG.BALL.GRAVITY;
                     const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
-                    const t = max(8, floor((2 * HIT_Z) / max(0.01, g))); // frames until z returns ~0
-                    const sum = (1 - pow(air, t)) / max(0.0001, (1 - air)); // \sum air^i
+                    const t = max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.GRAVITY_MIN, g)));
+                    const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
 
                     // Add an inward margin so "wide" still spreads but doesn't hug the lines too much.
-                    const safetyMargin = 20;
+                    const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_SAFETY_MARGIN;
                     const minX = layout.courtLeft + this.r + safetyMargin;
                     const maxX = layout.courtRight - this.r - safetyMargin;
 
@@ -356,7 +358,7 @@ class Ball {
                     const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
 
                     // Keep some risk (not 100% in), but reduce frequent outs by not using the full limit.
-                    const limitScale = 0.85;
+                    const limitScale = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_LIMIT_SCALE;
                     const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * limitScale));
                     this.vx = sign * cappedMag;
                 }

@@ -1,11 +1,11 @@
 class AI {
     constructor(playerInstance) {
         this.player = playerInstance;
-        this.noiseOffset = random(1000);
+        this.noiseOffset = random(GAME_CONFIG.AI_PERSONALITIES.DEFAULT_INIT.NOISE_OFFSET_MAX);
         this.fidgetSpeed = GAME_CONFIG.AI.FIDGET_SPEED;
         this.serveDelayTimer = -1;
         this.serveTargetX = -1;
-        this.targetX = layout ? layout.centerX : 450;
+        this.targetX = layout ? layout.centerX : GAME_CONFIG.AI_PERSONALITIES.DEFAULT_INIT.TARGET_X_FALLBACK;
         this.targetY = null;
         this.serveSwung = false;
         this._prevBounceCount = 0;
@@ -14,36 +14,47 @@ class AI {
         this.personality = 'basic';
         this._attackerYRepositionTimer = -1;
         this._attackerYTarget = null;
-        this.attackerChooseBaselineProb = 0.25; // chance to retreat to baseline
-        this.attackerBaselineWhenBallDeepProb = 0.55; // retreat more when ball is deep
-        this.attackerDeepBallThreshold = 0.35; // court-height ratio from top
-        this.attackerPreferNetProb = 0.75; // when ball is near net
-        this.attackerNormalNetProb = 0.45; // default net preference
-        this.attackerFrontCourtRatio = 0.25; // safest aggressive line for fixed-power returns
-        this.attackerHitSafeCourtRatio = 0.16; // furthest forward contact line before fixed-power shots become unsafe
-        this.attackerAngleVxMin = 1.5; // mild horizontal spread so attacker pressures without becoming "wide"
-        this.attackerAngleVxMax = 4;
-        this.attackerAngleApplyProb = 0.55;
-        this.attackerAngleAimAwayProb = 0.7;
-        this.attackerRepositionMin = 12;
-        this.attackerRepositionMax = 26;
-        this.attackerRetreatRepositionMin = 16;
-        this.attackerRetreatRepositionMax = 34;
-        this.attackerAfterHitRetreatProb = 0.55;
-        this.attackerAfterHitMin = 18;
-        this.attackerAfterHitMax = 40;
-        this.wallTrackRatio = 0.65; // how far wall drifts from center toward the ball
-        this.wallCenterJitter = 18; // small offset so wall doesn't feel robotic
-        this.wallReturnSpread = 26; // target spread around court center on returns
-        this.wallReturnClampScale = 0.72; // extra safety factor for center returns
-        // "wide" (big left/right split shots) tuning (difficulty-adjusted in setPersonality)
-        this.wideVxMin = 4;
-        this.wideVxMax = 10;
-        this.wideExtremeProb = 0.7;      // choose near-max magnitude more often
-        this.wideAimAwayProb = 0.7;      // aim away from opponent x more often
-        this.wideApplyProb = 0.65;       // chance to apply wide override on each hit
-        this.skillUseMinFrames = 60;
-        this.skillUseMaxFrames = 300;
+        
+        // Initialize with default attacker values (will be overridden by setPersonality)
+        const attackerDefaults = GAME_CONFIG.AI_PERSONALITIES.ATTACKER.DEFAULT;
+        this.attackerChooseBaselineProb = attackerDefaults.CHOOSE_BASELINE_PROB;
+        this.attackerBaselineWhenBallDeepProb = attackerDefaults.BASELINE_WHEN_BALL_DEEP_PROB;
+        this.attackerDeepBallThreshold = attackerDefaults.DEEP_BALL_THRESHOLD;
+        this.attackerPreferNetProb = attackerDefaults.PREFER_NET_PROB;
+        this.attackerNormalNetProb = attackerDefaults.NORMAL_NET_PROB;
+        this.attackerFrontCourtRatio = attackerDefaults.FRONT_COURT_RATIO;
+        this.attackerHitSafeCourtRatio = attackerDefaults.HIT_SAFE_COURT_RATIO;
+        this.attackerAngleVxMin = attackerDefaults.ANGLE_VX_MIN;
+        this.attackerAngleVxMax = attackerDefaults.ANGLE_VX_MAX;
+        this.attackerAngleApplyProb = attackerDefaults.ANGLE_APPLY_PROB;
+        this.attackerAngleAimAwayProb = attackerDefaults.ANGLE_AIM_AWAY_PROB;
+        this.attackerRepositionMin = attackerDefaults.REPOSITION_MIN;
+        this.attackerRepositionMax = attackerDefaults.REPOSITION_MAX;
+        this.attackerRetreatRepositionMin = attackerDefaults.RETREAT_REPOSITION_MIN;
+        this.attackerRetreatRepositionMax = attackerDefaults.RETREAT_REPOSITION_MAX;
+        this.attackerAfterHitRetreatProb = attackerDefaults.AFTER_HIT_RETREAT_PROB;
+        this.attackerAfterHitMin = attackerDefaults.AFTER_HIT_MIN;
+        this.attackerAfterHitMax = attackerDefaults.AFTER_HIT_MAX;
+        
+        // Initialize with default wall values (will be overridden by setPersonality)
+        const wallDefaults = GAME_CONFIG.AI_PERSONALITIES.WALL.DEFAULT;
+        this.wallTrackRatio = wallDefaults.TRACK_RATIO;
+        this.wallCenterJitter = wallDefaults.CENTER_JITTER;
+        this.wallReturnSpread = wallDefaults.RETURN_SPREAD;
+        this.wallReturnClampScale = wallDefaults.RETURN_CLAMP_SCALE;
+        
+        // Initialize with default wide values (will be overridden by setPersonality)
+        const wideDefaults = GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
+        this.wideVxMin = wideDefaults.VX_MIN;
+        this.wideVxMax = wideDefaults.VX_MAX;
+        this.wideExtremeProb = wideDefaults.EXTREME_PROB;
+        this.wideAimAwayProb = wideDefaults.AIM_AWAY_PROB;
+        this.wideApplyProb = wideDefaults.APPLY_PROB;
+        
+        // Initialize skill usage frames
+        const initDefaults = GAME_CONFIG.AI_PERSONALITIES.DEFAULT_INIT;
+        this.skillUseMinFrames = initDefaults.SKILL_USE_MIN_FRAMES;
+        this.skillUseMaxFrames = initDefaults.SKILL_USE_MAX_FRAMES;
 
         const defaultLevel = GAME_CONFIG.AI_LEVELS.NORMAL;
         this.difficulty     = 'NORMAL';
@@ -62,16 +73,17 @@ class AI {
         const diff = (this.difficulty || 'NORMAL').toString().toUpperCase();
 
         // Difficulty-based tuning for skill usage frequency
+        const skillConfig = GAME_CONFIG.AI_PERSONALITIES.BASIC;
         if (diff === 'EASY') {
-            this.skillUseMinFrames = 100;
-            this.skillUseMaxFrames = 360;
+            this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.EASY;
+            this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.EASY;
         } else if (diff === 'HARD') {
-            this.skillUseMinFrames = 35;
-            this.skillUseMaxFrames = 180;
+            this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.HARD;
+            this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.HARD;
         } else {
             // NORMAL
-            this.skillUseMinFrames = 60;
-            this.skillUseMaxFrames = 300;
+            this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.NORMAL;
+            this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.NORMAL;
         }
 
         // Reset attacker state when switching
@@ -80,111 +92,44 @@ class AI {
 
         // Difficulty-based tuning for "attacker" behavior
         if (p === 'attacker') {
-            if (diff === 'EASY') {
-                this.attackerChooseBaselineProb = 0.52;
-                this.attackerBaselineWhenBallDeepProb = 0.78;
-                this.attackerDeepBallThreshold = 0.42;
-                this.attackerPreferNetProb = 0.42;
-                this.attackerNormalNetProb = 0.18;
-                this.attackerFrontCourtRatio = 0.26;
-                this.attackerHitSafeCourtRatio = 0.15;
-                this.attackerAngleVxMin = 1.2;
-                this.attackerAngleVxMax = 3;
-                this.attackerAngleApplyProb = 0.42;
-                this.attackerAngleAimAwayProb = 0.58;
-                this.attackerRepositionMin = 18;
-                this.attackerRepositionMax = 34;
-                this.attackerRetreatRepositionMin = 20;
-                this.attackerRetreatRepositionMax = 40;
-                this.attackerAfterHitRetreatProb = 0.8;
-                this.attackerAfterHitMin = 22;
-                this.attackerAfterHitMax = 44;
-            } else if (diff === 'HARD') {
-                this.attackerChooseBaselineProb = 0.28;
-                this.attackerBaselineWhenBallDeepProb = 0.48;
-                this.attackerDeepBallThreshold = 0.3;
-                this.attackerPreferNetProb = 0.72;
-                this.attackerNormalNetProb = 0.42;
-                this.attackerFrontCourtRatio = 0.32;
-                this.attackerHitSafeCourtRatio = 0.18;
-                this.attackerAngleVxMin = 2.2;
-                this.attackerAngleVxMax = 5.5;
-                this.attackerAngleApplyProb = 0.72;
-                this.attackerAngleAimAwayProb = 0.82;
-                this.attackerRepositionMin = 8;
-                this.attackerRepositionMax = 18;
-                this.attackerRetreatRepositionMin = 12;
-                this.attackerRetreatRepositionMax = 24;
-                this.attackerAfterHitRetreatProb = 0.55;
-                this.attackerAfterHitMin = 12;
-                this.attackerAfterHitMax = 26;
-            } else {
-                // NORMAL
-                this.attackerChooseBaselineProb = 0.38;
-                this.attackerBaselineWhenBallDeepProb = 0.66;
-                this.attackerDeepBallThreshold = 0.35;
-                this.attackerPreferNetProb = 0.58;
-                this.attackerNormalNetProb = 0.3;
-                this.attackerFrontCourtRatio = 0.29;
-                this.attackerHitSafeCourtRatio = 0.16;
-                this.attackerAngleVxMin = 1.7;
-                this.attackerAngleVxMax = 4.2;
-                this.attackerAngleApplyProb = 0.58;
-                this.attackerAngleAimAwayProb = 0.72;
-                this.attackerRepositionMin = 12;
-                this.attackerRepositionMax = 26;
-                this.attackerRetreatRepositionMin = 16;
-                this.attackerRetreatRepositionMax = 34;
-                this.attackerAfterHitRetreatProb = 0.68;
-                this.attackerAfterHitMin = 18;
-                this.attackerAfterHitMax = 40;
-            }
+            const config = GAME_CONFIG.AI_PERSONALITIES.ATTACKER[diff] || GAME_CONFIG.AI_PERSONALITIES.ATTACKER.DEFAULT;
+            this.attackerChooseBaselineProb = config.CHOOSE_BASELINE_PROB;
+            this.attackerBaselineWhenBallDeepProb = config.BASELINE_WHEN_BALL_DEEP_PROB;
+            this.attackerDeepBallThreshold = config.DEEP_BALL_THRESHOLD;
+            this.attackerPreferNetProb = config.PREFER_NET_PROB;
+            this.attackerNormalNetProb = config.NORMAL_NET_PROB;
+            this.attackerFrontCourtRatio = config.FRONT_COURT_RATIO;
+            this.attackerHitSafeCourtRatio = config.HIT_SAFE_COURT_RATIO;
+            this.attackerAngleVxMin = config.ANGLE_VX_MIN;
+            this.attackerAngleVxMax = config.ANGLE_VX_MAX;
+            this.attackerAngleApplyProb = config.ANGLE_APPLY_PROB;
+            this.attackerAngleAimAwayProb = config.ANGLE_AIM_AWAY_PROB;
+            this.attackerRepositionMin = config.REPOSITION_MIN;
+            this.attackerRepositionMax = config.REPOSITION_MAX;
+            this.attackerRetreatRepositionMin = config.RETREAT_REPOSITION_MIN;
+            this.attackerRetreatRepositionMax = config.RETREAT_REPOSITION_MAX;
+            this.attackerAfterHitRetreatProb = config.AFTER_HIT_RETREAT_PROB;
+            this.attackerAfterHitMin = config.AFTER_HIT_MIN;
+            this.attackerAfterHitMax = config.AFTER_HIT_MAX;
         }
 
         // Difficulty-based tuning for "wall" behavior
         if (p === 'wall') {
-            if (diff === 'EASY') {
-                this.wallTrackRatio = 0.5;
-                this.wallCenterJitter = 32;
-                this.wallReturnSpread = 42;
-                this.wallReturnClampScale = 0.64;
-            } else if (diff === 'HARD') {
-                this.wallTrackRatio = 0.82;
-                this.wallCenterJitter = 10;
-                this.wallReturnSpread = 14;
-                this.wallReturnClampScale = 0.82;
-            } else {
-                // NORMAL
-                this.wallTrackRatio = 0.68;
-                this.wallCenterJitter = 22;
-                this.wallReturnSpread = 26;
-                this.wallReturnClampScale = 0.74;
-            }
+            const config = GAME_CONFIG.AI_PERSONALITIES.WALL[diff] || GAME_CONFIG.AI_PERSONALITIES.WALL.DEFAULT;
+            this.wallTrackRatio = config.TRACK_RATIO;
+            this.wallCenterJitter = config.CENTER_JITTER;
+            this.wallReturnSpread = config.RETURN_SPREAD;
+            this.wallReturnClampScale = config.RETURN_CLAMP_SCALE;
         }
 
         // Difficulty-based tuning for "wide" shot behavior
         if (p === 'wide') {
-            if (diff === 'EASY') {
-                // Easy: keep shots mostly central (narrow spread)
-                this.wideVxMin = 2;
-                this.wideVxMax = 5;
-                this.wideExtremeProb = 0.2;
-                this.wideAimAwayProb = 0.35;
-                this.wideApplyProb = 0.35;
-            } else if (diff === 'HARD') {
-                this.wideVxMin = 6;
-                this.wideVxMax = 14;
-                this.wideExtremeProb = 0.85;
-                this.wideAimAwayProb = 0.85;
-                this.wideApplyProb = 0.75;
-            } else {
-                // NORMAL
-                this.wideVxMin = 4;
-                this.wideVxMax = 7;
-                this.wideExtremeProb = 0.4;
-                this.wideAimAwayProb = 0.5;
-                this.wideApplyProb = 0.55;
-            }
+            const config = GAME_CONFIG.AI_PERSONALITIES.WIDE[diff] || GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
+            this.wideVxMin = config.VX_MIN;
+            this.wideVxMax = config.VX_MAX;
+            this.wideExtremeProb = config.EXTREME_PROB;
+            this.wideAimAwayProb = config.AIM_AWAY_PROB;
+            this.wideApplyProb = config.APPLY_PROB;
         }
     }
 
@@ -342,17 +287,17 @@ class AI {
                 const speedFactor = ball.speedMultiplier !== undefined ? ball.speedMultiplier : 1.0;
                 // If it's a slow ball, reduce distance (but keep a small minimum to avoid standing on the ball)
                 const dynamicBounceDist = Math.max(
-                    GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * 0.5, 
+                    GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * GAME_CONFIG.AI.BOUNCE_DISTANCE_FACTOR, 
                     GAME_CONFIG.AI.BOUNCE_DISTANCE * speedFactor
                 );
 
                 if (this.personality === 'attacker' && !isServeReceive) {
                     // Move up toward service line / net more aggressively
-                    const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * 0.45);
+                    const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * GAME_CONFIG.AI.BOUNCE_POSITION_FACTOR);
                     this.targetY = preferNet ? this.getAttackerHitSafeY() : min(this.getServiceLineY(), this.getAttackerHitSafeY());
 
                     // Force attacker to get close enough if ball is critically short
-                    if (this.targetY > ball.y - dynamicBounceDist + GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * 0.8) {
+                    if (this.targetY > ball.y - dynamicBounceDist + GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * GAME_CONFIG.AI.RECEIVE_Y_FACTOR) {
                         this.targetY = min(this.getAttackerHitSafeY(), ball.y - dynamicBounceDist);
                     }
                 } else {
@@ -394,7 +339,7 @@ class AI {
                     : AI.LERP_FACTOR_SERVE);
             let moveStep = dx * lerpFactor;
             const maxSpeed = isRoundEnding
-                ? this.player.speed * this.speedMult * 0.7
+                ? this.player.speed * this.speedMult * AI.SERVE_SPEED_MULT
                 : this.player.speed * this.speedMult;
             moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
             this.player.x += moveStep;
@@ -410,7 +355,7 @@ class AI {
             let lerpFactor = isRoundEnding ? AI.LERP_FACTOR_SERVE : AI.LERP_FACTOR_NORMAL;
             let moveStep = dy * lerpFactor;
             const maxSpeed = isRoundEnding
-                ? this.player.speed * this.speedMult * 0.7
+                ? this.player.speed * this.speedMult * AI.SERVE_SPEED_MULT
                 : this.player.speed * this.speedMult;
             moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
             this.player.y += moveStep;
