@@ -17,7 +17,7 @@ const Scene_Menu = {
             image(bgImg, 0, 0, w, h);
         }
         else {
-            background(250);
+            background(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
         }
 
         noSmooth();
@@ -33,19 +33,19 @@ const Scene_Menu = {
         textStyle(BOLD);
         textSize(titleSize);
 
-        stroke(56, 49, 78);
+        stroke(...GAME_CONFIG.COLORS.MENU_TEXT_SHADOW);
         strokeWeight(strokeSize);
-        fill(0);
+        fill(...GAME_CONFIG.COLORS.BLACK);
         text("TENNIS GAME", titleX + w * 0.005, titleY + w * 0.005);
 
-        stroke(64, 57, 85);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_LIGHT);
         strokeWeight(strokeSize);
         fill(80);
         text("TENNIS GAME", titleX + w * 0.002, titleY + w * 0.002);
 
-        stroke(51, 44, 74);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
         strokeWeight(strokeSize);
-        fill(255, 188, 31);
+        fill(...GAME_CONFIG.COLORS.GOLD);
         text("TENNIS GAME", titleX, titleY);
         pop();
 
@@ -77,16 +77,16 @@ const Scene_Menu = {
 
             if (i === this.selectedIndex && blink) {
                 textSize(menuFontSize * 0.5);
-                stroke(51, 44, 74);
+                stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
                 strokeWeight(w * 0.0075);
-                fill(250);
+                fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
                 text("▶", x - w * 0.04, y);
             }
 
             textSize(menuFontSize);
-            stroke(51, 44, 74);
+            stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
             strokeWeight(w * 0.009);
-            fill(250);
+            fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
             text(this.options[i].label.toUpperCase(), x, y);
         }
         pop();

@@ -140,27 +140,5 @@ class ScoreManager {
         text("Press 'R' to Restart", centerX, centerY + UI.RESTART_Y_OFFSET);
         pop();
     }
-    // the score HUD
-    display() {
-        const { UI, COLORS } = GAME_CONFIG;
-        const { centerX, courtTop } = layout;
 
-        push();
-        textAlign(CENTER, CENTER);
-        textSize(UI.SIZE_MAIN);
-        fill(COLORS.WHITE);
-
-        const p1Str = this.getDisplayScore(this.playerPoints, this.opponentPoints);
-        const p2Str = this.getDisplayScore(this.opponentPoints, this.playerPoints);
-
-        // Ensure score doesn't go off-screen on short displays
-        const minScoreY = UI.GAMES_OFFSET_Y + UI.SIZE_SUB + UI.SCORE_MARGIN_TOP;
-        const scoreY = max(courtTop - UI.OFFSET_Y, minScoreY);
-        text(`${p2Str} : ${p1Str}`, centerX, scoreY);
-
-        textSize(UI.SIZE_SUB);
-        text(`Games: ${this.opponentGames} - ${this.playerGames}`,
-            centerX, scoreY - UI.GAMES_OFFSET_Y);
-        pop();
-    }
 }

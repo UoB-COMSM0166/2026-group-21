@@ -21,7 +21,7 @@ const Scene_Pause = {
             image(bgImg, 0, 0, w, h);
         }
         rectMode(CORNER);
-        fill(255, 200); 
+        fill(...GAME_CONFIG.COLORS.UI_PANEL_BG); 
         noStroke();
         rect(0, 0, w, h);
 
@@ -38,19 +38,19 @@ const Scene_Pause = {
         textStyle(BOLD);
         textSize(titleSize);
 
-        stroke(56, 49, 78);
+        stroke(...GAME_CONFIG.COLORS.MENU_TEXT_SHADOW);
         strokeWeight(strokeSize);
-        fill(0);
+        fill(...GAME_CONFIG.COLORS.BLACK);
         text("PAUSED", titleX + w * 0.005, titleY + w * 0.005);
         
-        stroke(64, 57, 85);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_LIGHT);
         strokeWeight(strokeSize);
         fill(80);
         text("PAUSED", titleX + w * 0.002, titleY + w * 0.002);
 
-        stroke(51, 44, 74);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
         strokeWeight(strokeSize);
-        fill(255, 188, 31);
+        fill(...GAME_CONFIG.COLORS.GOLD);
         text("PAUSED", titleX, titleY);
         pop();
 
@@ -87,17 +87,17 @@ const Scene_Pause = {
             // Arrow blinking
             if (i === this.selectedIndex && blink) {
                 textSize(menuFontSize * 0.45);
-                stroke(51, 44, 74);
+                stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
                 strokeWeight(w * 0.007);
-                fill(250);
+                fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
                 text("▶", x - w * 0.03, y);
             }
 
             // Text
             textSize(menuFontSize * 1.1);
-            stroke(51, 44, 74);
+            stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
             strokeWeight(w * 0.008);
-            fill(250);
+            fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
             text(txt, x, y);
         }
         pop();

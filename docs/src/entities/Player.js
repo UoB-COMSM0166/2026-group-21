@@ -24,6 +24,7 @@ class Player {
         this.feedbackText = "";
         this.feedbackTimer = 0;
         this.wasBallNearOnSwing = false;
+        this.shotModifier = null;
     }
 
     get isServer() {
@@ -41,6 +42,7 @@ class Player {
         this.currentFrame = 0;
         this.feedbackText = "";
         this.feedbackTimer = 0;
+        this.shotModifier = null;
     }
 
     update() {
@@ -272,30 +274,6 @@ class Player {
             SkillManager.execute(this, ball);
         }
     }
-    // temporarily skillbar placeholder
-    displaySkillBar(x, y, w, h) {
-        push();
-        let progress = 1 - (this.skillCooldown / this.maxCooldown);
-        progress = constrain(progress, 0, 1);
-
-        noStroke();
-        fill(50, 50, 50, 200);
-        rectMode(CORNER);
-        rect(x, y, w, h, 5);
-
-        if (progress >= 1) {
-            fill(GAME_CONFIG.COLORS.PINK);
-            if (frameCount % 30 < 15) fill(255);
-        } else {
-            fill(100, 200, 255);
-        }
-        rect(x, y, w * progress, h, 5);
-        fill(255);
-        textSize(12);
-        textAlign(LEFT, CENTER);
-        text("SKILL", x + 5, y + h / 2);
-        pop();
-    }
 
     drawBuffAura() {
         push();
@@ -308,11 +286,11 @@ class Player {
         noFill();
         
         strokeWeight(6);
-        stroke(r, g, b, 80);
+        stroke(r, g, b, GAME_CONFIG.PLAYER.SKILL_AURA_STROKE_OUTER);
         ellipse(0, 0, auraSize + 10, auraSize + 10);
         
         strokeWeight(3);
-        stroke(r, g, b, 200); 
+        stroke(r, g, b, GAME_CONFIG.PLAYER.SKILL_AURA_STROKE_INNER); 
         ellipse(0, 0, auraSize, auraSize);
         
         pop();
@@ -321,13 +299,13 @@ class Player {
         push();
         translate(0, -this.h / 2 - 10); 
         
-        let stars = 3;
+        let stars = GAME_CONFIG.PLAYER.STUN_STAR_COUNT;
         for (let i = 0; i < stars; i++) {
             let angle = frameCount * 0.2 + (TWO_PI / stars) * i;
             let sx = cos(angle) * 20;
             let sy = sin(angle) * 5;
             
-            fill(255, 255, 0);
+            fill(...GAME_CONFIG.COLORS.YELLOW);
             noStroke();
             ellipse(sx, sy, 8, 8); 
         }

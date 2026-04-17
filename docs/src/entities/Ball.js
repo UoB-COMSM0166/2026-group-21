@@ -150,10 +150,11 @@ class Ball {
             this.vy *= GAME_CONFIG.BALL.BOUNCE_FRICTION;
         }
     }
-    //ends the round with slight delay
+    // Ends the round with a slight delay granting time for audio and visual cues to play before resetting
     terminateRound(winner) {
         this.vz = 0; this.vx = 0; this.vy = 0;
         if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
+            // Instantly record the score and stop further logic during the tutorial mini-games
             if (scoreManager && !this.roundEnding) {
                 this.roundEnding = true;
                 scoreManager.recordPoint(winner); 
@@ -164,6 +165,7 @@ class Ball {
             this.roundEnding = true;
 
             if (currentState === GAME_CONFIG.STATES.PLAYING) {
+                // Wait for ROUND_END_DELAY (milliseconds) allowing the final hit visual to linger.
                 this.roundTimer = setTimeout(() => {
                     let gameWon = false;
                     if (scoreManager) {
@@ -174,6 +176,7 @@ class Ball {
                     if (gameWon && !scoreManager.isMatchOver) {
                         Scene_Game.isShowingScore = true;
                         
+                        // Wait for SCORE_DISPLAY_DURATION to show the floating score splash text
                         this.scoreTimer = setTimeout(() => {
                             Scene_Game.nextRound();
                             this.roundEnding = false;
@@ -231,137 +234,9 @@ class Ball {
                 }
             }
 
-            // Single mode AI personality: "wall" returns deep through the center.
-            // Guarded so it never affects humans or multiplayer.
-            if (!this.isTossing &&
-                typeof isMultiplayer !== 'undefined' && !isMultiplayer &&
-                p && p.isAI &&
-                typeof opponent !== 'undefined' && p === opponent &&
-                typeof opponentAI !== 'undefined' && opponentAI &&
-                opponentAI.personality === 'wall') {
-
-                // Center returns minimize risk with the game's fixed shot power.
-                const g = GAME_CONFIG.BALL.GRAVITY;
-                const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
-                const t = max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.GRAVITY_MIN, g)));
-                const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
-                const targetCenterX = layout.centerX + random(
-                    -(opponentAI.wallReturnSpread ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_SPREAD_DEFAULT),
-                    (opponentAI.wallReturnSpread ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_SPREAD_DEFAULT)
-                );
-                const desiredVx = (targetCenterX - this.x) / sum;
-                const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_SAFETY_MARGIN;
-                const minX = layout.courtLeft + this.r + safetyMargin;
-                const maxX = layout.courtRight - this.r - safetyMargin;
-                const maxVxPos = (maxX - this.x) / sum;
-                const maxVxNeg = (this.x - minX) / sum;
-                const maxAbsForSign = (desiredVx >= 0) ? maxVxPos : maxVxNeg;
-                const clampScale = opponentAI.wallReturnClampScale ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_CLAMP_DEFAULT;
-                const safeAbs = max(0, maxAbsForSign * clampScale);
-                this.vx = constrain(desiredVx, -safeAbs, safeAbs);
-            }
-
-            // Single mode AI personality: "attacker" adds only a mild angle bias.
-            // Guarded so it never affects humans or multiplayer.
-            if (!this.isTossing &&
-                typeof isMultiplayer !== 'undefined' && !isMultiplayer &&
-                p && p.isAI &&
-                typeof opponent !== 'undefined' && p === opponent &&
-                typeof opponentAI !== 'undefined' && opponentAI &&
-                opponentAI.personality === 'attacker') {
-
-                const attackerDefaults = GAME_CONFIG.AI_PERSONALITIES.ATTACKER.DEFAULT;
-                const minVx = opponentAI.attackerAngleVxMin ?? attackerDefaults.ANGLE_VX_MIN;
-                const maxVx = opponentAI.attackerAngleVxMax ?? attackerDefaults.ANGLE_VX_MAX;
-                const applyProb = opponentAI.attackerAngleApplyProb ?? attackerDefaults.ANGLE_APPLY_PROB;
-                const aimAwayProb = opponentAI.attackerAngleAimAwayProb ?? attackerDefaults.ANGLE_AIM_AWAY_PROB;
-
-                // Not every shot needs angle pressure.
-                if (random(1) < applyProb) {
-                    let sign;
-                    if (random(1) < aimAwayProb && typeof player !== 'undefined') {
-                        sign = (player.x < this.x) ? 1 : -1;
-                    } else {
-                        sign = (this.vx < 0) ? -1 : 1;
-                        if (Math.abs(this.vx) < GAME_CONFIG.BALL_HIT_BEHAVIOR.MIN_VX_FOR_SIGN) sign = (random(1) < 0.5) ? -1 : 1;
-                    }
-
-                    // Keep attacker angles modest and in-bounds; this is support for pressure,
-                    // not the large split-shot identity used by the "wide" personality.
-                    const g = GAME_CONFIG.BALL.GRAVITY;
-                    const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
-                    const t = max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.GRAVITY_MIN, g)));
-                    const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
-                    const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_SAFETY_MARGIN;
-                    const minX = layout.courtLeft + this.r + safetyMargin;
-                    const maxX = layout.courtRight - this.r - safetyMargin;
-                    const maxVxPos = (maxX - this.x) / sum;
-                    const maxVxNeg = (this.x - minX) / sum;
-                    const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
-                    const mag = random(minVx, maxVx);
-                    const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_MAX_ABS_SCALE));
-                    this.vx = sign * max(Math.abs(this.vx), cappedMag);
-                }
-            }
-
-            // Single mode AI personality: "wide" forces big left/right split shots.
-            // Guarded so it never affects humans or multiplayer.
-            if (!this.isTossing &&
-                typeof isMultiplayer !== 'undefined' && !isMultiplayer &&
-                p && p.isAI &&
-                typeof opponent !== 'undefined' && p === opponent &&
-                typeof opponentAI !== 'undefined' && opponentAI &&
-                opponentAI.personality === 'wide') {
-                
-                const wideDefaults = GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
-                const minVx = opponentAI.wideVxMin ?? wideDefaults.VX_MIN;
-                const maxVx = opponentAI.wideVxMax ?? wideDefaults.VX_MAX;
-                const extremeProb = opponentAI.wideExtremeProb ?? wideDefaults.EXTREME_PROB;
-                const aimAwayProb = opponentAI.wideAimAwayProb ?? wideDefaults.AIM_AWAY_PROB;
-                const applyProb = opponentAI.wideApplyProb ?? wideDefaults.APPLY_PROB;
-
-                // Not every shot needs wide-angle intent.
-                if (random(1) >= applyProb) {
-                    // Keep default vx from standard hit logic.
-                } else {
-
-                    // Choose direction: often aim away from player's x (make player run).
-                    let sign;
-                    if (random(1) < aimAwayProb && typeof player !== 'undefined') {
-                        sign = (player.x < this.x) ? 1 : -1;
-                    } else {
-                        sign = (random(1) < 0.5) ? -1 : 1;
-                    }
-
-                    // Choose magnitude: bias toward extremes.
-                    let mag;
-                    if (random(1) < extremeProb) {
-                        mag = random(max(minVx, maxVx * GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_EXTREME_MULT), maxVx);
-                    } else {
-                        mag = random(minVx, maxVx);
-                    }
-
-                    // Keep the 1st bounce roughly in-court by capping vx based on a simple prediction.
-                    // (Uses airtime from HIT_Z and air resistance sum.)
-                    const g = GAME_CONFIG.BALL.GRAVITY;
-                    const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
-                    const t = max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.GRAVITY_MIN, g)));
-                    const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
-
-                    // Add an inward margin so "wide" still spreads but doesn't hug the lines too much.
-                    const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_SAFETY_MARGIN;
-                    const minX = layout.courtLeft + this.r + safetyMargin;
-                    const maxX = layout.courtRight - this.r - safetyMargin;
-
-                    const maxVxPos = (maxX - this.x) / sum;
-                    const maxVxNeg = (this.x - minX) / sum;
-                    const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
-
-                    // Keep some risk (not 100% in), but reduce frequent outs by not using the full limit.
-                    const limitScale = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_LIMIT_SCALE;
-                    const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * limitScale));
-                    this.vx = sign * cappedMag;
-                }
+            // Apply custom shot modifier from the hitter (e.g., AI personality adjustments)
+            if (p.shotModifier) {
+                p.shotModifier(this);
             }
             //hit sound
             if (typeof soundManager !== 'undefined') {

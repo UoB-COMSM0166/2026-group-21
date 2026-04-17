@@ -29,7 +29,7 @@ const Scene_DifficultySelect = {
             image(bgImg, 0, 0, w, h);
         }
         rectMode(CORNER);
-        fill(255, 220);
+        fill(...GAME_CONFIG.COLORS.UI_PANEL_BG);
         noStroke();
         rect(0, 0, w, h);
 
@@ -46,8 +46,8 @@ const Scene_DifficultySelect = {
         // Title
         push();
         textAlign(CENTER, CENTER);
-        fill(255, 188, 31);
-        stroke(51, 44, 74);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
         strokeWeight(w * 0.008);
         textStyle(BOLD);
         textSize(w * 0.045);
@@ -96,7 +96,7 @@ const Scene_DifficultySelect = {
         }
 
         // Colours
-        stroke(0);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(isSelected ? w * 0.015 : w * 0.006);
         let col = this.boxColors[index];
         fill(col[0], col[1], col[2]);
@@ -117,8 +117,8 @@ const Scene_DifficultySelect = {
         }
 
         // Easy/ Normal/ Hard
-        fill(255);
-        stroke(0);
+        fill(...GAME_CONFIG.COLORS.WHITE);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(w * 0.009);
         textStyle(BOLD);
         textAlign(CENTER, CENTER);

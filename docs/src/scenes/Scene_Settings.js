@@ -15,9 +15,9 @@ const Scene_Settings = {
 
         // background
         if (bgImg) image(bgImg, 0, 0, w, h);
-        else background(250);
+        else background(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
         
-        fill(0, 0, 0, 100);
+        fill(...GAME_CONFIG.COLORS.UI_MASK);
         rect(0, 0, w, h);
 
         const centerX = w / 2;
@@ -39,9 +39,9 @@ const Scene_Settings = {
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
         textSize(w * 0.06); 
-        stroke(51, 44, 74);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
         strokeWeight(w * 0.008);
-        fill(255, 188, 31);
+        fill(...GAME_CONFIG.COLORS.GOLD);
         text("SETTINGS", centerX, centerY - h * 0.3);
         pop();
 
@@ -76,13 +76,13 @@ const Scene_Settings = {
             textAlign(LEFT, CENTER);
 
             if (i === this.selectedIndex) {
-                fill(255, 255, 0); 
+                fill(...GAME_CONFIG.COLORS.YELLOW); 
                 if (blink) {
                     push();
                     textSize(menuFontSize * 0.5);
-                    stroke(51, 44, 74);
+                    stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
                     strokeWeight(w * 0.0075);
-                    fill(250);
+                    fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
                     textAlign(RIGHT, CENTER);
 
                     let arrowX = this.options[i].includes("Volume") ? x - 400 : x - 150;
@@ -90,10 +90,10 @@ const Scene_Settings = {
                     pop();
                 }
             } else {
-                fill(250); 
+                fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT); 
             }
 
-            stroke(51, 44, 74);
+            stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
             strokeWeight(w * 0.008);
             textSize(menuFontSize);
 
@@ -111,13 +111,13 @@ const Scene_Settings = {
 
                 let barStartX = x + 30;
                 
-                fill(100);
+                fill(GAME_CONFIG.COLORS.FALLBACK);
                 rect(barStartX, y - 5, this.barW, 10, 5);
                 
-                fill(i === this.selectedIndex ? [255, 215, 0] : 255);
+                fill(i === this.selectedIndex ? GAME_CONFIG.COLORS.GOLD : 255);
                 rect(barStartX, y - 5, this.barW * vol, 10, 5);
                 
-                stroke(51, 44, 74);
+                stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
                 strokeWeight(2);
                 ellipse(barStartX + this.barW * vol, y, 18, 18);
 

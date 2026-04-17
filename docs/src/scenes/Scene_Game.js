@@ -37,8 +37,8 @@ const Scene_Game = {
             opponentAI.errorRange    = levelConfig.errorRange;
             opponentAI.prediction    = levelConfig.prediction;
             if (typeof opponentAI.setPersonality === 'function') {
-                // Single mode only: random personality per match
-                const personalities = ['basic', 'attacker', 'wide', 'wall'];
+                // Single mode only: random personality per match (exclude 'attacker' for normal matches)
+                const personalities = ['basic', 'wide', 'wall'];
                 opponentAI.setPersonality(random(personalities));
             }
             opponentAI.resetServeState();
@@ -235,7 +235,7 @@ const Scene_Game = {
             // backup scoring design
             push();
             noStroke();
-            fill(20, 20, 25, 220);
+            fill(...GAME_CONFIG.COLORS.OVERLAY_DARK);
             rect(backupX, backupY, backupW, backupH, 20);
 
             textAlign(CENTER, CENTER);
@@ -243,7 +243,7 @@ const Scene_Game = {
 
             if (isDeuce) {
                 fill(customGold);
-                textSize(50);
+                textSize(GAME_CONFIG.UI.HUD_SCORE_TITLE);
                 text("DEUCE", dividerX, backupY + 75);
             }
             else{
@@ -252,18 +252,18 @@ const Scene_Game = {
                 line(dividerX, backupY + 45, dividerX, backupY + 110);
                 noStroke();
                 
-                textSize(54);
+                textSize(GAME_CONFIG.UI.HUD_SCORE_MAIN);
                 // p1
-                fill(255, 100, 100);
+                fill(...GAME_CONFIG.COLORS.PLAYER_ONE);
                 let p1Display = isP1Ad ? "AD" : (isP2Ad ? "40" : p1.toUpperCase());
                 text(p1Display, dividerX - 65, backupY + 75);
 
                 // p2
-                fill(100, 200, 255);
+                fill(...GAME_CONFIG.COLORS.PLAYER_TWO);
                 let p2Display = isP2Ad ? "AD" : (isP1Ad ? "40" : p2.toUpperCase());
                 text(p2Display, dividerX + 65, backupY + 75);
             
-                textSize(12);
+                textSize(GAME_CONFIG.UI.HUD_SCORE_SUB);
                 fill(255, 120);
                 text("P1", dividerX - 65, backupY + 30);
                 text("P2", dividerX + 65, backupY + 30);
@@ -391,7 +391,7 @@ const Scene_Game = {
         opponent.resetState();
         // New match start: re-roll personality (single mode AI only)
         if (!isMultiplayer && opponentAI && typeof opponentAI.setPersonality === 'function') {
-            const personalities = ['basic', 'attacker', 'wide', 'wall'];
+            const personalities = ['basic', 'wide', 'wall'];
             opponentAI.setPersonality(random(personalities));
             opponentAI.resetServeState();
         }
@@ -421,7 +421,7 @@ const Scene_Game = {
 
     drawScoreOverlay: function() {
         push();
-        fill(0, 0, 0, 200);
+        fill(...GAME_CONFIG.COLORS.OVERLAY_DARK);
         rectMode(CORNER);
         rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
         textAlign(CENTER, CENTER);
@@ -432,10 +432,10 @@ const Scene_Game = {
         const centerY = layout.VIRTUAL_H / 2 - 20;
 
         fill(255);
-        textSize(80);
+        textSize(GAME_CONFIG.UI.ROUND_END_MAIN);
         text(`${scoreManager.playerGames} - ${scoreManager.opponentGames}`, centerX, centerY);
         
-        textSize(24);
+        textSize(GAME_CONFIG.UI.ROUND_END_SUB);
         fill(150);
         text("GAMES", centerX, centerY + 60);
 
@@ -447,16 +447,16 @@ const Scene_Game = {
         if (player && player.img) {
             imageMode(CENTER);
             image(player.img, centerX - 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH); 
-            fill(255, 100, 100); 
-            textSize(24);
+            fill(...GAME_CONFIG.COLORS.PLAYER_ONE); 
+            textSize(GAME_CONFIG.UI.ROUND_END_SUB);
             text(p1Name.toUpperCase(), centerX - 180, centerY + 90);
         }
 
         if (opponent && opponent.img) {
             imageMode(CENTER);
             image(opponent.img, centerX + 180, centerY - 10, drawW, drawH, 0, 0, srcW, srcH);
-            fill(100, 200, 255); 
-            textSize(24);
+            fill(...GAME_CONFIG.COLORS.PLAYER_TWO); 
+            textSize(GAME_CONFIG.UI.ROUND_END_SUB);
             text(p2Name.toUpperCase(), centerX + 180, centerY + 90);
         }
 
@@ -470,22 +470,22 @@ const Scene_Game = {
     drawDevMenu: function() {
         if (!opponentAI || isMultiplayer) return;
         push();
-        fill(0, 0, 0, 180);
+        fill(...GAME_CONFIG.COLORS.DARK_GRAY);
         noStroke();
         rect(10, 10, 280, 120, 10);
         
-        fill(255, 255, 0);
-        textSize(16);
+        fill(...GAME_CONFIG.COLORS.YELLOW);
+        textSize(GAME_CONFIG.UI.SIZE_SUB);
         textAlign(LEFT, TOP);
         text("DEVELOPER MODE", 20, 20);
         
         fill(255);
-        textSize(14);
+        textSize(GAME_CONFIG.UI.DEV_MODE_TEXT);
         text(`[1] AI Difficulty : ${opponentAI.difficulty}`, 20, 50);
         text(`[2] AI Personality: ${(opponentAI.personality || 'basic').toUpperCase()}`, 20, 75);
         
         fill(200, 200, 200);
-        textSize(12);
+        textSize(GAME_CONFIG.UI.HUD_SCORE_SUB);
         text("Press '9' to Toggle Dev Mode", 20, 105);
         pop();
     }

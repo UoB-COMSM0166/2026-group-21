@@ -41,6 +41,20 @@ const GAME_CONFIG = {
         MOVE_PADDING_Y: 100
     },
 
+    MAP_PHYSICS: {
+        POLAR_FRICTION: 0.95,
+        POLAR_MOVE_VELOCITY: 0.5,
+        POLAR_OPPONENT_VELOCITY: 0.4,
+        POLAR_AI_DEADZONE: 3,
+
+        EGYPT_WIND_DURATION: 80,
+        EGYPT_WIND_TIMER_BASE: 300,
+        EGYPT_WIND_TIMER_RANDOM: 200,
+        EGYPT_WIND_FORCE_MAGNITUDE: 0.2,
+        EGYPT_WIND_PARTICLES: 120,
+        EGYPT_WIND_SPEED_MULT: 60
+    },
+
     MATCH: {
         DEFAULT_SERVER: 'PLAYER',
         DEFAULT_SIDE: 'RIGHT',
@@ -107,6 +121,18 @@ const GAME_CONFIG = {
         FEEDBACK_PERFECT: [50, 205, 50],
         FEEDBACK_MISS: [220, 20, 60],
         INDICATOR_YELLOW: [255, 215, 0],
+        PLAYER_ONE: [255, 100, 100],
+        PLAYER_TWO: [100, 200, 255],
+        MENU_BG_LIGHT: 250,
+        MENU_BG_DARK: 200,
+        MENU_TEXT_SHADOW: [56, 49, 78],
+        OVERLAY_DARK: [20, 20, 25, 220],
+        UI_STROKE_DARK: [51, 44, 74],
+        UI_STROKE_LIGHT: [64, 57, 85],
+        UI_PANEL_BG: [255, 200],
+        UI_MASK: [0, 0, 0, 100],
+        TEXT_ERROR: [200, 30, 30],
+        TUTORIAL_TEXT_HIGHLIGHT: [255, 255, 0, 50]
     },
 
     PLAYER: {
@@ -116,22 +142,34 @@ const GAME_CONFIG = {
         SWING_DURATION: 10,         // frames: how long the hit window stays active
         SERVE_OFFSET: 5,            // Starting distance behind baseline
         NET_MARGIN: 10,             // Minimum safe distance from net
-        SWING_SCALE: 1.1,            // Visual feedback multiplier during swing
+        SWING_SCALE: 1.1,           // Visual feedback multiplier during swing
         SKILL_COOLDOWN: 180,
         TOTAL_FRAMES: 6,
         ANIM_SPEED: 0.4,
         SPRITE_WIDTH: 100,
         SPRITE_HEIGHT: 64,
-        SPRITE_COLS: 2
+        SPRITE_COLS: 2,
+        SKILL_BAR_COLORS: { BG: [50, 50, 50, 200], BORDER_RADIUS: 5 },
+        SKILL_AURA_STROKE_INNER: 200,
+        SKILL_AURA_STROKE_OUTER: 80,
+        STUN_STAR_COUNT: 3,
+        HIT_OFFSET: 100,
+        SKILLS: {
+            DURATION_FRAMES: 60,
+            FEATHER_STORM_SPEED: 1.1,
+            FEATHER_STORM_SIZE: 0.5,
+            FOREST_ZEN_SPEED: 0.7,
+            GIGA_BALL_SIZE: 2.0
+        }
     },
 
     ASSETS: {
-        MENU_BG: 'assets/images/menu_background_picture.png',
-        ESC_IMG: 'assets/images/esc.png',
+        MENU_BG: 'assets/images/bg_menu.png',
+        ESC_IMG: 'assets/images/button_esc.png',
         DIFFICULTY_IMGS: [
-            'assets/images/easy_mode.png',
-            'assets/images/normal_mode.png',
-            'assets/images/hard_mode.png'
+            'assets/images/mode_easy.png',
+            'assets/images/mode_normal.png',
+            'assets/images/mode_hard.png'
         ],
         MAP_IMGS: [
             'assets/images/preview_polar_bg.png',
@@ -139,17 +177,17 @@ const GAME_CONFIG = {
             'assets/images/preview_wimbledon_bg.png'
         ],
         PLAYER_IMG: 'assets/images/player_bird_back.png',
-        BACKGROUND_IMG: 'assets/images/bg_polar.png',
+        BACKGROUND_IMG: 'assets/images/bg_polar_1.png',
         TUTORIAL_IMG: 'assets/images/game_key_instruction.png',
         COURT_IMG: 'assets/images/bg_stadium.png',
-        GEAR_IMG: 'assets/images/settings.png',
+        GEAR_IMG: 'assets/images/button_settings.png',
         SCORE_PATH: 'assets/images/',
-        SKILL_ICONS:{
-            cat: 'assets/images/cat_skill_button.png',
-            dog: 'assets/images/dog_skill_button.png',
-            deer: 'assets/images/deer_skill_button.png',
-            bird: 'assets/images/bird_skill_button.png'
-        }
+        SKILL_ICONS: {
+            cat: 'assets/images/skill_cat.png',
+            dog: 'assets/images/skill_dog.png',
+            deer: 'assets/images/skill_deer.png',
+            bird: 'assets/images/skill_bird.png'
+        },
     },
 
     CONTROLS: {
@@ -177,6 +215,33 @@ const GAME_CONFIG = {
         BASE_STROKE_WEIGHT: 2
     },
 
+    SOUND: {
+        FADE_TIME_DEFAULT: 1.5,
+        FADE_TIME_MULTIPLIER: 2.5,
+        BUFFER_MS: 100,
+        TARGET_VOLUME_DEFAULT: 0.3,
+        SFX_VOLUME_DEFAULT: 0.5,
+        COOLDOWN: {
+            'success': 200,
+            'select': 50,
+            'confirm': 100,
+            'swing': 200,
+            'hit': 100,
+            'clap': 500,
+            'boo': 500
+        },
+        VOLUME: {
+            'success': 2.0,
+            'victory': 0.8,
+            'select': 1.5,
+            'confirm': 0.6,
+            'swing': 2.0,
+            'hit': 0.3,
+            'clap': 0.5,
+            'boo': 0.4
+        }
+    },
+
     UI: {
         SIZE_MAIN: 32,
         SIZE_SUB: 16,
@@ -191,7 +256,13 @@ const GAME_CONFIG = {
         SKILL_BUTTON_SIZE: 110,
         SKILL_MASK_OPACITY: 180,
         SKILL_MASK_INSET: 10,
-        GOLD_COLOR: [255, 188, 31, 200]
+        GOLD_COLOR: [255, 188, 31, 200],
+        HUD_SCORE_TITLE: 50,
+        HUD_SCORE_MAIN: 54,
+        HUD_SCORE_SUB: 12,
+        ROUND_END_MAIN: 80,
+        ROUND_END_SUB: 24,
+        DEV_MODE_TEXT: 14
     },
 
     FEEDBACK: {
@@ -207,9 +278,13 @@ const GAME_CONFIG = {
     },
 
     MAPS: [
-        { name: "Polar", bgPath: "assets/images/bg_polar.png", courtPath: "assets/images/bg_stadium.png" },
-        { name: "Egypt", bgPath: "assets/images/bg_egypt.png", courtPath: "assets/images/bg_stadium.png" },
-        { name: "Hard Court", bgPath: "assets/images/bg_hardcourt.png", courtPath: "assets/images/bg_stadium.png" }
+        { name: "Polar", bgPath: "assets/images/bg_polar_1.png", courtPath: "assets/images/bg_stadium.png" },
+        { name: "Egypt", bgPath: "assets/images/bg_egypt_1.png", courtPath: "assets/images/bg_stadium.png" },
+        { 
+            name: "Hard Court", 
+            bgPath: "assets/images/bg_hardcourt_1.png", 
+            courtPath: "assets/images/bg_stadium.png" 
+        }
     ],
 
     CHARACTERS: [
@@ -219,7 +294,7 @@ const GAME_CONFIG = {
             speed: 6,
             skillType: 'SHADOW_TELEPORT',
             assets: {
-                front: 'assets/images/player_cat_swing_front.png',
+                front: 'assets/images/player_cat_swing_front_1.png',
                 back: 'assets/images/player_cat_swing_back.png',
                 portrait: 'assets/images/player_cat_front.png'
             }

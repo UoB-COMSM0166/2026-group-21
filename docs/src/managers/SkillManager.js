@@ -32,7 +32,7 @@ class SkillManager {
     static shadowTeleport(p, ball) {
         p.x = ball.x;
         // offset to make player have time to react
-        let hitOffset = 100; 
+        let hitOffset = GAME_CONFIG.PLAYER.HIT_OFFSET; 
         if (p.isBottom) {
             p.y = ball.y + hitOffset;
         } else {
@@ -43,23 +43,23 @@ class SkillManager {
 
     // Grow ball to 2x size for 1 second, then return to normal size, opponent will be stunned if they catch ball
     static gigaBall(ball) {
-        ball.r = GAME_CONFIG.BALL.RADIUS * 2;
-        ball.sizeTimer = 60;
+        ball.r = GAME_CONFIG.BALL.RADIUS * GAME_CONFIG.PLAYER.SKILLS.GIGA_BALL_SIZE;
+        ball.sizeTimer = GAME_CONFIG.PLAYER.SKILLS.DURATION_FRAMES;
         ball.isGigaShot = true;
     }
 
     // Shrink ball to 0.5x size and increase speed for around 1 second, then return everything back to normal
     static featherStorm(ball) {
-        ball.r = GAME_CONFIG.BALL.RADIUS * 0.5;
-        ball.sizeTimer = 60;
+        ball.r = GAME_CONFIG.BALL.RADIUS * GAME_CONFIG.PLAYER.SKILLS.FEATHER_STORM_SIZE;
+        ball.sizeTimer = GAME_CONFIG.PLAYER.SKILLS.DURATION_FRAMES;
 
-        ball.speedMultiplier = 1.1; 
-        ball.speedTimer = 60;
+        ball.speedMultiplier = GAME_CONFIG.PLAYER.SKILLS.FEATHER_STORM_SPEED; 
+        ball.speedTimer = GAME_CONFIG.PLAYER.SKILLS.DURATION_FRAMES;
     }
 
     // This would be used to reduce the ball’s velocity to 0.5x speed for around 1 second, then return it back to normal
     static forestZen(ball) {
-        ball.speedMultiplier = 0.7; 
-        ball.speedTimer = 60;
+        ball.speedMultiplier = GAME_CONFIG.PLAYER.SKILLS.FOREST_ZEN_SPEED; 
+        ball.speedTimer = GAME_CONFIG.PLAYER.SKILLS.DURATION_FRAMES;
     }
 }

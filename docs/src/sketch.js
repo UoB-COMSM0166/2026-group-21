@@ -1,5 +1,5 @@
 let player, opponent, ball, layout;
-let courtImg, backgroundImg, bgImg;
+let courtImg, backgroundImg, bgImg, escImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;
@@ -36,9 +36,9 @@ function preload() {
     gearImg = loadImage(GAME_CONFIG.ASSETS.GEAR_IMG);
 
     // deuce and AD
-    scoreImages["deuce"] = loadImage(path + 'deuce.png');
-    scoreImages["ad_40"] = loadImage(path + 'ad_40.png');
-    scoreImages["40_ad"] = loadImage(path + '40_ad.png');
+    scoreImages["deuce"] = loadImage(path + 'score_deuce.png');
+    scoreImages["ad_40"] = loadImage(path + 'score_ad_40.png');
+    scoreImages["40_ad"] = loadImage(path + 'score_40_ad.png');
 
     for (let p1 of labels) {
         for (let p2 of labels) {
@@ -47,10 +47,10 @@ function preload() {
             if (p1 === "40" && p2 === "40") continue;
             
             let key = `${p1}_${p2}`;
-            scoreImages[key] = loadImage(path + key + '.png', 
+            scoreImages[key] = loadImage(path + 'score_' + key + '.png', 
                 () => console.log("Loaded: " + key),
                 () => {
-                    console.warn("Missing image: " + key + ".png");
+                    console.warn("Missing image: score_" + key + ".png");
                     scoreImages[key] = scoreImages["0_0"];
                 }
             );
