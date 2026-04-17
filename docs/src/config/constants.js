@@ -165,9 +165,9 @@ const GAME_CONFIG = {
         WINNER_Y_OFFSET: 50,        // winner text vertical offset from center
         RESTART_Y_OFFSET: 50,       // restart hint vertical offset from center
         SCORE_MARGIN_TOP: 10,       // safety margin from top edge
-        SKILL_BUTTON_SIZE: 100,
+        SKILL_BUTTON_SIZE: 110,
         SKILL_MASK_OPACITY: 180,
-        SKILL_MASK_INSET: 8,
+        SKILL_MASK_INSET: 10,
         GOLD_COLOR: [255, 188, 31, 200]
     },
 

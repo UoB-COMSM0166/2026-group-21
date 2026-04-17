@@ -332,8 +332,11 @@ const Scene_Game = {
         if (progress >= 1) {
             noFill();
             stroke(...ui.GOLD_COLOR);
-            strokeWeight(5);
+            strokeWeight(6);
+            drawingContext.shadowBlur = 20;
+            drawingContext.shadowColor = color(255, 230, 100);
             circle(0, 0, size + 8);
+            drawingContext.shadowBlur = 0;
         }
         pop();
     },
