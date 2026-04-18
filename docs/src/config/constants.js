@@ -113,7 +113,7 @@ const GAME_CONFIG = {
         WHITE: [255, 255, 255],
         BLACK: [0, 0, 0],
         YELLOW: [255, 255, 0],
-        GOLD: [255, 215, 0],
+        GOLD: [253, 203, 2],
         SHADOW: [0, 0, 0, 100],
         PINK: [255, 200, 200],
         DARK_GRAY: [0, 0, 0, 180],
@@ -182,6 +182,7 @@ const GAME_CONFIG = {
         COURT_IMG: 'assets/images/bg_stadium.png',
         GEAR_IMG: 'assets/images/button_settings.png',
         SCORE_PATH: 'assets/images/',
+        PAW_ICON: 'assets/images/menu_icon_paw.png',
         SKILL_ICONS: {
             cat: 'assets/images/skill_cat.png',
             dog: 'assets/images/skill_dog.png',
@@ -294,7 +295,7 @@ const GAME_CONFIG = {
             speed: 8,
             skillType: 'SHADOW_TELEPORT',
             assets: {
-                front: 'assets/images/player_cat_swing_front_1.png',
+                front: 'assets/images/player_cat_swing_front_2.png',
                 back: 'assets/images/player_cat_swing_back.png',
                 portrait: 'assets/images/player_cat_front.png'
             }

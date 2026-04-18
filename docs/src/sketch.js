@@ -1,5 +1,5 @@
 let player, opponent, ball, layout;
-let courtImg, backgroundImg, bgImg, escImg;
+let courtImg, backgroundImg, bgImg, escImg, pawImg;
 let scoreManager;
 let currentState = GAME_CONFIG.STATES.MENU;
 let isMultiplayer = false;
@@ -34,6 +34,7 @@ function preload() {
     escImg = loadImage(GAME_CONFIG.ASSETS.ESC_IMG);
     tutorialImg = loadImage(GAME_CONFIG.ASSETS.TUTORIAL_IMG);
     gearImg = loadImage(GAME_CONFIG.ASSETS.GEAR_IMG);
+    pawImg = loadImage(GAME_CONFIG.ASSETS.PAW_ICON);
 
     // deuce and AD
     scoreImages["deuce"] = loadImage(path + 'score_deuce.png');

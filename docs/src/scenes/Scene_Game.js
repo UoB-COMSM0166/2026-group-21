@@ -161,6 +161,47 @@ const Scene_Game = {
                 return;
             }
         }
+        
+        if (this.isDevMode) {
+            if (key === '3') {
+                p1CharIndex = (p1CharIndex + 1) % GAME_CONFIG.CHARACTERS.length;
+                const p1Config = GAME_CONFIG.CHARACTERS[p1CharIndex];
+                if (p1Config && typeof player !== 'undefined') {
+                    player.speed = p1Config.speed;
+                    player.skillType = p1Config.skillType;
+                    player.name = p1Config.name;
+                    player.charName = p1Config.charName || p1Config.name.toLowerCase();
+                    if (characterImages[p1CharIndex]) player.img = characterImages[p1CharIndex].back;
+                    player.maxCooldown = GAME_CONFIG.PLAYER.SKILLS?.DURATION_FRAMES || GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
+                }
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+            if (key === '4') {
+                p2CharIndex = (p2CharIndex + 1) % GAME_CONFIG.CHARACTERS.length;
+                const p2Config = GAME_CONFIG.CHARACTERS[p2CharIndex];
+                if (p2Config && typeof opponent !== 'undefined') {
+                    opponent.speed = p2Config.speed;
+                    opponent.skillType = p2Config.skillType;
+                    opponent.name = p2Config.name;
+                    opponent.charName = p2Config.charName || p2Config.name.toLowerCase();
+                    if (characterImages[p2CharIndex]) opponent.img = characterImages[p2CharIndex].front;
+                    opponent.maxCooldown = GAME_CONFIG.PLAYER.SKILLS?.DURATION_FRAMES || GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
+                }
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+            if (key === '5') {
+                selectedMap = (selectedMap + 1) % GAME_CONFIG.MAPS.length;
+                if (mapImages[selectedMap]) {
+                    backgroundImg = mapImages[selectedMap].bg;
+                    courtImg = mapImages[selectedMap].court;
+                }
+                MapManager.reset();
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+        }
 
         if (scoreManager.isMatchOver) {
             if (key.toLowerCase() === CONTROLS.RESTART) {
@@ -468,11 +509,10 @@ const Scene_Game = {
     },
 
     drawDevMenu: function() {
-        if (!opponentAI || isMultiplayer) return;
         push();
         fill(...GAME_CONFIG.COLORS.DARK_GRAY);
         noStroke();
-        rect(10, 10, 280, 120, 10);
+        rect(10, 10, 310, 200, 10);
         
         fill(...GAME_CONFIG.COLORS.YELLOW);
         textSize(GAME_CONFIG.UI.SIZE_SUB);
@@ -481,12 +521,25 @@ const Scene_Game = {
         
         fill(255);
         textSize(GAME_CONFIG.UI.DEV_MODE_TEXT);
-        text(`[1] AI Difficulty : ${opponentAI.difficulty}`, 20, 50);
-        text(`[2] AI Personality: ${(opponentAI.personality || 'basic').toUpperCase()}`, 20, 75);
+        
+        let y = 50;
+        if (!isMultiplayer && typeof opponentAI !== 'undefined' && opponentAI) {
+            text(`[1] AI Difficulty : ${opponentAI.difficulty}`, 20, y);
+            text(`[2] AI Personality: ${(opponentAI.personality || 'basic').toUpperCase()}`, 20, y + 25);
+        } else {
+            fill(120);
+            text(`[1] AI Difficulty : (Multiplayer)`, 20, y);
+            text(`[2] AI Personality: (Multiplayer)`, 20, y + 25);
+            fill(255);
+        }
+        
+        text(`[3] P1 Character: ${GAME_CONFIG.CHARACTERS[p1CharIndex]?.name || 'Unknown'}`, 20, y + 50);
+        text(`[4] P2 Character: ${GAME_CONFIG.CHARACTERS[p2CharIndex]?.name || 'Unknown'}`, 20, y + 75);
+        text(`[5] Map Select  : ${GAME_CONFIG.MAPS[selectedMap]?.name || 'Unknown'}`, 20, y + 100);
         
         fill(200, 200, 200);
         textSize(GAME_CONFIG.UI.HUD_SCORE_SUB);
-        text("Press '9' to Toggle Dev Mode", 20, 105);
+        text("Press '9' to Toggle Dev Mode", 20, y + 130);
         pop();
     }
 };
