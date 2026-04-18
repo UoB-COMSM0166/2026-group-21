@@ -88,8 +88,8 @@ const Scene_Game = {
         // p1
         let p1Energy = player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100);
         this.drawCircularSkillUI(
-            layout.VIRTUAL_W - 500, 
-            layout.VIRTUAL_H - 250, 
+            layout.courtRight + 180, 
+            layout.courtBottom - 80, 
             p1Energy,
             player.charName
         );
@@ -97,8 +97,8 @@ const Scene_Game = {
         // p2 or opponent
         let p2Energy = opponent.skillCooldown === 0 ? 100 : map(opponent.skillCooldown, opponent.maxCooldown, 0, 0, 100);
         this.drawCircularSkillUI(
-            500, 
-            250, 
+            layout.courtLeft - 180, 
+            layout.courtTop + 80, 
             p2Energy,
             opponent.charName
         );
