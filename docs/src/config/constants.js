@@ -291,7 +291,7 @@ const GAME_CONFIG = {
         {
             name: "Cat",
             charName: "cat",
-            speed: 6,
+            speed: 8,
             skillType: 'SHADOW_TELEPORT',
             assets: {
                 front: 'assets/images/player_cat_swing_front_1.png',
@@ -302,7 +302,7 @@ const GAME_CONFIG = {
         {
             name: "Dog",
             charName: "dog",
-            speed: 6,
+            speed: 8,
             skillType: 'GIGA_BALL',
             assets: {
                 front: 'assets/images/player_dog_swing_front.png',
@@ -313,7 +313,7 @@ const GAME_CONFIG = {
         {
             name: "Deer",
             charName: "deer",
-            speed: 6,
+            speed: 8,
             skillType: 'FOREST_ZEN',
             assets: {
                 front: 'assets/images/player_deer_swing_front.png',
@@ -324,7 +324,7 @@ const GAME_CONFIG = {
         {
             name: "Bird",
             charName: "bird",
-            speed: 6,
+            speed: 8,
             skillType: 'FEATHER_STORM',
             assets: {
                 front: 'assets/images/player_bird_swing_front.png',
@@ -332,14 +332,14 @@ const GAME_CONFIG = {
                 portrait: 'assets/images/player_bird_front.png'
             }
         },
-        { name: "?", speed: 6, skillType: '?', assets:{}}
+        { name: "?", speed: 8, skillType: '?', assets:{}}
     ],
 
     AI_LEVELS: {
         EASY: {
             speedMult: 0.7,     // ↑: AI moves faster
-            reactionDelay: 13,  // ↓: AI reacts quicker to ball
-            errorRange: 45,     // ↓: more accurate positioning
+            reactionDelay: 11,  // ↓: AI reacts quicker to ball
+            errorRange: 35,     // ↓: more accurate positioning
             prediction: 4       // ↑: better at predicting ball trajectory
         },
         NORMAL: {
@@ -513,28 +513,36 @@ const GAME_CONFIG = {
                 VX_MAX: 5,              // ↑: faster maximum angle shots
                 EXTREME_PROB: 0.2,      // ↑: uses max angle more often
                 AIM_AWAY_PROB: 0.35,    // ↑: aims away from opponent more
-                APPLY_PROB: 0.35        // ↑: uses wide shots more frequently
+                APPLY_PROB: 0.25,       // ↑: uses wide shots more frequently
+                SPREAD_RATIO_MIN: 0.3,  // Minimum lerp ratio towards the boundary line
+                SPREAD_RATIO_MAX: 0.65  // Maximum lerp ratio towards the boundary line
             },
             NORMAL: {
                 VX_MIN: 4,
                 VX_MAX: 10,
-                EXTREME_PROB: 0.7,
-                AIM_AWAY_PROB: 0.7,
-                APPLY_PROB: 0.65
+                EXTREME_PROB: 0.5,
+                AIM_AWAY_PROB: 0.55,
+                APPLY_PROB: 0.45,
+                SPREAD_RATIO_MIN: 0.5,
+                SPREAD_RATIO_MAX: 0.85
             },
             HARD: {
                 VX_MIN: 6,
                 VX_MAX: 14,
-                EXTREME_PROB: 0.88,
-                AIM_AWAY_PROB: 0.85,
-                APPLY_PROB: 0.82
+                EXTREME_PROB: 0.6,
+                AIM_AWAY_PROB: 0.65,
+                APPLY_PROB: 0.65,
+                SPREAD_RATIO_MIN: 0.7,
+                SPREAD_RATIO_MAX: 0.95
             },
             DEFAULT: {
                 VX_MIN: 4,
                 VX_MAX: 10,
                 EXTREME_PROB: 0.7,
                 AIM_AWAY_PROB: 0.7,
-                APPLY_PROB: 0.65
+                APPLY_PROB: 0.65,
+                SPREAD_RATIO_MIN: 0.5,
+                SPREAD_RATIO_MAX: 0.85
             }
         }
     }

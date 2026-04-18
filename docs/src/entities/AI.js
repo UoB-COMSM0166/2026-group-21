@@ -12,6 +12,8 @@ class AI {
         this._prevHitStatus = false;
         this._skillUseTimer = -1;
         this.personality = 'basic';
+        this.vx = 0;
+        this.vy = 0;
         this._attackerYRepositionTimer = -1;
         this._attackerYTarget = null;
         
@@ -50,6 +52,8 @@ class AI {
         this.wideExtremeProb = wideDefaults.EXTREME_PROB;
         this.wideAimAwayProb = wideDefaults.AIM_AWAY_PROB;
         this.wideApplyProb = wideDefaults.APPLY_PROB;
+        this.wideSpreadMin = wideDefaults.SPREAD_RATIO_MIN;
+        this.wideSpreadMax = wideDefaults.SPREAD_RATIO_MAX;
         
         // Initialize skill usage frames
         const initDefaults = GAME_CONFIG.AI_PERSONALITIES.DEFAULT_INIT;
@@ -134,6 +138,8 @@ class AI {
             this.wideExtremeProb = config.EXTREME_PROB;
             this.wideAimAwayProb = config.AIM_AWAY_PROB;
             this.wideApplyProb = config.APPLY_PROB;
+            this.wideSpreadMin = config.SPREAD_RATIO_MIN;
+            this.wideSpreadMax = config.SPREAD_RATIO_MAX;
         }
     }
 
@@ -164,17 +170,23 @@ class AI {
                     let homeX = isPlayerOnRight ?
                         layout.courtLeft + (layout.COURT_W / GAME_CONFIG.AI.HOME_X_DIVISOR) :
                         layout.courtRight - (layout.COURT_W / GAME_CONFIG.AI.HOME_X_DIVISOR);
-                    let fidgetRange = layout.COURT_W / GAME_CONFIG.AI.FIDGET_RANGE_DIVISOR;
-                    let noiseValue = (noise(this.noiseOffset) - 0.5) * fidgetRange;
-                    this.noiseOffset += this.fidgetSpeed;
-                    this.targetX = homeX + noiseValue;
+                    // Wait steadily in position, entirely eliminating randomly generated fidgeting
+                    this.targetX = homeX;
                 } else {
                     this.targetX = this.calculateServePosition();
                 }
                 this.targetY = null;
+            } else if (ball.lastHitter === this.player) {
+                // If AI just hit the ball over, retreat to center and wait
+                this.targetX = layout.centerX;
+                this.serveDelayTimer = -1;
+                this.serveTargetX = -1;
             } else {
-                // Use smooth noise instead of random jumping to prevent jitter
+                // Determine a fixed prediction target, locking onto it until next reaction cycle
+                // Base prediction error directly on the ball's position & AI prediction rating
                 let error = (noise(frameCount * 0.05, this.noiseOffset) - 0.5) * 2 * this.errorRange;
+                this.noiseOffset += this.fidgetSpeed;
+                
                 if (this.personality === 'wall') {
                     // Wall keeps a central base and only shades toward the predicted incoming ball position.
                     // This creates a solid defensive stance that doesn't overcommit to extreme corners.
@@ -189,7 +201,8 @@ class AI {
                 this.serveTargetX = -1;
             }
         }
-
+        
+        // Target Y acts dynamically, but we only calculate Target X during reaction frames.
         this.updateTargetY(ball);
         this.applySmoothMovement();
         this.handleActions(ball);
@@ -324,57 +337,71 @@ class AI {
     }
 
     applySmoothMovement() {
-        const AI = GAME_CONFIG.AI;
-        const baseline = layout.courtTop - GAME_CONFIG.PLAYER.SERVE_OFFSET - this.player.h / 2;
-        const isServeReceive = this.isServeReceivePhase(ball);
-        const isRoundEnding = !!ball.roundEnding;
+        let isRoundEnding = (typeof ball !== 'undefined' && ball.roundEnding);
+        let isServeReceive = (typeof ball !== 'undefined' && this.isServeReceivePhase(ball));
 
-        if (this.personality === 'attacker' && !isServeReceive && !isRoundEnding) {
-            this.updateAttackerY(ball);
-        }
-
-        // During point-end recovery, don't reserve a serve target yet.
-        // Otherwise attacker can carry a stale serveTargetX into the next point and never toss.
-        const targetX = isRoundEnding
-            ? this.player.x
-            : (this.personality === 'wall' && !ball.isWaiting && !ball.isTossing
-                ? this.targetX
-                : this.targetX);
-        let dx = targetX - this.player.x;
-        if (Math.abs(dx) >= AI.MOVE_DEADZONE) {
-            let lerpFactor = isRoundEnding
-                ? AI.LERP_FACTOR_SERVE
-                : ((scoreManager.currentServer === 'PLAYER' && !ball.isWaiting)
-                    ? AI.LERP_FACTOR_NORMAL
-                    : AI.LERP_FACTOR_SERVE);
-            let moveStep = dx * lerpFactor;
-            const maxSpeed = isRoundEnding
-                ? this.player.speed * this.speedMult * AI.SERVE_SPEED_MULT
-                : this.player.speed * this.speedMult;
-            moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
-            this.player.x += moveStep;
-        }
-
-
+        let baseline = this.getBaselineY();
+        let destX = (this.targetX !== null) ? this.targetX : layout.centerX;
         let destY = (this.targetY !== null) ? this.targetY : baseline;
+
         if (this.personality === 'attacker' && 
             !isServeReceive && 
             !isRoundEnding && 
             this.targetY == null && 
-            !ball.isWaiting && 
-            !ball.isTossing) {
+            (typeof ball !== 'undefined' && !ball.isWaiting && !ball.isTossing)) {
             destY = this._attackerYTarget ?? destY;
         }
-        let dy = destY - this.player.y;
-        if (Math.abs(dy) >= AI.MOVE_DEADZONE) {
-            let lerpFactor = isRoundEnding ? AI.LERP_FACTOR_SERVE : AI.LERP_FACTOR_NORMAL;
-            let moveStep = dy * lerpFactor;
-            const maxSpeed = isRoundEnding
-                ? this.player.speed * this.speedMult * AI.SERVE_SPEED_MULT
-                : this.player.speed * this.speedMult;
-            moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
-            this.player.y += moveStep;
+
+        if (isRoundEnding) {
+            // Rapidly halt progress when the point ends (ball goes out, scored, etc)
+            this.vx *= 0.5;
+            this.vy *= 0.5;
+            this.player.x += this.vx;
+            this.player.y += this.vy;
+            return;
         }
+
+        let friction = 0.85;
+        if (typeof selectedMap !== 'undefined' && selectedMap === 0) {
+            // Apply slippery ice friction if on Polar Map
+            friction = GAME_CONFIG.MAP_PHYSICS.POLAR_FRICTION;
+        }
+
+        let baseAcc = this.player.speed * this.speedMult * 0.22;
+        let maxSpeed = this.player.speed * this.speedMult;
+
+        // X movement
+        let dx = destX - this.player.x;
+        let xFriction = friction;
+        if (Math.abs(dx) >= GAME_CONFIG.AI.MOVE_DEADZONE) {
+            this.vx += (dx > 0) ? baseAcc : -baseAcc;
+        } else {
+            // Apply heavy braking inside deadzone to stop pendulum oscillation
+            xFriction *= 0.5;
+            if (Math.abs(this.vx) < 1) {
+                this.vx = 0;
+                this.player.x = destX;
+            }
+        }
+        this.vx *= xFriction;
+        this.vx = constrain(this.vx, -maxSpeed, maxSpeed);
+        this.player.x += this.vx;
+
+        // Y movement
+        let dy = destY - this.player.y;
+        let yFriction = friction;
+        if (Math.abs(dy) >= GAME_CONFIG.AI.MOVE_DEADZONE) {
+            this.vy += (dy > 0) ? baseAcc : -baseAcc;
+        } else {
+            yFriction *= 0.5;
+            if (Math.abs(this.vy) < 1) {
+                this.vy = 0;
+                this.player.y = destY;
+            }
+        }
+        this.vy *= yFriction;
+        this.vy = constrain(this.vy, -maxSpeed, maxSpeed);
+        this.player.y += this.vy;
     }
 
     calculateServePosition() {
@@ -548,29 +575,27 @@ class AI {
             const extremeProb = this.wideExtremeProb ?? wideDefaults.EXTREME_PROB;
             const aimAwayProb = this.wideAimAwayProb ?? wideDefaults.AIM_AWAY_PROB;
             const applyProb = this.wideApplyProb ?? wideDefaults.APPLY_PROB;
+            const spreadMin = this.wideSpreadMin ?? wideDefaults.SPREAD_RATIO_MIN;
+            const spreadMax = this.wideSpreadMax ?? wideDefaults.SPREAD_RATIO_MAX;
 
             // Not every shot needs wide-angle intent.
             if (random(1) >= applyProb) {
                 // Keep default vx from standard hit logic.
             } else {
-                // Choose direction: often aim away from player's x (make player run).
-                let sign;
+                // Choose direction based on ball position to create cross-court pressure.
+                let sideX;
                 if (random(1) < aimAwayProb && typeof player !== 'undefined') {
-                    sign = (player.x < ball.x) ? 1 : -1;
+                    // Aim for the opposite side of where the **ball** currently is, generating massive cross-court angles
+                    sideX = (ball.x > layout.centerX) ? layout.courtLeft : layout.courtRight;
                 } else {
-                    sign = (random(1) < 0.5) ? -1 : 1;
+                    sideX = (random(1) < 0.5) ? layout.courtLeft : layout.courtRight;
                 }
 
-                // Choose magnitude: bias toward extremes.
-                let mag;
-                if (random(1) < extremeProb) {
-                    mag = random(max(minVx, maxVx * GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_EXTREME_MULT), maxVx);
-                } else {
-                    mag = random(minVx, maxVx);
-                }
+                let wideRatio = random(spreadMin, spreadMax);
+                let targetX = lerp(layout.centerX, sideX, wideRatio);
+                // Add an inward margin so "wide" spreads into the corners safely
+                const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_SAFETY_MARGIN;
 
-                // Keep the 1st bounce roughly in-court by capping vx based on a simple prediction.
-                // (Uses airtime from HIT_Z and air resistance sum.)
                 const g = GAME_CONFIG.BALL.GRAVITY;
                 const air = GAME_CONFIG.BALL.AIR_RESISTANCE;
                 const t = max(
@@ -579,19 +604,21 @@ class AI {
                 );
                 const sum = (1 - pow(air, t)) / max(GAME_CONFIG.BALL_HIT_BEHAVIOR.AIR_RESISTANCE_MIN, (1 - air));
 
-                // Add an inward margin so "wide" still spreads but doesn't hug the lines too much.
-                const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_SAFETY_MARGIN;
+                // Calculate the precise velocity needed to hit the designated far corner
+                const desiredVx = (targetX - ball.x) / sum;
+
                 const minX = layout.courtLeft + ball.r + safetyMargin;
                 const maxX = layout.courtRight - ball.r - safetyMargin;
 
                 const maxVxPos = (maxX - ball.x) / sum;
                 const maxVxNeg = (ball.x - minX) / sum;
-                const maxAbsForSign = (sign > 0) ? maxVxPos : maxVxNeg;
+                const maxAbsForSign = (desiredVx >= 0) ? maxVxPos : maxVxNeg;
 
-                // Keep some risk (not 100% in), but reduce frequent outs by not using the full limit.
+                // Keep some risk but limit outs
                 const limitScale = GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_LIMIT_SCALE;
-                const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * limitScale));
-                ball.vx = sign * cappedMag;
+                const safeAbs = max(0, maxAbsForSign * limitScale);
+                
+                ball.vx = constrain(desiredVx, -safeAbs, safeAbs);
             }
         }
     }

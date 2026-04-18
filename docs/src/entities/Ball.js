@@ -234,7 +234,7 @@ class Ball {
                 }
             }
 
-            // Apply custom shot modifier from the hitter (e.g., AI personality adjustments)
+            // Apply custom shot modifier from the hitter (AI personality adjustments)
             if (p.shotModifier) {
                 p.shotModifier(this);
             }

@@ -42,7 +42,6 @@ class Player {
         this.currentFrame = 0;
         this.feedbackText = "";
         this.feedbackTimer = 0;
-        this.shotModifier = null;
     }
 
     update() {
