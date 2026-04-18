@@ -277,4 +277,4 @@ class Ball {
         this.x = layout.courtLeft + rel.x * layout.COURT_W;
         this.y = layout.courtTop + rel.y * layout.COURT_H;
     }
-}
+}if (typeof module !== 'undefined' && module.exports) { module.exports = Ball; }
