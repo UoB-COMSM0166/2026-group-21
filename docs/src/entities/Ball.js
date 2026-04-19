@@ -220,7 +220,7 @@ class Ball {
         if (!isHittable) return;
         // basic box-to-box collision detection
         const hitX = abs(this.x - p.x) < this.r + p.w / 2;
-        const hitY = abs(this.y - p.y) < this.r + p.h / 2;
+        const hitY = abs(this.y - p.y) < this.r + p.h / 2 + GAME_CONFIG.BALL_HIT_BEHAVIOR.HIT_Y_TOLERANCE;
         if (hitX && hitY) {
             if (this.isGigaShot) { 
                 p.stunTimer = GAME_CONFIG.BALL_HIT_BEHAVIOR.GIGA_SHOT_STUN;

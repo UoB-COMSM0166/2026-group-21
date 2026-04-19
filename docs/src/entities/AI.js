@@ -52,6 +52,9 @@ class AI {
         this.wideSpreadMin = wideDefaults.SPREAD_RATIO_MIN;
         this.wideSpreadMax = wideDefaults.SPREAD_RATIO_MAX;
         
+        // Initialize with default basic protection probability
+        this.basicProtectProb = GAME_CONFIG.AI_PERSONALITIES.BASIC.PROTECT_PROB.DEFAULT;
+
         // Initialize skill usage frames
         const initDefaults = GAME_CONFIG.AI_PERSONALITIES.DEFAULT_INIT;
         this.skillUseMinFrames = initDefaults.SKILL_USE_MIN_FRAMES;
@@ -77,18 +80,21 @@ class AI {
 
         const diff = (this.difficulty || 'NORMAL').toString().toUpperCase();
 
-        // Difficulty-based tuning for skill usage frequency
+        // Difficulty-based tuning for skill usage frequency and basic shot protection
         const skillConfig = GAME_CONFIG.AI_PERSONALITIES.BASIC;
         if (diff === 'EASY') {
             this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.EASY;
             this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.EASY;
+            this.basicProtectProb = skillConfig.PROTECT_PROB.EASY;
         } else if (diff === 'HARD') {
             this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.HARD;
             this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.HARD;
+            this.basicProtectProb = skillConfig.PROTECT_PROB.HARD;
         } else {
             // NORMAL
             this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.NORMAL;
             this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.NORMAL;
+            this.basicProtectProb = skillConfig.PROTECT_PROB.NORMAL;
         }
 
         // Reset attacker state when switching
@@ -287,7 +293,9 @@ class AI {
     }
 
     updateTargetY(ball) {
-        const serveLineY = layout.courtTop + layout.COURT_H * GAME_CONFIG.AI.SERVE_LINE_RATIO;
+        const { SERVE_LINE_RATIO, RECEIVE_Y_THRESHOLD, BOUNCE_DISTANCE_FACTOR,
+                BOUNCE_DISTANCE, BOUNCE_POSITION_FACTOR, RECEIVE_Y_FACTOR } = GAME_CONFIG.AI;
+        const serveLineY = layout.courtTop + layout.COURT_H * SERVE_LINE_RATIO;
         const isServeReceive = this.isServeReceivePhase(ball);
 
         if (ball.roundEnding) {
@@ -302,21 +310,19 @@ class AI {
                 const speedFactor = ball.speedMultiplier !== undefined ? ball.speedMultiplier : 1.0;
                 // If it's a slow ball, reduce distance (but keep a small minimum to avoid standing on the ball)
                 const dynamicBounceDist = Math.max(
-                    GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * GAME_CONFIG.AI.BOUNCE_DISTANCE_FACTOR, 
-                    GAME_CONFIG.AI.BOUNCE_DISTANCE * speedFactor
+                    RECEIVE_Y_THRESHOLD * BOUNCE_DISTANCE_FACTOR,
+                    BOUNCE_DISTANCE * speedFactor
                 );
 
                 if (this.personality === 'attacker' && !isServeReceive) {
                     // Move up toward service line / net more aggressively
-                    const preferNet = (Math.abs(ball.y - layout.netY) < 
-                                       dynamicBounceDist * GAME_CONFIG.AI.BOUNCE_POSITION_FACTOR);
-                    this.targetY = preferNet 
-                        ? this.getAttackerHitSafeY() 
+                    const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * BOUNCE_POSITION_FACTOR);
+                    this.targetY = preferNet
+                        ? this.getAttackerHitSafeY()
                         : min(this.getServiceLineY(), this.getAttackerHitSafeY());
 
                     // Force attacker to get close enough if ball is critically short
-                    if (this.targetY > ball.y - dynamicBounceDist + 
-                        GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * GAME_CONFIG.AI.RECEIVE_Y_FACTOR) {
+                    if (this.targetY > ball.y - dynamicBounceDist + RECEIVE_Y_THRESHOLD * RECEIVE_Y_FACTOR) {
                         this.targetY = min(this.getAttackerHitSafeY(), ball.y - dynamicBounceDist);
                     }
                 } else {
@@ -333,6 +339,10 @@ class AI {
     }
 
     applySmoothMovement() {
+        const { MOVE_FRICTION, MOVE_ACC_FACTOR, VELOCITY_SNAP_THRESHOLD,
+                MOVE_DEADZONE, DEADZONE_BRAKE_MULT } = GAME_CONFIG.AI;
+        const { POLAR_FRICTION, POLAR_OPPONENT_VELOCITY } = GAME_CONFIG.MAP_PHYSICS;
+
         let isRoundEnding = (typeof ball !== 'undefined' && ball.roundEnding);
         let isServeReceive = (typeof ball !== 'undefined' && this.isServeReceivePhase(ball));
 
@@ -340,10 +350,8 @@ class AI {
         let destX = (this.targetX !== null) ? this.targetX : layout.centerX;
         let destY = (this.targetY !== null) ? this.targetY : baseline;
 
-        if (this.personality === 'attacker' && 
-            !isServeReceive && 
-            !isRoundEnding && 
-            this.targetY == null && 
+        if (this.personality === 'attacker' && !isServeReceive &&
+            !isRoundEnding && this.targetY == null &&
             (typeof ball !== 'undefined' && !ball.isWaiting && !ball.isTossing)) {
             destY = this._attackerYTarget ?? destY;
         }
@@ -360,18 +368,15 @@ class AI {
         const isPolarIce = typeof selectedMap !== 'undefined' && selectedMap === 0 &&
                            typeof currentState !== 'undefined' && currentState === GAME_CONFIG.STATES.PLAYING;
 
-        let friction = isPolarIce ? GAME_CONFIG.MAP_PHYSICS.POLAR_FRICTION : GAME_CONFIG.AI.MOVE_FRICTION;
-        let baseAcc = isPolarIce
-            ? GAME_CONFIG.MAP_PHYSICS.POLAR_OPPONENT_VELOCITY
-            : this.player.speed * this.speedMult * GAME_CONFIG.AI.MOVE_ACC_FACTOR;
+        let friction = isPolarIce ? POLAR_FRICTION : MOVE_FRICTION;
+        let baseAcc = isPolarIce ? POLAR_OPPONENT_VELOCITY : this.player.speed * this.speedMult * MOVE_ACC_FACTOR;
         let maxSpeed = this.player.speed * this.speedMult;
 
         // X movement
         let dx = destX - this.player.x;
         let xFriction = friction;
         if (isPolarIce) {
-            const snap = GAME_CONFIG.AI.VELOCITY_SNAP_THRESHOLD;
-            if (Math.abs(dx) < snap && Math.abs(this.vx) < snap) {
+            if (Math.abs(dx) < VELOCITY_SNAP_THRESHOLD && Math.abs(this.vx) < VELOCITY_SNAP_THRESHOLD) {
                 this.vx = 0;
                 this.player.x = destX;
             } else {
@@ -381,11 +386,11 @@ class AI {
                     this.vx += (dx > 0) ? baseAcc : -baseAcc;
                 }
             }
-        } else if (Math.abs(dx) >= GAME_CONFIG.AI.MOVE_DEADZONE) {
+        } else if (Math.abs(dx) >= MOVE_DEADZONE) {
             this.vx += (dx > 0) ? baseAcc : -baseAcc;
         } else {
-            xFriction *= GAME_CONFIG.AI.DEADZONE_BRAKE_MULT;
-            if (Math.abs(this.vx) < GAME_CONFIG.AI.VELOCITY_SNAP_THRESHOLD) {
+            xFriction *= DEADZONE_BRAKE_MULT;
+            if (Math.abs(this.vx) < VELOCITY_SNAP_THRESHOLD) {
                 this.vx = 0;
                 this.player.x = destX;
             }
@@ -398,8 +403,7 @@ class AI {
         let dy = destY - this.player.y;
         let yFriction = friction;
         if (isPolarIce) {
-            const snap = GAME_CONFIG.AI.VELOCITY_SNAP_THRESHOLD;
-            if (Math.abs(dy) < snap && Math.abs(this.vy) < snap) {
+            if (Math.abs(dy) < VELOCITY_SNAP_THRESHOLD && Math.abs(this.vy) < VELOCITY_SNAP_THRESHOLD) {
                 this.vy = 0;
                 this.player.y = destY;
             } else {
@@ -409,11 +413,11 @@ class AI {
                     this.vy += (dy > 0) ? baseAcc : -baseAcc;
                 }
             }
-        } else if (Math.abs(dy) >= GAME_CONFIG.AI.MOVE_DEADZONE) {
+        } else if (Math.abs(dy) >= MOVE_DEADZONE) {
             this.vy += (dy > 0) ? baseAcc : -baseAcc;
         } else {
-            yFriction *= GAME_CONFIG.AI.DEADZONE_BRAKE_MULT;
-            if (Math.abs(this.vy) < GAME_CONFIG.AI.VELOCITY_SNAP_THRESHOLD) {
+            yFriction *= DEADZONE_BRAKE_MULT;
+            if (Math.abs(this.vy) < VELOCITY_SNAP_THRESHOLD) {
                 this.vy = 0;
                 this.player.y = destY;
             }
@@ -436,16 +440,19 @@ class AI {
     }
 
     handleActions(ball) {
+        const { RECEIVE_X_THRESHOLD, RECEIVE_Y_THRESHOLD, MOVE_DEADZONE,
+                SERVE_DELAY_MIN, SERVE_DELAY_MAX, SERVE_DIST_THRESHOLD,
+                SERVE_SWING_Z_MIN, SERVE_SWING_Z_MAX } = GAME_CONFIG.AI;
+
         if (!ball.isWaiting && !ball.isTossing && ball.vy < 0) {
             let xDiff = Math.abs(this.player.x - ball.x);
             let yDiff = Math.abs(this.player.y - ball.y);
-            if (xDiff < GAME_CONFIG.AI.RECEIVE_X_THRESHOLD &&
-                yDiff < GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD) {
+            if (xDiff < RECEIVE_X_THRESHOLD && yDiff < RECEIVE_Y_THRESHOLD) {
                 // Attacker can wait forward, but should step back to a safe hit line
                 // before swinging so fixed-power returns stay playable.
                 if (this.personality === 'attacker' &&
                     !this.isServeReceivePhase(ball) &&
-                    this.player.y > this.getAttackerHitSafeY() + GAME_CONFIG.AI.MOVE_DEADZONE) {
+                    this.player.y > this.getAttackerHitSafeY() + MOVE_DEADZONE) {
                     return;
                 }
                 // On serve receive, always wait for 1 bounce before returning.
@@ -493,21 +500,17 @@ class AI {
             if (ball.isWaiting) {
                 this.serveSwung = false;
                 if (this.serveDelayTimer === -1) {
-                    this.serveDelayTimer = int(random(
-                        GAME_CONFIG.AI.SERVE_DELAY_MIN,
-                        GAME_CONFIG.AI.SERVE_DELAY_MAX));
+                    this.serveDelayTimer = int(random(SERVE_DELAY_MIN, SERVE_DELAY_MAX));
                 }
                 let distToTarget = Math.abs(this.player.x - this.serveTargetX);
-                if (distToTarget < GAME_CONFIG.AI.SERVE_DIST_THRESHOLD && this.serveDelayTimer > 0) {
+                if (distToTarget < SERVE_DIST_THRESHOLD && this.serveDelayTimer > 0) {
                     this.serveDelayTimer--;
                 } else if (this.serveDelayTimer === 0) {
                     ball.toss();
                     this.serveDelayTimer = -1;
                 }
-            } else if (ball.isTossing && !this.serveSwung &&
-                       ball.vz < 0 &&
-                       ball.z > GAME_CONFIG.AI.SERVE_SWING_Z_MIN &&
-                       ball.z < GAME_CONFIG.AI.SERVE_SWING_Z_MAX) {
+            } else if (ball.isTossing && !this.serveSwung && ball.vz < 0 &&
+                       ball.z > SERVE_SWING_Z_MIN && ball.z < SERVE_SWING_Z_MAX) {
                 this.player.swing(ball);
                 this.serveSwung = true;
             }
@@ -546,14 +549,17 @@ class AI {
         if (ball.isTossing) return;
         if (typeof isMultiplayer !== 'undefined' && isMultiplayer) return;
 
+        const { WALL_SAFETY_MARGIN, WALL_RETURN_SPREAD_DEFAULT, WALL_RETURN_CLAMP_DEFAULT,
+                MIN_VX_FOR_SIGN, ATTACKER_SAFETY_MARGIN, ATTACKER_MAX_ABS_SCALE,
+                WIDE_SAFETY_MARGIN, WIDE_LIMIT_SCALE } = GAME_CONFIG.BALL_HIT_BEHAVIOR;
+
         // Single mode AI personality: "wall" returns deep through the center.
         if (this.personality === 'wall') {
             const sum = this.flightSum();
-            const spread = this.wallReturnSpread ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_SPREAD_DEFAULT;
+            const spread = this.wallReturnSpread ?? WALL_RETURN_SPREAD_DEFAULT;
             const targetX = layout.centerX + random(-spread, spread);
-            const clampScale = this.wallReturnClampScale ?? GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_RETURN_CLAMP_DEFAULT;
-            ball.vx = this.clampVxToTarget(
-                ball, targetX, sum, GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_SAFETY_MARGIN, clampScale);
+            const clampScale = this.wallReturnClampScale ?? WALL_RETURN_CLAMP_DEFAULT;
+            ball.vx = this.clampVxToTarget(ball, targetX, sum, WALL_SAFETY_MARGIN, clampScale);
         }
 
         // Single mode AI personality: "attacker" adds only a mild angle bias.
@@ -571,31 +577,33 @@ class AI {
                     sign = (player.x < ball.x) ? 1 : -1;
                 } else {
                     sign = (ball.vx < 0) ? -1 : 1;
-                    if (Math.abs(ball.vx) < GAME_CONFIG.BALL_HIT_BEHAVIOR.MIN_VX_FOR_SIGN) {
+                    if (Math.abs(ball.vx) < MIN_VX_FOR_SIGN) {
                         sign = (random(1) < 0.5) ? -1 : 1;
                     }
                 }
                 const sum = this.flightSum();
-                const safetyMargin = GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_SAFETY_MARGIN;
-                const minX = layout.courtLeft + ball.r + safetyMargin;
-                const maxX = layout.courtRight - ball.r - safetyMargin;
+                const minX = layout.courtLeft + ball.r + ATTACKER_SAFETY_MARGIN;
+                const maxX = layout.courtRight - ball.r - ATTACKER_SAFETY_MARGIN;
                 const maxAbsForSign = (sign > 0) ? (maxX - ball.x) / sum : (ball.x - minX) / sum;
                 const mag = random(minVx, maxVx);
-                const cappedMag = constrain(
-                    mag, 
-                    0, 
-                    max(0, maxAbsForSign * GAME_CONFIG.BALL_HIT_BEHAVIOR.ATTACKER_MAX_ABS_SCALE)
-                );
+                const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * ATTACKER_MAX_ABS_SCALE));
                 ball.vx = sign * max(Math.abs(ball.vx), cappedMag);
             }
+        }
+
+        // Basic personality: occasionally clamp vx to prevent out-of-bounds shots
+        if (this.personality === 'basic' && random(1) < this.basicProtectProb) {
+            const sum = this.flightSum();
+            const minX = layout.courtLeft + ball.r + WALL_SAFETY_MARGIN;
+            const maxX = layout.courtRight - ball.r - WALL_SAFETY_MARGIN;
+            ball.vx = constrain(ball.vx, (minX - ball.x) / sum, (maxX - ball.x) / sum);
         }
 
         // Polar ice: AI position may be offset from target due to sliding, cap vx so ball stays in court
         if (typeof selectedMap !== 'undefined' && selectedMap === 0) {
             const sum = this.flightSum();
-            const margin = GAME_CONFIG.BALL_HIT_BEHAVIOR.WALL_SAFETY_MARGIN;
-            const minX = layout.courtLeft + ball.r + margin;
-            const maxX = layout.courtRight - ball.r - margin;
+            const minX = layout.courtLeft + ball.r + WALL_SAFETY_MARGIN;
+            const maxX = layout.courtRight - ball.r - WALL_SAFETY_MARGIN;
             ball.vx = constrain(ball.vx, (minX - ball.x) / sum, (maxX - ball.x) / sum);
         }
 
@@ -618,13 +626,7 @@ class AI {
 
                 const targetX = lerp(layout.centerX, sideX, random(spreadMin, spreadMax));
                 const sum = this.flightSum();
-                ball.vx = this.clampVxToTarget(
-                    ball, 
-                    targetX, 
-                    sum, 
-                    GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_SAFETY_MARGIN, 
-                    GAME_CONFIG.BALL_HIT_BEHAVIOR.WIDE_LIMIT_SCALE
-                );
+                ball.vx = this.clampVxToTarget(ball, targetX, sum, WIDE_SAFETY_MARGIN, WIDE_LIMIT_SCALE);
             }
         }
     }

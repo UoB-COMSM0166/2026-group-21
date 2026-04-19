@@ -102,7 +102,7 @@ const GAME_CONFIG = {
         HIT_Y: 13,                  // Forward power imparted by racket
         HIT_Z: 7,                   // Upward lift imparted by racket
         DIRECTION_MULT: 0.15,       // Sensitivity of horizontal angle deflection
-        HIT_MIN_Z: 5,               // Hit window: minimum height required
+        HIT_MIN_Z: 2,               // Hit window: minimum height required
         HIT_MAX_Z: 50,
         SERVE_MIN_VX: 6,
         SERVE_MAX_VX: 12
@@ -115,6 +115,7 @@ const GAME_CONFIG = {
         AIRTIME_CALC_MIN_FRAMES: 8,    // minimum frames for airtime calculation | ↑: assumes longer flight time
         GRAVITY_MIN: 0.01,             // minimum gravity value for calculations | ↑: prevents division errors
         AIR_RESISTANCE_MIN: 0.0001,    // minimum air resistance for calculations | ↑: prevents division errors
+        HIT_Y_TOLERANCE: 5,            // ↑: more forgiving Y-axis hit detection
         
         // Wall personality shot physics
         WALL_RETURN_SPREAD_DEFAULT: 26,    // ↓: tighter center returns
@@ -377,7 +378,7 @@ const GAME_CONFIG = {
         EASY: {
             speedMult: 0.6,     // ↑: AI moves faster
             reactionDelay: 11,  // ↓: AI reacts quicker to ball
-            errorRange: 35,     // ↓: more accurate positioning
+            errorRange: 40,     // ↓: more accurate positioning
             prediction: 4       // ↑: better at predicting ball trajectory
         },
         NORMAL: {
@@ -431,7 +432,8 @@ const GAME_CONFIG = {
         // Basic personality (used as fallback)
         BASIC: {
             SKILL_USE_MIN_FRAMES: { EASY: 100, NORMAL: 60, HARD: 35 },
-            SKILL_USE_MAX_FRAMES: { EASY: 360, NORMAL: 300, HARD: 180 }
+            SKILL_USE_MAX_FRAMES: { EASY: 360, NORMAL: 300, HARD: 180 },
+            PROTECT_PROB: { EASY: 0.25, NORMAL: 0.35, HARD: 0.65, DEFAULT: 0.65 }
         },
 
         // Attacker personality: aggressive net play
@@ -521,13 +523,13 @@ const GAME_CONFIG = {
         // Wall personality: defensive center play
         WALL: {
             EASY: {
-                TRACK_RATIO: 0.5,           // ↑: follows ball more (drifts from center)
+                TRACK_RATIO: 0.55,           // ↑: follows ball more (drifts from center)
                 CENTER_JITTER: 32,          // ↓: less random positioning (more robotic)
                 RETURN_SPREAD: 42,          // ↓: tighter shots to center
                 RETURN_CLAMP_SCALE: 0.64    // ↑: takes more risk (shots closer to lines)
             },
             NORMAL: {
-                TRACK_RATIO: 0.68,
+                TRACK_RATIO: 0.65,
                 CENTER_JITTER: 22,
                 RETURN_SPREAD: 26,
                 RETURN_CLAMP_SCALE: 0.74
@@ -555,16 +557,16 @@ const GAME_CONFIG = {
                 SPREAD_RATIO_MAX: 0.65  // Maximum lerp ratio towards the boundary line
             },
             NORMAL: {
-                AIM_AWAY_PROB: 0.55,
-                APPLY_PROB: 0.35,
-                SPREAD_RATIO_MIN: 0.5,
-                SPREAD_RATIO_MAX: 0.85
+                AIM_AWAY_PROB: 0.40,
+                APPLY_PROB: 0.30,
+                SPREAD_RATIO_MIN: 0.3,
+                SPREAD_RATIO_MAX: 0.65
             },
             HARD: {
-                AIM_AWAY_PROB: 0.65,
+                AIM_AWAY_PROB: 0.50,
                 APPLY_PROB: 0.65,
-                SPREAD_RATIO_MIN: 0.7,
-                SPREAD_RATIO_MAX: 0.95
+                SPREAD_RATIO_MIN: 0.5,
+                SPREAD_RATIO_MAX: 0.75
             },
             DEFAULT: {
                 AIM_AWAY_PROB: 0.7,
