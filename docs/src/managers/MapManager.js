@@ -19,6 +19,7 @@ const MapManager = {
         }
     },
 
+    // handles wind logic for the Egypt map, blows the ball left or right
     handleEgyptWind: function (ball) {
         if (this.currentWindActive > 0) {
             this.currentWindActive--;
@@ -29,14 +30,17 @@ const MapManager = {
             this.windTimer--;
             if (this.windTimer <= 0) {
                 this.currentWindActive = this.windDuration;
+                // set random waiting time for next wind
                 this.windTimer = GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_TIMER_BASE + 
                                  floor(random(GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_TIMER_RANDOM));
+                // random pick direction, left-, right+
                 let forceMagnitude = GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_FORCE_MAGNITUDE;
                 this.windForce = random([-forceMagnitude, forceMagnitude]);
             }
         }
     },
 
+    // handles Ice Physics for players, makes them slide with inertia
     handlePolarIce: function (p1, p2) {
         this.p1Vel.x *= this.friction;
         this.p1Vel.y *= this.friction;
@@ -63,13 +67,6 @@ const MapManager = {
                 if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_RIGHT)) this.p2Vel.x += p2Vel;
                 if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_UP)) this.p2Vel.y -= p2Vel;
                 if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.p2Vel.y += p2Vel;
-            } else {
-                if (typeof opponentAI !== 'undefined' && opponentAI) {
-                    let dx = opponentAI.targetX - p2.x;
-                    let deadzone = GAME_CONFIG.MAP_PHYSICS.POLAR_AI_DEADZONE;
-                    if (dx < -deadzone) this.p2Vel.x -= p2Vel;
-                    else if (dx > deadzone) this.p2Vel.x += p2Vel;
-                }
             }
         }
 
@@ -82,7 +79,8 @@ const MapManager = {
     draw: function () {
         if (selectedMap === 1 && this.currentWindActive > 0) {
             push();
-            fill(200, 150, 50, 25);
+            const [r, g, b] = GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_OVERLAY_COLOR;
+            fill(r, g, b, GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_OVERLAY_ALPHA);
             rectMode(CORNER);
             rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
             pop();
@@ -90,40 +88,40 @@ const MapManager = {
         }
     },
 
+    // draw wind for egypt map
     drawWindParticles: function () {
         push();
         noStroke();
-        // Precalculate variables outside the loop to save CPU cycles
+        // precalculate variables outside the loop to save CPU cycles
         let vw = layout.VIRTUAL_W;
         let vh = layout.VIRTUAL_H;
         let speed = this.windForce * GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_SPEED_MULT;
         
-        // Base sine wave counter. Changing the multiplier affects how fast the wind 'wiggles' vertically.
-        let baseWave = frameCount * 0.08;
-        
-        // Horizontal displacement factor driven by the raw map windForce configuration
+        const MP = GAME_CONFIG.MAP_PHYSICS;
+        let baseWave = frameCount * MP.EGYPT_WAVE_SPEED;
         let baseSpeed = frameCount * speed;
-        let particleCount = GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_PARTICLES;
-        
-        for (let i = 0; i < particleCount; i++) {
-            // Apply a slight horizontal stagger per particle (i * 111 pseudo-randomizes mapping)
-            let xJiggle = random(-20, 20);
-            let x = (baseSpeed + (i * 111) + xJiggle) % vw;
-            if (x < 0) x += vw; // Wraps particles arriving from the left back to the right side of the screen
+        let particleCount = MP.EGYPT_WIND_PARTICLES;
+        const [pr, pg, pb] = MP.EGYPT_PARTICLE_COLOR;
 
-            // Overlay the base sine wave with a phase shift (i * 0.5) so particles don't identically wiggle
-            let wave = sin(baseWave + i * 0.5) * 20;
-            let yJiggle = random(-15, 15);
-            
-            // Distribute particles evenly across the vertical axis, then displace them visually by the sine wave
+        for (let i = 0; i < particleCount; i++) {
+            // calculate X, make particles move and wrap around screen
+            let xJiggle = random(-MP.EGYPT_PARTICLE_X_JITTER, MP.EGYPT_PARTICLE_X_JITTER);
+            let x = (baseSpeed + (i * MP.EGYPT_PARTICLE_X_STAGGER) + xJiggle) % vw;
+            if (x < 0) x += vw; // wraps particles arriving from the left back to the right side of the screen
+
+            // calculate Y, make particles move up and down like a wave
+            let wave = sin(baseWave + i * MP.EGYPT_WAVE_FREQ) * MP.EGYPT_WAVE_AMP;
+            let yJiggle = random(-MP.EGYPT_PARTICLE_Y_JITTER, MP.EGYPT_PARTICLE_Y_JITTER);
             let y = (i * (vh / particleCount)) + wave + yJiggle;
 
-            fill(230, 190, 100, random(150, 230));
-            // rect is significantly faster to render than ellipse on unaccelerated canvas
-            rect(x, y, random(15, 30), random(1.5, 3));
+            fill(pr, pg, pb, random(MP.EGYPT_PARTICLE_ALPHA_MIN, MP.EGYPT_PARTICLE_ALPHA_MAX));
+            rect(x, y, random(MP.EGYPT_PARTICLE_W_MIN, MP.EGYPT_PARTICLE_W_MAX), 
+                random(MP.EGYPT_PARTICLE_H_MIN, MP.EGYPT_PARTICLE_H_MAX)
+            );
         }
         pop();
     },
+
     reset: function () {
         this.currentWindActive = 0;
         this.windTimer = GAME_CONFIG.MAP_PHYSICS.EGYPT_WIND_TIMER_BASE;

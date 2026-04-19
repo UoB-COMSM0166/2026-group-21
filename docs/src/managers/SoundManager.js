@@ -27,6 +27,7 @@ class SoundManager {
         window.addEventListener('mousedown', startAudio);
         window.addEventListener('keydown', startAudio);
     }
+
     loadSounds() {
         this.sounds.bgmGame = loadSound(this.basePath + 'bgm/bgm_game.mp3', () => {
             this.sounds.bgmGame.setVolume(0);
@@ -38,8 +39,8 @@ class SoundManager {
         const sfxPath = this.basePath + 'sfx/';
 
         const ballPath = sfxPath + 'ball_interaction/';
-        this.sounds.swing = loadSound(ballPath + 'fast_travel.wav'); // swing
-        this.sounds.hit = loadSound(ballPath + 'frame_hit.wav');      // hit
+        this.sounds.swing = loadSound(ballPath + 'fast_travel.wav');
+        this.sounds.hit = loadSound(ballPath + 'frame_hit.wav');
 
         const crowdPath = sfxPath + 'crowd_dynamics/';
         this.sounds.clap = loadSound(crowdPath + 'cheer.wav');
@@ -66,6 +67,7 @@ class SoundManager {
         }
     }
 
+    // smoothly switch from current BGM to a new one
     transitionTo(nextBGM) {
         if (!nextBGM || !nextBGM.isLoaded()) return;
         if (this.currentBGM === nextBGM && nextBGM.isPlaying()) return;
@@ -82,7 +84,7 @@ class SoundManager {
         this.isFading = true;
         const fadeTime = GAME_CONFIG.SOUND.FADE_TIME_DEFAULT;
         let oldBGM = this.currentBGM;
-
+        // fade out the old music
         if (oldBGM && oldBGM.isLoaded() && oldBGM.isPlaying()) {
             oldBGM.setVolume(0, fadeTime);
             let t1 = setTimeout(() => {
@@ -94,7 +96,7 @@ class SoundManager {
         }
 
         this.currentBGM = nextBGM;
-
+        // fade in the new music
         if (getAudioContext().state === 'running') {
             this.currentBGM.setVolume(0);
             let t2 = setTimeout(() => {
@@ -114,28 +116,7 @@ class SoundManager {
         }
     }
 
-    startNewBGM(newBGM, fadeTime) {
-        if (newBGM && newBGM.isLoaded()) {
-            const isLoaded = this.currentBGM && this.currentBGM.isLoaded();
-            const isPlaying = isLoaded && this.currentBGM.isPlaying();
-            if (isPlaying && this.currentBGM !== newBGM) {
-                this.currentBGM.stop();
-            }
-            if (this.fadeOutTimeouts) {
-                this.fadeOutTimeouts.forEach(t => clearTimeout(t));
-            }
-            this.fadeOutTimeouts = [];
-            if (this.loopTimeouts) {
-                this.loopTimeouts.forEach(t => clearTimeout(t));
-            }
-            this.loopTimeouts = [];
-
-            this.currentBGM = newBGM;
-            this.playBGMWithFadeLoop(this.currentBGM, fadeTime);
-            this.isFading = false;
-        }
-    }
-
+    // plays BGM with a smooth fade-in and manual seamless looping
     playBGMWithFadeLoop(bgm, fadeTime) {
         if (!bgm || !bgm.isLoaded()) return;
 
@@ -146,9 +127,9 @@ class SoundManager {
         this.loopTimeouts = [];
 
         bgm.setVolume(0);
-
         bgm.play(0, 1, 0);
 
+        // slight delay before fading in to avoid audio pop at track start
         let tFadeIn = setTimeout(() => {
             if (this.currentBGM === bgm) {
                 bgm.setVolume(0);
@@ -158,6 +139,7 @@ class SoundManager {
         this.loopTimeouts.push(tFadeIn);
 
         let dur = bgm.duration();
+        // if track is long enough, manually cross-fade near the end and restart to avoid abrupt loop click
         if (dur > fadeTime * GAME_CONFIG.SOUND.FADE_TIME_MULTIPLIER) {
             let fadeOutStart = (dur - fadeTime) * 1000;
             let loopTimeout = setTimeout(() => {

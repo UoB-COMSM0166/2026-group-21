@@ -43,7 +43,7 @@ class TutorialManager {
         }
     }
 
-    // Returns the small looping yellow text at the top of the screen
+    // Returns the small looping yellow text at the bottom of the screen
     getCurrentPrompt() {
         switch (this.currentStep) {
             case 1: 

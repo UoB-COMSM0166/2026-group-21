@@ -53,7 +53,7 @@ const Scene_Settings = {
             let x = marginLeft;
             let y = centerY + (i * h * 0.1) - h * 0.12;
 
-            let isHovered = UIManager.isMouseOver(x, y - 30, this.btnW, 60);
+            let isHovered = UIManager.isMouseOver(x - 200, y - 30, this.btnW, 60);
             if (isHovered) {
                 this.selectedIndex = i;
                 currentHoverId = i;
@@ -85,7 +85,6 @@ const Scene_Settings = {
                     fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
                     textAlign(RIGHT, CENTER);
 
-                    let arrowX = this.options[i].includes("Volume") ? x - 400 : x - 150;
                     text("▶", x - 40, y);
                     pop();
                 }
@@ -100,7 +99,6 @@ const Scene_Settings = {
             if (this.options[i].includes("Volume")) {
                 textAlign(RIGHT, CENTER);
                 textSize(menuFontSize);
-                let textStartX = x - 170;
                 text(this.options[i], x - 30, y);
                 
                 let vol = (this.options[i] === "BGM Volume") ? 
@@ -143,7 +141,7 @@ const Scene_Settings = {
     },
 
     handleInput: function() {
-        if (keyCode === ESCAPE || keyCode === 27) {
+        if (keyCode === ESCAPE) {
             this.goBack();
             return;
         }

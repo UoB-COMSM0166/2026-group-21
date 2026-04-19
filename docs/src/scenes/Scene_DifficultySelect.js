@@ -66,7 +66,7 @@ const Scene_DifficultySelect = {
         }
 
         for (let i = 0; i < this.difficulties.length; i++) {
-            let x = centerX + (i - 1) * spacing;;
+            let x = centerX + (i - 1) * spacing;
             let y = centerY + h * 0.08;
 
             let boxLeftX = x - (boxW / 2);

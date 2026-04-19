@@ -5,9 +5,6 @@ const Scene_MapSelect = {
         "Egypt: Sandstorm obscures vision every 30s",
         "Wimbledon: Classic tournament rules"
     ],
-    iconW: 180,
-    iconH: 100,
-    spacing: 30,
 
     draw: function () {
         rectMode(CORNER);
@@ -54,14 +51,15 @@ const Scene_MapSelect = {
         // Map preview area
         let pW = w * 0.4;
         let pH = h * 0.5;
-        let triSize = w * 0.012;
+        let triSize = w * 0.015;
         let yPos = centerY + h * 0.05;
         let currentHoverId = -1;
 
         let leftArrowX = centerX - pW / 2 - triSize * 3;
         let rightArrowX = centerX + pW / 2 + triSize * 3;
-        let arrowHitSize = triSize * 5;
+        let arrowHitSize = triSize * 5; // hit area is larger than visual triangle for easier clicking
 
+        // convert center-based arrow positions to top-left coords for UIManager.isMouseOver
         let leftArrowLeftX = leftArrowX - (arrowHitSize / 2);
         let rightArrowLeftX = rightArrowX - (arrowHitSize / 2);
         let boxLeftX = centerX - (pW / 2);

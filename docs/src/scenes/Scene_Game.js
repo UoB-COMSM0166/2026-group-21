@@ -36,11 +36,6 @@ const Scene_Game = {
             opponentAI.reactionDelay = levelConfig.reactionDelay;
             opponentAI.errorRange    = levelConfig.errorRange;
             opponentAI.prediction    = levelConfig.prediction;
-            if (typeof opponentAI.setPersonality === 'function') {
-                // Single mode only: random personality per match (exclude 'attacker' for normal matches)
-                const personalities = ['basic', 'wide', 'wall'];
-                opponentAI.setPersonality(random(personalities));
-            }
             opponentAI.resetServeState();
         } else {
             opponent.isAI = false;
@@ -74,10 +69,10 @@ const Scene_Game = {
             ball.update();
             ball.checkHit(player);
             ball.checkHit(opponent);
+            MapManager.update(player, opponent, ball);
         }
         player.display();
         opponent.display();
-        MapManager.update(player, opponent, ball);
         ball.display();
         MapManager.draw();
 
@@ -172,7 +167,7 @@ const Scene_Game = {
                     player.name = p1Config.name;
                     player.charName = p1Config.charName || p1Config.name.toLowerCase();
                     if (characterImages[p1CharIndex]) player.img = characterImages[p1CharIndex].back;
-                    player.maxCooldown = GAME_CONFIG.PLAYER.SKILLS?.DURATION_FRAMES || GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
+                    player.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
                 }
                 if (soundManager) soundManager.play('select');
                 return;
@@ -186,7 +181,7 @@ const Scene_Game = {
                     opponent.name = p2Config.name;
                     opponent.charName = p2Config.charName || p2Config.name.toLowerCase();
                     if (characterImages[p2CharIndex]) opponent.img = characterImages[p2CharIndex].front;
-                    opponent.maxCooldown = GAME_CONFIG.PLAYER.SKILLS?.DURATION_FRAMES || GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
+                    opponent.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
                 }
                 if (soundManager) soundManager.play('select');
                 return;
@@ -220,8 +215,8 @@ const Scene_Game = {
         if (this.isShowingScore) return;
 
         // gear
-        const margin = 60;
-        const size = 72;
+        const margin = GAME_CONFIG.UI.GEAR_MARGIN;
+        const size = GAME_CONFIG.UI.GEAR_SIZE;
         const gearX = layout.VIRTUAL_W - margin;
         const gearY = margin;
 
@@ -244,7 +239,7 @@ const Scene_Game = {
             return;
         }
 
-        const customGold = color(255, 188, 31);
+        const customGold = color(...GAME_CONFIG.COLORS.GAME_GOLD);
 
         // pic
         const imgW = 360; 
@@ -266,6 +261,7 @@ const Scene_Game = {
         const isP1Ad = (p1 === "ad");
         const isP2Ad = (p2 === "ad");
 
+        // build image filename key: deuce/ad cases need special names, otherwise "p1score_p2score"
         let scoreKey = isDeuce ? "deuce" : (isP1Ad ? "ad_40" : (isP2Ad ? "40_ad" : `${p1}_${p2}`));
         let img = scoreImages[scoreKey];
         
@@ -316,16 +312,16 @@ const Scene_Game = {
         textStyle(BOLD);
         noStroke();
         fill(customGold);
-        textSize(22);
-        
+        textSize(GAME_CONFIG.UI.HUD_GAMES_TEXT);
+
         text(`${scoreManager.playerGames} : ${scoreManager.opponentGames}`, dividerX, backupY + 135);
 
         pop();
     },
 
     drawPauseButton: function() {
-        const margin = 60;
-        const size = 72;
+        const margin = GAME_CONFIG.UI.GEAR_MARGIN;
+        const size = GAME_CONFIG.UI.GEAR_SIZE;
         const x = layout.VIRTUAL_W - margin;
         const y = margin;
 
@@ -339,6 +335,7 @@ const Scene_Game = {
             cursor(HAND);
         } else {
             noTint();
+            cursor(ARROW);
         }
 
         if (gearImg) {
@@ -352,7 +349,7 @@ const Scene_Game = {
         const size = ui.SKILL_BUTTON_SIZE;         
         const strokeW = 8;
         const progress = (energy || 0) / 100; 
-        const goldColor = color(255, 188, 31); 
+        const goldColor = color(...GAME_CONFIG.COLORS.GAME_GOLD);
 
         push();
         translate(x, y);
@@ -361,17 +358,17 @@ const Scene_Game = {
         // skill button pics
         let roleKey = roleName ? roleName.toLowerCase() : "";
         let img = skillButtonImages[roleKey];
-        //img = null;
 
         if (img && img.width > 0) {
             image(img, 0, 0, size, size);
             
-            // fan-shaped mask
+            // fan-shaped mask: maps progress 0→1 to angle TWO_PI→0, so the dark
+            // sector shrinks as energy fills (starts from top at -HALF_PI)
             if (progress < 1) {
                 fill(0, 0, 0, ui.SKILL_MASK_OPACITY);
                 noStroke();
 
-                let maskSize =  size - ui.SKILL_MASK_INSET;
+                let maskSize = size - ui.SKILL_MASK_INSET;
                 let angle = map(progress, 0, 1, TWO_PI, 0);
                 arc(0, 0, maskSize, maskSize, -HALF_PI, -HALF_PI + angle, PIE);
             }
@@ -410,6 +407,7 @@ const Scene_Game = {
             }
             strokeWeight(strokeW);
             strokeCap(ROUND);
+            // arc sweeps clockwise from the top (-HALF_PI) based on current energy progress
             let endAngle = map(progress, 0, 1, 0, TWO_PI);
             arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
         }
@@ -428,8 +426,6 @@ const Scene_Game = {
     },
 
     restartGame: function () {
-        player.resetState();
-        opponent.resetState();
         // New match start: re-roll personality (single mode AI only)
         if (!isMultiplayer && opponentAI && typeof opponentAI.setPersonality === 'function') {
             const personalities = ['basic', 'wide', 'wall'];
@@ -444,8 +440,11 @@ const Scene_Game = {
         MapManager.reset();
         this.nextRound();
     },
+    
     // transition between rounds and switch service sides
     nextRound: function () {
+        player.resetState();
+        opponent.resetState();
         let serverX = (scoreManager.currentSide === 'RIGHT') ? layout.sideRight : layout.sideLeft;
         let receiverX = (scoreManager.currentSide === 'RIGHT') ? layout.sideLeft : layout.sideRight;
 
@@ -480,10 +479,10 @@ const Scene_Game = {
         fill(150);
         text("GAMES", centerX, centerY + 60);
 
-        let srcW = 100;
-        let srcH = 64;
-        let drawW = 100 * 1.5;
-        let drawH = 64 * 1.5;
+        let srcW = GAME_CONFIG.PLAYER.SPRITE_WIDTH;
+        let srcH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
+        let drawW = srcW * 1.5;
+        let drawH = srcH * 1.5;
 
         if (player && player.img) {
             imageMode(CENTER);
@@ -501,8 +500,8 @@ const Scene_Game = {
             text(p2Name.toUpperCase(), centerX + 180, centerY + 90);
         }
 
-        fill(0, 255, 0);
-        textSize(26);
+        fill(...GAME_CONFIG.COLORS.SERVER_INDICATOR);
+        textSize(GAME_CONFIG.UI.SCORE_OVERLAY_SERVER_TEXT);
         let serverName = (scoreManager.currentServer === 'PLAYER') ? p1Name : p2Name;
         text(`Next Serve: ${serverName.toUpperCase()}`, centerX, centerY + 150);
         pop();

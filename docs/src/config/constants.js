@@ -6,7 +6,6 @@ const GAME_CONFIG = {
         PLAYING: 'PLAYING',
         PAUSED: 'PAUSED',
         SETTINGS: 'SETTINGS',
-
         TUTORIAL: 'TUTORIAL',
         DIFFICULTY_SELECT: "DIFFICULTY_SELECT"
     },
@@ -20,14 +19,21 @@ const GAME_CONFIG = {
         OPPONENT_START_Y_OFFSET: 20,
 
         TARGET_RADIUS: 40,
-        HIT_VY_THRESHOLD: -2,
-        DEAD_BALL_VZ_THRESHOLD: 1.5,
+        HIT_VY_THRESHOLD: -2,          // vy is negative when ball travels upward (toward opponent)
+        DEAD_BALL_VZ_THRESHOLD: 1.5,   // ball is "dead" when vertical bounce speed drops below this
         OUT_OFFSET_Y: 50,
-        SKILL_TRIGGER_MARGIN: 2,
+        SKILL_TRIGGER_MARGIN: 5,       // frames of cooldown reset that count as "skill just fired"
 
-        PAUSE_MINOR: 60,
-        PAUSE_MAJOR: 90,
-        RESET_WAIT_LIMIT: 60
+        PAUSE_MINOR: 60,               // frames: short freeze after each small success
+        PAUSE_MAJOR: 90,               // frames: longer freeze when a full point is scored
+        RESET_WAIT_LIMIT: 60,          // frames: delay before resetting failed ball
+
+        TARGET_ZONE_W: 60,             // width of the target zone ellipse in pixels
+        TARGET_ZONE_H: 30,
+        UI_TEXT_SIZE: 36,
+        UI_BOX_W: 950,                 // width of the tutorial prompt text box
+        UI_BOX_H: 300,
+        SUCCESS_TEXT_SIZE: 50
     },
 
     COURT: {
@@ -43,8 +49,8 @@ const GAME_CONFIG = {
 
     MAP_PHYSICS: {
         POLAR_FRICTION: 0.95,
-        POLAR_MOVE_VELOCITY: 0.5,
-        POLAR_OPPONENT_VELOCITY: 0.4,
+        POLAR_MOVE_VELOCITY: 0.9,
+        POLAR_OPPONENT_VELOCITY: 0.9,
         POLAR_AI_DEADZONE: 3,
 
         EGYPT_WIND_DURATION: 80,
@@ -52,7 +58,23 @@ const GAME_CONFIG = {
         EGYPT_WIND_TIMER_RANDOM: 200,
         EGYPT_WIND_FORCE_MAGNITUDE: 0.2,
         EGYPT_WIND_PARTICLES: 120,
-        EGYPT_WIND_SPEED_MULT: 60
+        EGYPT_WIND_SPEED_MULT: 60,
+
+        EGYPT_WIND_OVERLAY_COLOR: [200, 150, 50], // RGB tint of the wind screen overlay
+        EGYPT_WIND_OVERLAY_ALPHA: 25,             // opacity of the wind screen overlay (0-255)
+        EGYPT_WAVE_SPEED: 0.08,                   // frameCount multiplier for particle wave animation
+        EGYPT_WAVE_AMP: 20,                       // pixel amplitude of particle vertical wave
+        EGYPT_WAVE_FREQ: 0.5,                     // wave phase offset per particle index
+        EGYPT_PARTICLE_X_STAGGER: 111,            // pixel spacing between particle base X positions
+        EGYPT_PARTICLE_X_JITTER: 20,              // max random X offset per particle
+        EGYPT_PARTICLE_Y_JITTER: 15,
+        EGYPT_PARTICLE_COLOR: [230, 190, 100],    // base RGB of sand particles
+        EGYPT_PARTICLE_ALPHA_MIN: 150,            // minimum opacity of sand particles
+        EGYPT_PARTICLE_ALPHA_MAX: 230,
+        EGYPT_PARTICLE_W_MIN: 15,                 // minimum particle width in pixels
+        EGYPT_PARTICLE_W_MAX: 30,
+        EGYPT_PARTICLE_H_MIN: 1.5,
+        EGYPT_PARTICLE_H_MAX: 3
     },
 
     MATCH: {
@@ -81,7 +103,7 @@ const GAME_CONFIG = {
         HIT_Z: 7,                   // Upward lift imparted by racket
         DIRECTION_MULT: 0.15,       // Sensitivity of horizontal angle deflection
         HIT_MIN_Z: 5,               // Hit window: minimum height required
-        HIT_MAX_Z: 50,              // Hit window: maximum height allowed
+        HIT_MAX_Z: 50,
         SERVE_MIN_VX: 6,
         SERVE_MAX_VX: 12
     },
@@ -132,28 +154,40 @@ const GAME_CONFIG = {
         UI_PANEL_BG: [255, 200],
         UI_MASK: [0, 0, 0, 100],
         TEXT_ERROR: [200, 30, 30],
-        TUTORIAL_TEXT_HIGHLIGHT: [255, 255, 0, 50]
+        TUTORIAL_TEXT_HIGHLIGHT: [255, 255, 0, 50],
+        GAME_GOLD: [255, 188, 31],         // opaque HUD gold (same hue as GOLD_COLOR, no alpha)
+        SERVER_INDICATOR: [0, 255, 0]      // next-server text in score overlay
     },
 
     PLAYER: {
         WIDTH: 100,
         HEIGHT: 64,
         SPEED: 6,
-        SWING_DURATION: 10,         // frames: how long the hit window stays active
-        SERVE_OFFSET: 5,            // Starting distance behind baseline
-        NET_MARGIN: 10,             // Minimum safe distance from net
-        SWING_SCALE: 1.1,           // Visual feedback multiplier during swing
-        SKILL_COOLDOWN: 180,
-        TOTAL_FRAMES: 6,
-        ANIM_SPEED: 0.4,
+        SWING_DURATION: 10,            // frames: how long the hit window stays active
+        SERVE_OFFSET: 5,               // Starting distance behind baseline
+        NET_MARGIN: 10,                // Minimum safe distance from net
+        SKILL_COOLDOWN: 180,           // frames before skill can be used again
+        TOTAL_FRAMES: 6,               // total sprite animation frames in the swing sheet
+        ANIM_SPEED: 0.4,               // frames advanced per game tick during swing animation
         SPRITE_WIDTH: 100,
         SPRITE_HEIGHT: 64,
-        SPRITE_COLS: 2,
+        SPRITE_COLS: 2,                // number of columns in the sprite sheet grid
         SKILL_BAR_COLORS: { BG: [50, 50, 50, 200], BORDER_RADIUS: 5 },
-        SKILL_AURA_STROKE_INNER: 200,
-        SKILL_AURA_STROKE_OUTER: 80,
+        SKILL_AURA_STROKE_INNER: 200,  // alpha of the inner aura ring (brighter)
+        SKILL_AURA_STROKE_OUTER: 80,   // dimmer
+        AURA_PULSE_SPEED: 0.15,        // radians per frame for aura size sine wave
+        AURA_PULSE_AMP: 15,            // pixel amplitude of the aura size
+        AURA_BASE_PADDING: 10,         // extra pixels added to player size for the base aura ring
+        AURA_OUTER_RING_GAP: 10,       // extra size of the outer aura ring beyond the inner ring
+        AURA_STROKE_WEIGHT_OUTER: 6,
+        AURA_STROKE_WEIGHT_INNER: 3,
         STUN_STAR_COUNT: 3,
-        HIT_OFFSET: 100,
+        STUN_HEAD_OFFSET: 10,
+        STUN_STAR_ROTATION_SPEED: 0.2,
+        STUN_STAR_ORBIT_X: 20,         // horizontal circle radius for stun stars
+        STUN_STAR_ORBIT_Y: 5,
+        STUN_STAR_SIZE: 8,
+        HIT_OFFSET: 100,               // pixel gap between teleported player and ball (shadow teleport skill)
         SKILLS: {
             DURATION_FRAMES: 60,
             FEATHER_STORM_SPEED: 1.1,
@@ -173,7 +207,7 @@ const GAME_CONFIG = {
         ],
         MAP_IMGS: [
             'assets/images/preview_polar_bg.png',
-            'assets/images/preview_eygpt_bg.png',
+            'assets/images/preview_egypt_bg.png',
             'assets/images/preview_wimbledon_bg.png'
         ],
         PLAYER_IMG: 'assets/images/player_bird_back.png',
@@ -217,9 +251,9 @@ const GAME_CONFIG = {
     },
 
     SOUND: {
-        FADE_TIME_DEFAULT: 1.5,
-        FADE_TIME_MULTIPLIER: 2.5,
-        BUFFER_MS: 100,
+        FADE_TIME_DEFAULT: 1.5,       // seconds for BGM fade-in / fade-out
+        FADE_TIME_MULTIPLIER: 2.5,    
+        BUFFER_MS: 100,               // brief delay before starting new BGM to prevent audio glitches
         TARGET_VOLUME_DEFAULT: 0.3,
         SFX_VOLUME_DEFAULT: 0.5,
         COOLDOWN: {
@@ -256,24 +290,28 @@ const GAME_CONFIG = {
         SCORE_MARGIN_TOP: 10,       // safety margin from top edge
         SKILL_BUTTON_SIZE: 110,
         SKILL_MASK_OPACITY: 180,
-        SKILL_MASK_INSET: 10,
+        SKILL_MASK_INSET: 10,       
         GOLD_COLOR: [255, 188, 31, 200],
         HUD_SCORE_TITLE: 50,
         HUD_SCORE_MAIN: 54,
         HUD_SCORE_SUB: 12,
         ROUND_END_MAIN: 80,
         ROUND_END_SUB: 24,
-        DEV_MODE_TEXT: 14
+        DEV_MODE_TEXT: 14,
+        GEAR_MARGIN: 60,
+        GEAR_SIZE: 72,
+        SCORE_OVERLAY_SERVER_TEXT: 26, // text size for the "Next Serve" line in the game-won overlay
+        HUD_GAMES_TEXT: 22             // text size for the games score in the in-game scoreboard
     },
 
     FEEDBACK: {
-        MISS_DISTANCE_THRESHOLD: 300,
-        DISPLAY_DURATION: 60,
+        MISS_DISTANCE_THRESHOLD: 300, // max px distance from ball that still counts as a near-miss swing
+        DISPLAY_DURATION: 60,          // frames to show PERFECT / MISS text
         TEXT_SIZE: 24,
         TEXT_OFFSET_Y: 20,
         INDICATOR_OFFSET_Y: 50,
-        INDICATOR_ANIM_SPEED: 0.1,
-        INDICATOR_ANIM_AMP: 5,
+        INDICATOR_ANIM_SPEED: 0.1,    // speed of the bouncing serve arrow (radians per frame)
+        INDICATOR_ANIM_AMP: 5,        // pixel amplitude of the bouncing serve arrow
         INDICATOR_WIDTH: 10,
         INDICATOR_HEIGHT: 15
     },
@@ -333,24 +371,23 @@ const GAME_CONFIG = {
                 portrait: 'assets/images/player_bird_front.png'
             }
         },
-        { name: "?", speed: 8, skillType: '?', assets:{}}
     ],
 
     AI_LEVELS: {
         EASY: {
-            speedMult: 0.7,     // ↑: AI moves faster
+            speedMult: 0.6,     // ↑: AI moves faster
             reactionDelay: 11,  // ↓: AI reacts quicker to ball
             errorRange: 35,     // ↓: more accurate positioning
             prediction: 4       // ↑: better at predicting ball trajectory
         },
         NORMAL: {
-            speedMult: 0.8,     // ↑: AI moves faster
+            speedMult: 0.7,     // ↑: AI moves faster
             reactionDelay: 8,   // ↓: AI reacts quicker to ball
             errorRange: 25,     // ↓: more accurate positioning
-            prediction: 8       // ↑: better at predicting ball trajectory
+            prediction: 7       // ↑: better at predicting ball trajectory
         },
         HARD: {
-            speedMult: 0.89,    // ↑: AI moves faster
+            speedMult: 0.8,     // ↑: AI moves faster
             reactionDelay: 5,   // ↓: AI reacts quicker to ball
             errorRange: 15,     // ↓: more accurate positioning
             prediction: 10      // ↑: better at predicting ball trajectory
@@ -360,13 +397,10 @@ const GAME_CONFIG = {
     AI: {
         FIDGET_SPEED: 0.015,        // Speed of lateral sway while receiving | ↑: more side-to-side wobble
         HOME_X_DIVISOR: 4,          // Court ratio for receive home pos | ↑: stands closer to sideline
-        FIDGET_RANGE_DIVISOR: 8,    // Court ratio for lateral sway range | ↓: wider sway range
         RECEIVE_X_THRESHOLD: 70,    // ↑: AI starts moving to ball earlier (more responsive)
         RECEIVE_Y_THRESHOLD: 100,   // ↑: AI moves forward earlier after bounce
         SERVE_DELAY_MIN: 90,        // ↓: faster serves (less thinking time)
         SERVE_DELAY_MAX: 160,       // ↓: faster serves (less variation)
-        LERP_FACTOR_NORMAL: 0.2,    // ↑: snappier movement during rallies (less smooth)
-        LERP_FACTOR_SERVE: 0.1,     // ↑: faster serve positioning
         SERVE_POS_PADDING: 10,      // ↑: AI positions farther from target serve spot
         SERVE_DIST_THRESHOLD: 20,   // ↑: AI tosses from farther away (sloppier serves)
         SERVE_SWING_Z_MIN: 10,      // Min z height to swing during serve | ↓: hits toss earlier
@@ -377,16 +411,21 @@ const GAME_CONFIG = {
         BOUNCE_DISTANCE_FACTOR: 0.5, // Multiplier for minimum bounce distance | ↑: AI keeps more distance on slow balls
         BOUNCE_POSITION_FACTOR: 0.45, // Factor for preferring net position | ↑: AI rushes net more aggressively
         RECEIVE_Y_FACTOR: 0.8,      // Factor for attacker Y positioning | ↑: attacker moves up even more
-        SERVE_SPEED_MULT: 0.7       // Speed multiplier during serve/round ending | ↑: faster recovery between points
+        NOISE_TIME_SCALE: 0.05,     // time scaling for standard prediction shaking
+        WALL_NOISE_TIME_SCALE: 0.03, // time scaling for wall personality center shaking
+        MOVE_FRICTION: 0.85,        // Default deceleration multiplier per frame (non-ice maps)
+        MOVE_ACC_FACTOR: 0.22,      // Acceleration as a fraction of (speed × speedMult)
+        DEADZONE_BRAKE_MULT: 0.5,   // Extra friction applied inside the movement deadzone to prevent shake
+        VELOCITY_SNAP_THRESHOLD: 1  // Speed below which velocity is zeroed out
     },
 
     AI_PERSONALITIES: {
         // Default initialization values for constructor
         DEFAULT_INIT: {
-            NOISE_OFFSET_MAX: 1000,
-            TARGET_X_FALLBACK: 450,
-            SKILL_USE_MIN_FRAMES: 60,
-            SKILL_USE_MAX_FRAMES: 300
+            NOISE_OFFSET_MAX: 1000,       // random seed range for Perlin noise movement
+            TARGET_X_FALLBACK: 450,       // used before layout is ready
+            SKILL_USE_MIN_FRAMES: 60,     // earliest frame after cooldown ends that AI uses skill
+            SKILL_USE_MAX_FRAMES: 300     // latest frame after cooldown ends that AI uses skill
         },
 
         // Basic personality (used as fallback)
@@ -510,36 +549,24 @@ const GAME_CONFIG = {
         // Wide personality: extreme angle shots
         WIDE: {
             EASY: {
-                VX_MIN: 2,              // ↑: faster minimum angle shots
-                VX_MAX: 5,              // ↑: faster maximum angle shots
-                EXTREME_PROB: 0.2,      // ↑: uses max angle more often
                 AIM_AWAY_PROB: 0.35,    // ↑: aims away from opponent more
                 APPLY_PROB: 0.25,       // ↑: uses wide shots more frequently
                 SPREAD_RATIO_MIN: 0.3,  // Minimum lerp ratio towards the boundary line
                 SPREAD_RATIO_MAX: 0.65  // Maximum lerp ratio towards the boundary line
             },
             NORMAL: {
-                VX_MIN: 4,
-                VX_MAX: 10,
-                EXTREME_PROB: 0.5,
                 AIM_AWAY_PROB: 0.55,
-                APPLY_PROB: 0.45,
+                APPLY_PROB: 0.35,
                 SPREAD_RATIO_MIN: 0.5,
                 SPREAD_RATIO_MAX: 0.85
             },
             HARD: {
-                VX_MIN: 6,
-                VX_MAX: 14,
-                EXTREME_PROB: 0.6,
                 AIM_AWAY_PROB: 0.65,
                 APPLY_PROB: 0.65,
                 SPREAD_RATIO_MIN: 0.7,
                 SPREAD_RATIO_MAX: 0.95
             },
             DEFAULT: {
-                VX_MIN: 4,
-                VX_MAX: 10,
-                EXTREME_PROB: 0.7,
                 AIM_AWAY_PROB: 0.7,
                 APPLY_PROB: 0.65,
                 SPREAD_RATIO_MIN: 0.5,

@@ -56,6 +56,7 @@ const Scene_CharSelect = {
         let p2X = w * 0.68;
         let panelY = h * 0.52;
 
+        // show the cursor on whichever player is currently selecting
         let p1DisplayIdx = (p1CharIndex === -1) ? this.focusedIndex : p1CharIndex;
         let p2DisplayIdx = (p1CharIndex !== -1 && p2CharIndex === -1) ? this.focusedIndex : p2CharIndex;
 
@@ -242,6 +243,7 @@ const Scene_CharSelect = {
         if (soundManager) soundManager.play('confirm');
 
         let finalIndex = this.focusedIndex;
+        // index 4 is the "?" random slot
         if (finalIndex === 4) {
             finalIndex = floor(random(0, this.charNames.length - 1));
         }

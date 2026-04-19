@@ -36,7 +36,6 @@ const Scene_Menu = {
         const textPart1 = "FUR";
         const textPart2 = "HAND SMASH";
         let p1W = textWidth(textPart1);
-        let spaceW = textWidth(" ");
         let pawImgSize = titleSize * 1.0;
         
         // layer 1: bottom shadow

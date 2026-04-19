@@ -27,7 +27,7 @@ class LayoutManager {
         this.courtLeft = (this.VIRTUAL_W - this.COURT_W) / 2;
         this.courtRight = (this.VIRTUAL_W + this.COURT_W) / 2;
         this.centerX = (this.courtLeft + this.courtRight) / 2;
-         //layout optimization for different size of screen
+        // layout optimization for different size of screen
         let extraHeight = this.VIRTUAL_H - this.COURT_H;
         if (this.VIRTUAL_H > GAME_CONFIG.COURT.TALL_SCREEN_THRESHOLD) {
             this.courtTop = GAME_CONFIG.COURT.TALL_SCREEN_TOP;
@@ -35,10 +35,10 @@ class LayoutManager {
             this.courtTop = max(GAME_CONFIG.COURT.MIN_TOP_MARGIN, extraHeight / 2);
         }
         this.courtBottom = this.courtTop + this.COURT_H;
-        //net is in the middle of the court
+        // net is in the middle of the court
         this.netY = (this.courtTop + this.courtBottom) / 2;
         this.centerY = this.netY;
-        //serve positions relative to the court boundaries
+        // serve positions relative to the court boundaries
         this.sideLeft = this.courtLeft + GAME_CONFIG.COURT.SERVE_OUTSIDE_OFFSET;
         this.sideRight = this.courtRight - GAME_CONFIG.COURT.SERVE_OUTSIDE_OFFSET;
     }

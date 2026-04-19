@@ -43,13 +43,14 @@ function preload() {
 
     for (let p1 of labels) {
         for (let p2 of labels) {
+            // skip impossible tennis score combinations (ad only valid alongside 40, and not 40-40)
             if ((p1 === "ad" && p2 !== "40") || (p2 === "ad" && p1 !== "40")) continue;
-            if (p1 === "ad" && p2 === "ad") continue; 
-            if (p1 === "40" && p2 === "40") continue;
+            if (p1 === "ad" && p2 === "ad") continue;
+            if (p1 === "40" && p2 === "40") continue; // deuce has its own image
             
             let key = `${p1}_${p2}`;
-            scoreImages[key] = loadImage(path + 'score_' + key + '.png', 
-                () => console.log("Loaded: " + key),
+            scoreImages[key] = loadImage(path + 'score_' + key + '.png',
+                () => {},
                 () => {
                     console.warn("Missing image: score_" + key + ".png");
                     scoreImages[key] = scoreImages["0_0"];
@@ -199,29 +200,26 @@ function keyPressed() {
         CONTROLS.ESCAPE, CONTROLS.OPPONENT_ACTION, CONTROLS.OPPONENT_LEFT, 
         CONTROLS.OPPONENT_RIGHT, CONTROLS.OPPONENT_UP, CONTROLS.OPPONENT_DOWN, 
         CONTROLS.PLAYER_ACTION, CONTROLS.PLAYER_LEFT, CONTROLS.PLAYER_RIGHT, 
-        CONTROLS.PLAYER_UP, CONTROLS.PLAYER_DOWN, CONTROLS.OPPONENT_SKILL, 
-        CONTROLS.PLAYER_SKILL, 32 // spacebar fallback
+        CONTROLS.PLAYER_UP, CONTROLS.PLAYER_DOWN, CONTROLS.OPPONENT_SKILL,
+        CONTROLS.PLAYER_SKILL
     ];
     if (gameKeys.includes(keyCode) || [UP_ARROW, DOWN_ARROW, LEFT_ARROW, RIGHT_ARROW, ENTER].includes(keyCode)) {
         return false;
     }
 }
+
 // handle window resizing
 function windowResized() {
     if (player && opponent && ball && layout) {
-    //calculate relative positions before resizing
-    let relP = player.relativePos;
-    let relO = opponent.relativePos;
-    let relB = ball.relativePos;
-    //resize canvas and caculate layout boundaries
-    resizeCanvas(windowWidth, windowHeight);
-    layout.update();
-    //remap objects positions to the new position
-    player.reposition(relP, layout);
-    opponent.reposition(relO, layout);
-    ball.reposition(relB, layout);
-    }
-    else{
+        let relP = player.relativePos;
+        let relO = opponent.relativePos;
+        let relB = ball.relativePos;
+        resizeCanvas(windowWidth, windowHeight);
+        layout.update();
+        player.reposition(relP, layout);
+        opponent.reposition(relO, layout);
+        ball.reposition(relB, layout);
+    } else {
         resizeCanvas(windowWidth, windowHeight);
         if (layout) layout.update();
     }

@@ -2,15 +2,9 @@ class Ball {
     constructor() {
         this.r = GAME_CONFIG.BALL.RADIUS;
         this.gravity = GAME_CONFIG.BALL.GRAVITY;
-        this.bounceCount = 0;
-        this.lastHitter = null;
-        this.justServed = false; // true only between serve-hit and receiver's first return
         this.reset(0, 0, 'PLAYER');
-        this.speedMultiplier = 1.0;
-        this.speedTimer = 0;
-        this.sizeTimer = 0;
-        this.isGigaShot = false;
     }
+
     //resets the ball to its starting state for a new serve
     reset(startX, startY, side) {
         if (this.roundTimer) {
@@ -33,11 +27,15 @@ class Ball {
         this.vy = 0;
         this.vz = 0;
         this.bounceCount = 0;
+        this.lastHitter = null;
         this.isWaiting = true; // holding the ball before tossing
         this.isTossing = false; // ball is in the air but not yet hit
         this.serveSide = side; // track who is serving
         this.isGigaShot = false;
         this.justServed = false;
+        this.speedMultiplier = 1.0;
+        this.speedTimer = 0;
+        this.sizeTimer = 0;
     }
 
     update() {
@@ -78,6 +76,7 @@ class Ball {
         ellipse(this.x, this.y - visualZ - this.r, this.r * 2);
         pop();
     }
+
     // initialzie the serve toss
     toss() {
         if (this.isWaiting) {
@@ -86,6 +85,7 @@ class Ball {
             this.vz = GAME_CONFIG.BALL.TOSS_Z;
         }
     }
+
     // locks the ball position to the serve during serve preparation
     handleServeState() {
         if (this.isWaiting || this.isTossing) {
@@ -100,6 +100,7 @@ class Ball {
         }
         return false;
     }
+
     //calculates position, air resistance and gravity
     applyPhysics() {
         this.x += this.vx * this.speedMultiplier;
@@ -107,10 +108,12 @@ class Ball {
         this.z += this.vz;
         this.vx *= GAME_CONFIG.BALL.AIR_RESISTANCE;
         this.vy *= GAME_CONFIG.BALL.AIR_RESISTANCE;
+        // only apply gravity while the ball is in the air or still rising (vz > 0 catches the peak frame)
         if (this.z > 0 || this.vz > 0) {
             this.vz -= this.gravity;
         }
     }
+
     // floor collision, bounce logic, and score rules
     checkGroundCollision() {
         if (this.z < 0) {
@@ -134,8 +137,10 @@ class Ball {
             }
         }
     }
+
     //check the first bounce, out or wrong side?
     handleFirstBounce(isInside) {
+        if (!this.lastHitter) return;
         //ball must land in the oppoent's half relative to the hitter
         const hitterIsBottom = this.lastHitter.isBottom;
         const isCorrectSide = hitterIsBottom ? (this.y < layout.netY) : (this.y > layout.netY);
@@ -150,33 +155,33 @@ class Ball {
             this.vy *= GAME_CONFIG.BALL.BOUNCE_FRICTION;
         }
     }
-    // Ends the round with a slight delay granting time for audio and visual cues to play before resetting
+
+    // ends the round with a slight delay granting time for audio and visual cues to play before resetting
     terminateRound(winner) {
         this.vz = 0; this.vx = 0; this.vy = 0;
         if (currentState === GAME_CONFIG.STATES.TUTORIAL) {
-            // Instantly record the score and stop further logic during the tutorial mini-games
+            // instantly record the score and stop further logic during the tutorial mode
             if (scoreManager && !this.roundEnding) {
                 this.roundEnding = true;
                 scoreManager.recordPoint(winner); 
             }
             return; 
         }
+
         if (!this.roundEnding) {
             this.roundEnding = true;
 
             if (currentState === GAME_CONFIG.STATES.PLAYING) {
-                // Wait for ROUND_END_DELAY (milliseconds) allowing the final hit visual to linger.
+                // wait for a bit allowing the player can see where the ball landed
                 this.roundTimer = setTimeout(() => {
                     let gameWon = false;
                     if (scoreManager) {
                         gameWon = scoreManager.recordPoint(winner);
                         scoreManager.prepareNextPoint();
                     }
-                    
+                    // decide next scene
                     if (gameWon && !scoreManager.isMatchOver) {
                         Scene_Game.isShowingScore = true;
-                        
-                        // Wait for SCORE_DISPLAY_DURATION to show the floating score splash text
                         this.scoreTimer = setTimeout(() => {
                             Scene_Game.nextRound();
                             this.roundEnding = false;
@@ -191,6 +196,7 @@ class Ball {
             }
         }
     }
+
     // safe mechanism to reset game if ball is outside the playable area
     checkSafetyBounds() {
         const limit = GAME_CONFIG.MATCH.SAFETY_LIMIT;
@@ -204,6 +210,7 @@ class Ball {
             this.terminateRound(winner);
         }
     }
+
     // collision detection with player's racket during swing
     checkHit(p) {
         const { HIT_MIN_Z, HIT_MAX_Z, HIT_Z, HIT_Y, DIRECTION_MULT } = GAME_CONFIG.BALL;
@@ -222,7 +229,7 @@ class Ball {
             this.isGigaShot = false;
             this.vz = HIT_Z;
             this.vy = p.isBottom ? -HIT_Y : HIT_Y;
-            //Change the ball's angle based on where it hits the player
+            // change the ball's angle based on where it hits the player
             this.vx = (this.x - p.x) * DIRECTION_MULT;
             // forces the ball to fly diagonally to the opposite side during a serve
             if (this.isTossing) {
@@ -234,11 +241,12 @@ class Ball {
                 }
             }
 
-            // Apply custom shot modifier from the hitter (AI personality adjustments)
+            // apply custom shot modifier from the hitter (for AI personality adjustments)
             if (p.shotModifier) {
                 p.shotModifier(this);
             }
-            //hit sound
+
+            // hit sound
             if (typeof soundManager !== 'undefined') {
                 soundManager.play('hit'); 
             }
@@ -250,14 +258,15 @@ class Ball {
             p.feedbackTimer = GAME_CONFIG.FEEDBACK.DISPLAY_DURATION;
         }
     }
-    //transition ball state from serve or idle to active play
+
+    // transition ball state from serve or idle to active play
     recordHit(p) {
         this.bounceCount = 0;
         this.lastHitter = p;
         this.isTossing = false;
         this.roundEnding = false;
 
-        // After the receiver returns the serve once, we're no longer in "serve return" phase.
+        // after the receiver returns the serve once, no longer in "serve return" phase.
         if (this.justServed && typeof scoreManager !== 'undefined' && scoreManager) {
             const server = (scoreManager.currentServer === 'PLAYER') ? player : opponent;
             if (p !== server) {
@@ -265,6 +274,7 @@ class Ball {
             }
         }
     }
+
     //normalizes position to a 0-1 scale to maintain alignment during resizing
     get relativePos() {
         return {
@@ -272,7 +282,8 @@ class Ball {
             y: (this.y - layout.courtTop) / layout.COURT_H
         };
     }
-    //re-maps normalized coordinates back to absolute pixels after resizing
+
+    // re-maps normalized coordinates back to absolute pixels after resizing
     reposition(rel, layout) {
         this.x = layout.courtLeft + rel.x * layout.COURT_W;
         this.y = layout.courtTop + rel.y * layout.COURT_H;

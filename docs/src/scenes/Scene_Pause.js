@@ -1,8 +1,6 @@
 const Scene_Pause = {
     selectedIndex: 0,
     options: ["Resume", "Restart", "Settings", "Main Menu"],
-    btnW: 0,
-    btnH: 0,
 
     draw: function() {
         rectMode(CORNER);

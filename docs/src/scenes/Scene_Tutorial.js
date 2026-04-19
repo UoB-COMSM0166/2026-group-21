@@ -12,6 +12,8 @@ const Scene_Tutorial = {
     pendingSuccessDelay: 0,
     pendingSuccessMessage: "",
     pendingSuccessPauseDuration: 0,
+    isSkillReady: false,
+    victorySoundPlayedInTutorial: false,
 
     setup: function () {
         player.isAI = false;
@@ -87,7 +89,7 @@ const Scene_Tutorial = {
     },
 
     draw: function () {
-        strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT || 2);
+        strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT);
         stroke(...GAME_CONFIG.COLORS.BLACK);
         background(backgroundImg);
         
@@ -189,10 +191,10 @@ const Scene_Tutorial = {
         if (handler?.init) handler.init();
     },
 
-    updateFrozen: function (entity, updateArgs) {
+    updateFrozen: function (entity) {
         const tempX = entity.x;
         const tempY = entity.y;
-        entity.update(updateArgs);
+        entity.update();
         entity.x = tempX;
         entity.y = tempY;
     },
@@ -201,10 +203,10 @@ const Scene_Tutorial = {
     updateGameElements: function (hasOpponent = true, hasBall = true) {
         if (hasOpponent) {
             if (this.successPauseTimer > 0) {
-                this.updateFrozen(opponent, false);
+                this.updateFrozen(opponent);
             } else {
                 if (!this.needsReset) opponentAI.update(ball);
-                opponent.update(!this.needsReset);
+                opponent.update();
             }
             opponent.display();
         }
@@ -254,25 +256,15 @@ const Scene_Tutorial = {
     resetBallFull: function () {
         ball.reset(layout.sideRight,
             layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET, 'PLAYER');
-        ball.vx = 0;
-        ball.vy = 0;
-        ball.vz = 0;
         ball.isWaiting = false;
-        ball.isTossing = false;
     },
 
     resetBallForServe: function () {
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
         player.swingTimer = 0;
-        player.isSwinging = false;
 
         ball.reset(player.x, player.y, 'PLAYER');
-        ball.vx = 0;
-        ball.vy = 0;
-        ball.vz = 0;
-        ball.isWaiting = true;
-        ball.isTossing = false;
         this.ballResetTimer = 0;
         this.hasHitBall = false;
         this.needsReset = false;
@@ -287,28 +279,18 @@ const Scene_Tutorial = {
             scoreManager.currentSide = 'LEFT';
         }
 
-        let serveConfig = {
-            server: 'OPPONENT', side: 'LEFT', x: layout.sideLeft,
-            y: layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET, role: 'OPPONENT'
-        };
-
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
         player.swingTimer = 0;
-        player.isSwinging = false;
-        
+
         if (opponentAI) {
-            opponentAI.resetServeState(); 
+            opponentAI.resetServeState();
         }
         opponent.x = layout.sideLeft;
         opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
         opponent.swingTimer = 0;
-        opponent.isSwinging = false;
 
-        ball.reset(serveConfig.x, serveConfig.y, serveConfig.role);
-        ball.vx = 0; ball.vy = 0; ball.vz = 0;
-        ball.isWaiting = true;
-        ball.isTossing = false;
+        ball.reset(opponent.x, opponent.y, 'OPPONENT');
 
         this.ballResetTimer = 0;
         this.hasHitBall = false;
@@ -430,7 +412,9 @@ const Scene_Tutorial = {
         if (player.skillCooldown === 0) {
             this.isSkillReady = true;
         }
-        let hasJustFiredSkill = this.isSkillReady && (player.skillCooldown > player.maxCooldown - 5);
+        // when skill fires, cooldown resets to maxCooldown; detect that jump within a 5-frame window
+        let hasJustFiredSkill = this.isSkillReady && 
+            (player.skillCooldown > player.maxCooldown - GAME_CONFIG.TUTORIAL.SKILL_TRIGGER_MARGIN);
 
         if (hasJustFiredSkill && 
             !this.skillTriggered && 
@@ -457,14 +441,14 @@ const Scene_Tutorial = {
 
     // Step 5: The final mock match with full score and win condition logic
     handleScoringLogic: function () {
-        // Did the player score a new point?
+        // player score a new point?
         if (scoreManager.playerPoints > this.lastPlayerScore) {
             this.scoringMessage = "YOU SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
             this.lastPlayerScore = scoreManager.playerPoints;
             return;
         }
-        // Did the AI score a new point?
+        // AI score a new point?
         if (scoreManager.opponentPoints > this.lastOpponentScore) {
             this.scoringMessage = "AI SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
@@ -500,6 +484,7 @@ const Scene_Tutorial = {
     },
 
     handleSuccessPause: function () {
+        // pendingSuccessDelay adds a short buffer before showing the message
         if (this.pendingSuccessDelay > 0) {
             this.pendingSuccessDelay--;
             if (this.pendingSuccessDelay === 0) {
@@ -508,29 +493,23 @@ const Scene_Tutorial = {
             }
         }
 
-        if (this.successPauseTimer <= 0) return false;
+        if (this.successPauseTimer <= 0) return;
         const { PAUSE_MINOR, PAUSE_MAJOR } = GAME_CONFIG.TUTORIAL;
-    
+
         // Only trigger sound on the exact initial frame we entered the success state
-        if (this.successPauseTimer === PAUSE_MINOR && 
-            this.scoringMessage !== "YOU SCORE!" && 
-            this.scoringMessage !== "AI SCORE!") {
-            if (soundManager) {
-                if (!this.scoringMessage.includes("AI")) {
-                    soundManager.play('success');
-                }
-            }
-        } else if (this.successPauseTimer === PAUSE_MAJOR) {
-            if (soundManager) {
-                if (!this.scoringMessage.includes("AI")) {
-                    soundManager.play('success');
-                }
+        const isAIMessage = this.scoringMessage.includes("AI");
+        if (!isAIMessage) {
+            if (this.successPauseTimer === PAUSE_MINOR &&
+                this.scoringMessage !== "YOU SCORE!") {
+                if (soundManager) soundManager.play('success');
+            } else if (this.successPauseTimer === PAUSE_MAJOR) {
+                if (soundManager) soundManager.play('success');
             }
         }
         this.successPauseTimer--;
         push();
         textAlign(CENTER, CENTER);
-        stroke(...GAME_CONFIG.COLORS.BLACK); strokeWeight(6); textSize(50);
+        stroke(...GAME_CONFIG.COLORS.BLACK); strokeWeight(6); textSize(GAME_CONFIG.TUTORIAL.SUCCESS_TEXT_SIZE);
         if (this.scoringMessage.includes("AI")) fill(...GAME_CONFIG.COLORS.TEXT_ERROR);
         else if (this.scoringMessage.includes("GREAT")) fill(...GAME_CONFIG.COLORS.YELLOW);
         else fill(0, 255, 0);
@@ -542,7 +521,6 @@ const Scene_Tutorial = {
             const handler = this.stepHandlers[tutorialManager.currentStep];
             if (handler?.onSuccess) handler.onSuccess();
         }
-        return true;
     },
 
     displayTutorialUI: function (txt) {
@@ -552,25 +530,26 @@ const Scene_Tutorial = {
         stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(4);
         fill(...GAME_CONFIG.COLORS.GOLD);
-        textSize(36);
-        let boxW = 950;
-        let boxX = (layout.VIRTUAL_W - boxW) / 2;
+        const { UI_TEXT_SIZE, UI_BOX_W, UI_BOX_H } = GAME_CONFIG.TUTORIAL;
+        textSize(UI_TEXT_SIZE);
+        let boxX = (layout.VIRTUAL_W - UI_BOX_W) / 2;
         let boxY = layout.VIRTUAL_H * 0.85;
 
-        text(txt, boxX, boxY, boxW, 300);
+        text(txt, boxX, boxY, UI_BOX_W, UI_BOX_H);
         pop();
     },
 
     drawTargetZone: function (x, y) {
         push();
+        const { TARGET_ZONE_W, TARGET_ZONE_H } = GAME_CONFIG.TUTORIAL;
         noFill();
         stroke(...GAME_CONFIG.COLORS.GOLD);
         strokeWeight(5);
-        ellipse(x, y, 60, 30);
+        ellipse(x, y, TARGET_ZONE_W, TARGET_ZONE_H);
 
         if (frameCount % 60 < 30) {
             fill(...GAME_CONFIG.COLORS.TUTORIAL_TEXT_HIGHLIGHT);
-            ellipse(x, y, 60, 30);
+            ellipse(x, y, TARGET_ZONE_W, TARGET_ZONE_H);
         }
         pop();
     },
