@@ -1,148 +1,147 @@
-Banner placeholder
-
-[CLICK HERE TO PLAY GAME ](https://uob-comsm0166.github.io/2026-group-21/)
+<p align="center">
+  <img src="weekly-homeworks/assets/report-banner.png" width="800" alt="Game Banner">
+  <br>
+  <a href="https://uob-comsm0166.github.io/2026-group-21/" target="_blank">CLICK HERE TO PLAY FUR-HAND SMASH</a><br>
+</p>
 
 # Video Demonstration
 
 # Table of Contents
-1. [Development Team](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#1-development-team)
-2. Introduction
-3. Requirements
-4. Design
-5. Implementation
-6. Evaluation
-7. Process
-8. Sustainability, ethics and accessibility
-9. Conclusion
-10. AI statement
-11. Contribution Statement
+- [1. Development Team](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#1-development-team)
+- [2. Introduction](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#2-introduction)
+- [3. Requirements](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#3-requirements)
+- [4. Design](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#4-design)
+- [5. Implementation](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#5-implementation)
+- [6. Evaluation](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#6-evaluation)
+- [7. Process](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#7-process)
+- [8. Sustainability, ethics and accessibility](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#8-sustainability,-ethics-and-accessibility)
+- [9. Conclusion](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#9-conclusion)
+- [10. AI statement](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#10-ai-statement)
+- [11. Contribution Statement](https://github.com/UoB-COMSM0166/2026-group-21?tab=readme-ov-file#11-contribution-statement)
 
-# Development Team
+# 1. Development Team
 <p align="center">
-  <img src="weekly-homeworks/assets/week-01-photo.jpeg" width="500" alt="Group phote">
+  <b>Figure 1:</b>
+  <i>Development Team</i>
+  <br>
+  <img src="weekly-homeworks/assets/week-01-photo.jpeg" width="500" alt="Group photo">
 </p>
 
 <div align="center">
+  <b>Table 2:</b>
+  <i>Team Member Description</i>
+  <br>
 
-| NAME                  | EMAIl                 | ROLE |
-| --------------------- | --------------------- | ---- |
-| Xian Li               | yd25988@bristol.ac.uk |Lead Developer|
-| Yu-Han Sun            | qv25088@bristol.ac.uk |Multimedia Developer|
-| Yu-Chun Chen          | df25142@bristol.ac.uk |UI/UX Developer|
-| Yujing Shen           | pf25516@bristol.ac.uk |Interaction Developer|
-| Panarin Thipboonthong | uk25559@bristol.ac.uk |Gameplay Developer|
-| Koki Fushiya          | bz25385@bristol.ac.uk |AI & Testing Developer|
+| NAME                  | EMAIl                 | ROLE                 |
+| --------------------- | --------------------- | -------------------- |
+| Xian Li               | yd25988@bristol.ac.uk |Core Developer        |
+| Yu-Han Sun            | qv25088@bristol.ac.uk |Art & Sound Developer |
+| Yu-Chun Chen          | df25142@bristol.ac.uk |UI/UX Developer       |
+| Yujing Shen           | pf25516@bristol.ac.uk |Gameplay Developer    |
+| Panarin Thipboonthong | uk25559@bristol.ac.uk |Gameplay Developer    |
+| Koki Fushiya          | bz25385@bristol.ac.uk |AI Developer & Testing|
 
 </div>
 
-# Introduction
-**(Working Title TBD)** is a top-down 2.5D 1v1 tennis game inspired by genre classics like *Super Tennis* and *Mario Tennis*. As a team of tennis enthusiasts, we wanted to capture the sport's intensity into a fast-paced digital experience.
+# 2. Introduction
+Fur-hand Smash is a top-down 2.5D 1v1 tennis game inspired by genre classics like *Super Tennis* and *Mario Tennis*. As a team of fans who love the sport, we wanted to take the competitive spirit of real-world tennis and pack it into a arcade-style format.
 
-We have streamlined the traditional rules to keep the action fluid: players use simple movement controls alongside dedicated Serve and Skill buttons to outmaneuver their opponent. You score points by forcing a miss or driving the ball out of your opponent's reach, with the first player to hit the target game count declared the winner.
+We kept the mechanics simple to ensure matches stay fast-paced. Instead of wrestling with complex inputs, players just need to focus on positioning and the timing of their hits, serves, and special skills. Winning a point is all about catching your opponent off-guard or driving the ball past them, and the first player to reach the target score wins the match.
 
-At the core of the game is a custom ball physics system built to balance realistic collisions with arcade-style gameplay. This engine powers both local multiplayer and single-player modes against a custom AI. To ensure no two matches feel the same, we've introduced two key twists:
+Everything runs on a custom physics system we built to find a "sweet spot" between realistic ball movement and arcade fun. This logic handles everything in our local multiplayer and single-player modes. To keep things interesting, we added two main gameplay twists:
 
-- **Skill System:** To add a layer of strategy to the 1v1 matches, we implemented a character-based ability system. Each player can trigger a unique active skill that grants a tactical advantage, ranging from instant movement to ball manipulation, as summarized in the table below:
+- **Skill System:** Each character has a unique ability to add a layer of strategy to the 1v1 matches. These active skills allow for tactical advantages, ranging from instant movement to ball manipulation:
 
 <p align="center">
-  <b>Table 1:</b>
+  <b>Table 3:</b>
   <i>Character Skill Sets Overview</i>
 </p>
 
 |Character|Image|Skill|Description|
 |:-|:-|:-|:-|
-|**cat**|<img src="docs/assets/images/player_cat_front.png" width="80">|Shadow Teleport|Instantly teleports the character directly in front of the ball.|
-|**Dog**|<img src="docs/assets/images/player_dog_front.png" width="80">|Giga Ball|Hits a massive ball that increases the hit area and stuns the opponent upon contact.|
+|**Cat**|<img src="docs/assets/images/player_cat_front.png" width="80">|Shadow Teleport|Instantly teleports the character directly in front of the ball.|
+|**Dog**|<img src="docs/assets/images/player_dog_front.png" width="80">|Giga Ball|Hits a massive ball that increases the hit area and stuns the opponent.|
 |**Deer**|<img src="docs/assets/images/player_deer_front.png" width="80">|Forest Zen|Launches a slow-speed ball to disrupt the opponent's timing.|
 |**Bird**|<img src="docs/assets/images/player_bird_front.png" width="80">|Feather Storm|Shrinks the ball while significantly increasing its velocity.|
 
 <p align="center">
-  <b>Figure 2:</b>
-  <i>Demonstration of Dog's "Giga Ball" skill</i>
+  <b>Figure 4:</b>
+  <i>Demonstration of Dog's 'Giga Ball' skill</i>
   <br>
   <img src="weekly-homeworks/assets/report-skill.gif" alt="Demonstration of skill system" width="200">
 </p>
 
-- **Dynamic Environments:** To keep matches unpredictable, we developed diverse stages with unique environmental hazards. Beyond character skills, the court itself acts as a variable, forcing players to adapt their movement and timing based on specific environmental mechanics, as summarized in the table below:
+- **Dynamic Environments:** We designed different courts with unique environmental hazards. The court itself acts as a variable, forcing players to change how they move and time their shots based on the map's mechanics:
 
 <p align="center">
-  <b>Table 3:</b>
+  <b>Table 5:</b>
   <i>Maps Overview</i>
 </p>
 
 |Map|Image|Map Effect|
 |:-|:-|:-|
 |**Polar**|<img src="docs/assets/images/preview_polar_bg.png" width="200">|Features a frozen court that significantly reduces friction.|
-|**Eygpt**|<img src="docs/assets/images/preview_eygpt_bg.png" width="200">|Triggers sandstorms at random intervals with varying wind directions. These gusts apply a force to the ball.|
+|**Egypt**|<img src="docs/assets/images/preview_eygpt_bg.png" width="200">|Triggers random sandstorms. These wind gusts apply force to the ball's trajectory.|
 |**Wimbledon**|<img src="docs/assets/images/preview_wimbledon_bg.png" width="200">|A classic grass court with no environmental hazards.|
 
 <p align="center">
-  <b>Figure 4:</b>
-  <i>Demonstration of wind affecting ball trajectory</i>
+  <b>Figure 6:</b>
+  <i>Demonstration of Wind Affecting Ball Trajectory</i>
   <br>
-  <img src="weekly-homeworks/assets/report-mapeffect.gif" alt="Demonstration of skill system" width="200">
+  <img src="weekly-homeworks/assets/report-mapeffect.gif" alt="Demonstration of Skill System" width="200">
 </p>
     
 
-# Requirements 
+# 3. Requirements 
 ## Ideation Process
-During our initial brainstorming session, our team generated a wide range of creative concepts. However, due to our limited familiarity with p5.js, there were concerns regarding the technical feasibility of these ideas. To address this, we conducted independent research before the subsequent meeting. Each member proposed one or two game concepts in a shared [Google Doc](https://docs.google.com/document/d/1nrocSGf6uqzb97ttsJxpVtYdhJrd-7BKs9r7RD0a1_Y/edit?usp=sharing), ensuring that each proposal included two challenges and a "twist" for gameplay depth.
+Our first brainstorming produced many ideas, but we were concerned about what we could realistically build with p5.js. After researching independently, we shared concepts in a [Google Doc](https://docs.google.com/document/d/1nrocSGf6uqzb97ttsJxpVtYdhJrd-7BKs9r7RD0a1_Y/edit?usp=sharing), each including potential challenges and a unique 'twist'. Interestingly, three of us proposed similar ball-sports games. After a group vote, we narrowed the candidates down to two: the Tennis game and a Vampire Survivors-style project.
 
-Interestingly, three members proposed similar ball-sports games. After an in-person discussion and a voting process, the Tennis Game and a Vampire Survivors-style game emerged as the top two candidates.
 ## Early Stages Design
-We conducted market research through Google and the Steam store to analyze existing games within similar genres, using them as references for visual aesthetics and gameplay mechanics. This research informed our development during the Week 3 workshop and a subsequent offline session, where we developed paper prototypes for both candidate games.
+We researched similar games on Google and Steam to benchmark visuals and mechanics. These insights informed our Week 3 workshop and follow-up sessions, where we built paper prototypes for our top two concepts to compare their viability.
 
-During the workshop, we engaged with other teams for feedback and discovered that the tennis game received a significantly more positive response. Furthermore, our team members shared a collective passion for sports games, and we found our creative ideas for the tennis project to be more comprehensive during the prototyping phase. Based on these three factors, namely user feedback, team interest, and conceptual depth, we officially selected the tennis game as our project.
+Workshop feedback confirmed the tennis game as the crowd favorite. Since our team shares a passion for sports, we found the tennis project more intuitive and fleshed-out during the prototyping stage. This external feedback, combined with our own enthusiasm, made it an easy choice to officially move forward with the tennis game.
 
-The paper prototyping process also prompted deeper discussions regarding game mechanics and user flow, such as the requirement for character and map selection. Moreover, it helped us identify potential conflicts, such as differing opinions on the degree of adherence to real-world tennis rules. To resolve these ambiguities, we subsequently employed User Stories and Use Case modeling to formally define and establish our system requirements.
+Prototyping also forced us to address game flow and revealed disagreements regarding how realistic the rules should be. To resolve these, we turned to User Stories and Use Case modeling, which helped us formalize system requirements and ensure the entire team shared the same vision.
+
 <p align="center">
-  <b>Figure 5:</b>
+  <b>Figure 7:</b>
   <i>Tennis Game Paper Prototype </i><br>
   <a href="https://www.youtube.com/watch?v=qdplPSo7CMk" target="_blank">Watch it on YT for full audio-visual feedback</a><br>
   <img src="weekly-homeworks/assets/week-03-tennisgame-prototype.gif" alt="Tennis Game Paper Prototype ">
 </p>
 <p align="center">
-  <b>Figure 6:</b>
+  <b>Figure 8:</b>
   <i>Vampire Survival Paper Prototype </i><br>
   <a href="https://www.youtube.com/watch?v=HRUYlSV_QAU" target="_blank">Watch it on YT for full audio-visual feedback</a><br>
   <img src="weekly-homeworks/assets/week-03-vampiresurvival-prototype.gif" alt="Vampire Survival Paper Prototype ">
 </p>
 
 ## Stakeholders
-During the current development lifecycle, the Development Team acts as the primary operator, while Gamers represent the intended beneficiaries whose needs guide our requirements. Moreover, Markers/Assessors act as functional operators during the evaluation phase, interacting with the system to verify that all software requirements are met. Specifically, Markers fulfill a Surrogate Role, representing the high-standard expectations of a polished product. Consequently, we have categorized both Gamers and Markers within the Containing System, as their roles are essential to the operational success and validation of the project.
+To better understand our project's scope, we mapped our stakeholders using Ian Alexander’s onion model(2004). As illustrated in Figure 9, our team acts as the primary operators, while the gamers are our core 'beneficiaries' - it’s their needs that ultimately drive our requirements. We also recognize our markers as functional operators during the evaluation phase. They play a 'surrogate role' by representing the high professional standards we aim to meet. Because both players and markers are essential to the game's operational success and final validation, we’ve categorized them within the 'containing system' of the project.
 
 <p align="center">
-  <b>Figure 7:</b>
-  <i>Onion Model for Stakeholders </i><br>
-  <img src="weekly-homeworks/assets/week-04-onionmodel.png" controls width="640" height="640">
+  <b>Figure 9:</b>
+  <i>Onion Model for Stakeholders(Adapted from Alexander, 2004) </i><br>
+  <img src="weekly-homeworks/assets/week-04-onionmodel-1.svg" controls width="640" height="640">
   </img>
 </p>
 
 ## User Stories
-We initially generated a wide range of [User Story ideas](https://docs.google.com/document/d/1LYooThDOOa3G9zB3lg5oMovLOXHKsaj8kRKYu5YS_vA/edit?usp=sharing) to define our game's features. To manage our project scope effectively, we employed the MoSCoW method to prioritise these requirements and conducted Planning Poker sessions to estimate the development effort for each task. This structured approach enabled us to make critical trade-offs within our limited timeframe. 
+We started with plenty of [User Story ideas](https://docs.google.com/document/d/1LYooThDOOa3G9zB3lg5oMovLOXHKsaj8kRKYu5YS_vA/edit?usp=sharing), but we knew we couldn't build everything in the time we had. To stay on track, we applied MoSCoW framework (DSDM Consortium, 2014) to rank our requirements and used Planning Poker (Cohn, 2005) to estimate how long each part would take to develop. This structured approach made it much easier to see where our time was going and allowed us to cut back on lower-priority features. The following User Stories represent the final set we chose for implementation:
 
-By focusing on high-value requirements, we finalised the following set of User Stories for implementation:
 <p align="center">
-  <b>Table 8:</b>
-  <i>User Stories </i>
+  <b>Table 10:</b>
+  <i>User Stories</i>
+  <br>
+  <img src="weekly-homeworks/assets/week-04-userstory.svg" controls width="640" height="640">
+  </img>
 </p>
 
-| Epics | User Stories | Acceptance Criteria (AC) |
-| :--- | :---- | :--- |
-| Core Gameplay System | As a competitive player, I want the game to support dual-input mode on a single computer so that I can engage in real-time 1v1 matches with my friends. | Given two players are on the same computer, when they press their respective movement keys simultaneously, then both characters must move independently without input interference. |
-|  |As a casual player, I want to play against an AI opponent so that I can practice and enjoy the game even when a teammate is unavailable. | Given the player is at the main menu, when they select the "Single Player vs. AI" option, then the game should initialize a match with a computer-controlled opponent.|
-|  | As a casual player, I want to trigger unique skills via specific keys so that the match becomes more dynamic and engaging. | Given a skill has just been used, when the player attempts to trigger it again immediately, then the system should prevent the action until the cooldown period has ended. |
-|  | As a sports enthusiast, I want the ball to exhibit realistic collision, so that the trajectory feels authentic. |Given the ball strikes a surface, when it bounces, then its velocity and reflection angle must reflect realistic energy loss.|
-| Score System | As a competitive player, I want the screen to display real-time scores and the current set so that I can track match progress and determine the winner. | Given a match is in progress, when a player scores a point, then the UI must immediately update the corresponding score display area.|
-|  | As a sports enthusiast, I want the game to follow traditional tennis scoring logic so that I can experience the authentic rhythm of a tennis match. | Given a player has 30 points, when they win the next rally, then their score must advance to 40 instead of 31.|
-| User Onboarding System | As a beginner player, I want to see control icons on the start screen so that I can quickly understand how to move, swing, and use skills. | Given the player is on the start screen, when they view the instructions, then they should see clear icons mapping keys to movement, serving, and skills for both players.|
-| | As a beginner player, I want an interactive tutorial level to guide me through movement, hitting, and skill usage so that I can become familiar with the controls before a real match. |Given the player is in the tutorial mode, when they successfully return three balls, then the system must display a "Tutorial Complete" prompt and allow them to exit.|
-
 ## Use-Case Diagram
-Following the analysis of our User Stories, we developed a Use Case Diagram to translate these requirements into specific system behaviors. This process allowed us to define the functional boundaries of the game more precisely. For instance, we established an << include >> relationship between the "Hit Ball" and "Calculate Ball Physics" use cases. This structural decision clarified a critical technical dependency before implementation: physics calculations are not an optional feature but an indispensable component of the core gameplay loop. 
+After defining our User Stories, we developed a Use Case Diagram to help us visualise how these requirements would actually function within the system. This process was a great way to map out the game's functional boundaries more clearly. For example, by establishing an << include >> relationship between 'Hit Ball' and 'Calculate Ball Physics', we explicitly acknowledged a key technical dependency. It made the team realise that the physics engine wasn't just a feature to be added later, but the very foundation of the core gameplay loop that had to be prioritized from the start.
 
 <p align="center">
-      <b>Figure 7:</b>
+      <b>Figure 11:</b>
       <i>User Diagram </i>
       <br>
       <img src="weekly-homeworks/assets/week-04-userdiagram.png" controls width="640" height="640">
@@ -150,12 +149,13 @@ Following the analysis of our User Stories, we developed a Use Case Diagram to t
     </p>
 
 ## Refletion
-We recognized early on that Use Case Diagrams and User Stories are not static documents but evolving tools that helped define our core architecture and unified our team vision. However, as we transitioned into the implementation phase, our deepening technical understanding of the game system led us to constantly update these requirements to ensure they served as a robust baseline for testing.
+We quickly found that our Use Case Diagrams and User Stories weren't just things we finished at the start and set aside. Instead, they became living documents that we kept coming back to. As we moved into the implementation phase, our hands-on experience with the code gave us a much sharper technical understanding of the game. This meant we were constantly refining our requirements to make sure they stayed accurate and provided a reliable baseline for our testing.
 
-This internal evolution took a significant turn during the workshop. The real eye-opener came when we were observing other teams' demos; we quickly realized how frustrating it was to have no idea how the mechanics worked or what the buttons did just by watching. This firsthand frustration made us look back at our own design with fresh eyes, realizing we had fallen into the 'Expert Bias' trap: because we built the game, the controls felt intuitive to us, but they would likely be a mystery to a new player. This realization convinced us to prioritize the User Onboarding System, showing us that no matter how fun the core gameplay is, it is wasted if the player gets 'stuck at the front door'.
+The workshop was a huge turning point for us. The real eye-opener came when we were watching other teams demo their projects, we realized how frustrating it was to watch a game and have no clue how it worked or what the buttons did. This made us look back at our own design with fresh eyes. We realized we’d fallen into the 'Expert Bias' trap: because we were the ones building the game, the controls felt obvious to us, but they would be a total mystery to a new player. This convinced us to move the User Onboarding System to the top of our list.
 
-Ultimately, prioritizing these essential user needs led to the hardest decision of the project: scrapping the online multiplayer mode. While we were excited about the idea, Planning Poker gave us a cold, hard look at the numbers, revealing that forcing a complex network feature into our limited timeframe would likely result in a buggy mess. By choosing to "let go" of that ambition, we were able to protect the quality of our Must-haves, such as the local 1v1 experience and the physics engine, a strategic trade-off that allowed us to focus on what truly mattered for the final product.
-# Design
+Prioritizing the player experience led to our toughest decision: scrapping the online multiplayer. While we were excited about the feature, our Planning Poker session provided a necessary reality check. The estimates showed that forcing complex networking into our limited timeframe would risk project stability. We chose to drop this ambition to protect our 'Must-haves', specifically the physics engine and the local 1v1 mode. This trade-off allowed us to stop overextending and focus on perfecting the core gameplay.
+
+# 4. Design (PENDING)
 ## System Architecture
 Our game is architected using a Scene-Based Finite State Machine (FSM) pattern implemented within the p5.js framework.
 
@@ -167,7 +167,7 @@ Our game is architected using a Scene-Based Finite State Machine (FSM) pattern i
 Our system design underwent several iterations to balance functional requirements with code maintainability. Initially, as shown in Figure 8, our class diagram focused on establishing a clear inheritance hierarchy for game entities. We defined an abstract `Player` class to encapsulate shared movement and swinging logic, while delegating character-specific abilities to the `Cat` and `Dog` subclasses.
 
 <p align="center">
-  <b>Figure 8:</b>
+  <b>Figure 12:</b>
   <i>Early Class Diagram</i><br>
   <img src="weekly-homeworks/assets/week-05-earlyclassdiagram.png"></img>
 </p>
@@ -182,7 +182,7 @@ However, as we began adding more features and the game mechanics grew in complex
 By employing Composition for core entities and Dependency for behavioral interactions, the system ensures that physics logic, scoring rules, and scene transitions remain independent and easily maintainable.
 
 <p align="center">
-  <b>Figure 9:</b>
+  <b>Figure 13:</b>
   <i>Final Class Diagram</i><br>
   <img src="weekly-homeworks/assets/week-05-finalclassdiagram.png"></img>
 </p>
@@ -195,7 +195,7 @@ To illustrate the game's logic flow, we analyzed the "Ball Hit Detection" scenar
 - **Physics Resolution:** Upon a confirmed collision, the ball calculates new velocity vectors (`vx`, `vy`, `vz`), updates the match state via `recordHit()`, and resets the player's `swingTimer` to complete the interaction.
 
 <p align="center">
-  <b>Figure 10:</b>
+  <b>Figure 14:</b>
   <i>Sequence Diagram: Ball Hit Logic</i>
   <br>
   <img src="weekly-homeworks/assets/week-05-behaviourdiagram.png"controls height="640"></img>
@@ -236,13 +236,6 @@ $$v_{x, serve} \in [V_{min}, V_{max}] \cdot \text{sgn}(\text{TargetSide})$$
 
 This mathematical constraint prevents illegal serves and ensures the scoring logic stays consistent with the target court half.
 
-  <p align="center">
-    <b>Figure XX:</b>
-    <i>Demonstration of Ball Physics</i>
-    <br>
-    ([GIF placeholder])
-  </p>
-
 ### **3. Handling High-Speed Collisions**
 When the ball moves at high speed, it can sometimes pass through a player between frames. To prevent this, we used AABB (Axis-Aligned Bounding Box) detection. An AABB is a rectangular boundary that remains aligned with the X and Y axes of the coordinate system. We determine a collision by checking if the ball and the player's boxes overlap on both axes:
 
@@ -266,225 +259,226 @@ Beyond the technical challenges discussed previously, and the character skills a
       <b>Figure XX:</b>
       <i>Demonstration of Responsive UI Design</i>
       <br>
-    ([GIF placeholder])
+      <img src="weekly-homeworks/assets/report-resize.gif" width="600" alt="Demonstration of Responsive UI Design">
 </p>
 
 <p align="center">
       <b>Figure XX:</b>
       <i>Demonstration of Interactive Onboarding</i>
       <br>
-    ([GIF placeholder])
+      <img src="weekly-homeworks/assets/report-tutorial.gif" width="600" alt="Demonstration of Interactive Onboarding">
 </p>
 
-# Evaluation
+# 6. Evaluation
 Understanding user feedback is a cornerstone of our development process. Our goal is to provide an experience that is both engaging and accessible. We leverage both qualitative evaluation and quantitative analysis to gain a deeper insight into user needs, allowing us to define a clear roadmap for game improvements.
 ## Qualitative Evaluation
+
 ### Think Aloud
+During the workshop, we ran usability tests with three participants to see how they interacted with our prototype. We asked them to navigate the menu and play through two single-player sessions at different difficulty levels. By using the 'Think Aloud' method (Lewis, 1982), we were able to capture their immediate reactions and frustrations as they played. We then mapped these insights onto a Prioritization Quadrant Diagram (Figure 17), which gave us a clear way to decide which improvements were most urgent for the next stage of development.
 
-  During the workshop, we conducted usability tests on our early-stage prototype with three participants. Testers were tasked with navigating from the main menu and completing two single-player sessions across different difficulty levels. Using the 'Think Aloud' method, we captured their real-time thoughts and frustrations, which were then synthesized into a Prioritization Quadrant Diagram. This visualization provides a clear visual framework to guide our data-driven decisions and prioritize key improvements for future development.
-
-  <p align="center">
-  <b>Figure 11:</b>
+<p align="center">
+  <b>Figure 17:</b>
   <i>Quadrant Diagram: Think Aloud</i>
   <br>
-  <img src="weekly-homeworks/assets/week-07-thinkaloud.png"controls height="640"></img>
+  <img src="weekly-homeworks/assets/week-07-thinkaloud.svg"controls height="640"></img>
 </p>
 
 ### Heuristic Evaluation
+To complement the feedback we gathered from players, we also performed a Heuristic Evaluation based on Jakob Nielsen’s principles (1994). While 'Think Aloud' sessions showed us where players struggled, this structured audit helped us identify deeper interface flaws that might have been overlooked. By assigning severity ratings to each issue, we were able to turn our observations into a practical plan. This ensured we weren't just guessing what to fix next, but were instead tackling the most critical usability gaps first.
 
-We also employed Jakob Nielsen’s Heuristic Evaluation to assess our early-stage prototype. By assigning severity ratings to each heuristic, we were able to conduct a comprehensive assessment of the game's deficiencies and establish a clear prioritization roadmap for development.
-
-  <p align="center">
-  <b>Table 12:</b>
+<p align="center">
+  <b>Table 18:</b>
   <i>Heuristic Evaluation</i>
   <br>
-  <img src="weekly-homeworks/assets/week-07-heuristic.png"controls height="640"></img>
+  <img src="weekly-homeworks/assets/week-07-heuristic.svg"controls height="800"></img>
 </p>
 
 ### Improvements and Implementation
-In response to the usability gaps identified through the Think Aloud sessions and Heuristic Evaluation, we implemented several key updates to improve the overall player experience and system responsiveness:
+Based on the feedback from our 'Think Aloud' sessions and Heuristic Evaluation, we focused on several key updates to bridge the gap between our design and the player’s needs:
 
-1. Tutorial Mode: We introduced a structured onboarding process that guides players through core mechanics, including movement, serving, skill activation, and scoring rules.
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Placeholder</i>
-  <br>
-  <img src=""controls height="640"></img>
+- **Integrated Control Hints:** To lower the cognitive load for new players, we added a control reference guide within the pause menu. This uses clear icons to remind players of the key mappings for movement, hitting, and skills, ensuring they don't have to rely purely on memory during a match.
+- **Enhanced User Control:** We implemented a functional pause menu, giving players the flexibility to restart the match or return to the main menu at any time.
+- **Visual & Accessibility Optimization:** All UI components were redesigned with larger fonts and high-contrast colors. This was a direct response to feedback regarding clarity and ensures the game is accessible across different screens.
+- **Game Feel & Feedback:** To make the gameplay more responsive, we added visual pop-ups (like "Miss" or "Perfect") and integrated auditory cues, such as audience cheering, to provide immediate feedback on the player's actions.
+- **AI & Match Flow:** We upgraded the AI logic with diverse serving patterns and difficulty scaling to keep the challenge engaging. Additionally, we added dedicated screens for scoring and "side-changes" to make the match progress easier to follow.
+
+<p align="center">
+  <b>Figure 19:</b>
+  <i>Visual Improvements for the Difficulty Menu</i>
 </p>
 
-2. Enhanced User Control: A pause menu was implemented, allowing players to restart the match or return to the main menu at any time during gameplay.
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Placeholder</i>
-  <br>
-  <img src=""controls height="640"></img>
-</p>
+<div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center;">
+  
+  <div>
+    <img src="weekly-homeworks/assets/report-old-difficulty.png" alt="Old Version" height="200">
+    <br>
+    <b>Figure 19a:</b> <i>Old Version</i>
+  </div>
 
-3. UI Optimization: All UI components were redesigned with larger font sizes and high-contrast color palettes to ensure clarity and improve visual accessibility across all screens.
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Placeholder</i>
-  <br>
-  <img src=""controls height="640"></img>
-</p>
+  <div style="font-size: 20px;">
+    ➔
+  </div>
 
-4. Visual & Auditory Feedback: To increase game feel, we added hitting feedback (e.g., "Miss" or "Perfect" pop-ups) and integrated auditory cues, such as audience cheering upon scoring.
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Placeholder</i>
-  <br>
-  <img src=""controls height="640"></img>
-</p>
+  <div>
+    <img src="weekly-homeworks/assets/report-new-difficulty.png" alt="New Version" height="200">
+    <br>
+    <b>Figure 19b:</b> <i>New Version</i>
+  </div>
 
-5. AI & Difficulty Scaling: The AI logic was upgraded to include diverse serving patterns and adjusted difficulty constants, providing a more engaging and competitive challenge for players.
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Placeholder</i>
-  <br>
-  <img src=""controls height="640"></img>
-</p>
-
-6. Match Status & Visual Transitions: We added dedicated scoring and "side-change" screens after each set to provide clear feedback on match progress.
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Placeholder</i>
-  <br>
-  <img src=""controls height="640"></img>
-</p>
+</div>
 
 ## Quantitative Analysis
-Following a series of iterative improvements, we recruited ten participants to evaluate the 'Easy' and 'Difficult' settings within our single-player mode. We administered the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX) to analyze the current usability levels and cognitive workload, ensuring an effective difficulty balance between stages.
+After our iterative updates, we wanted to ensure the difficulty levels were properly balanced. We recruited ten participants to test both the 'Easy' and 'Difficult' settings in our single-player mode. To get an objective measure of the user experience and mental effort required, we used the System Usability Scale (SUS) (Brooke, 1996) and the NASA Task Load Index (NASA-TLX) (Hart and Staveland, 1988). These metrics allowed us to analyze the cognitive workload across different stages, helping us fine-tune the gameplay so it feels challenging but fair.
+
 ### System Usability Scale
 
-  <p align="center">
-  <b>Table 12:</b>
+<p align="center">
+  <b>Table 20:</b>
   <i>System Usability Scale</i>
   <br>
-  <img src="weekly-homeworks/assets/week-08-sus.png"controls height="400"></img>
+  <img src="weekly-homeworks/assets/week-08-sus.svg"controls height="400"></img>
 </p>
 
 
 ### NASA Task Load Index
 
-  <p align="center">
-  <b>Table 12:</b>
+<p align="center">
+  <b>Table 21:</b>
   <i>NASA Task Load Index</i>
   <br>
-  <img src="weekly-homeworks/assets/week-08-nasa.png"controls height="400"></img>
+  <img src="weekly-homeworks/assets/week-08-nasa.svg"controls height="400"></img>
 </p>
 
 ### Quantitative Findings
 The quantitative evaluation demonstrates that the game successfully balances challenge with user experience:
-- **System Usability (SUS):** The average scores for both difficulty levels (78.25 and 78.50) are well above the industry average of 68. Statistical testing indicates no significant difference in usability between levels (W=14 > 2), suggesting that increasing the game's difficulty did not negatively impact the system's intuitiveness or ease of use.
-- **Perceived Workload(NASA TLX):** There is a statistically significant increase in workload from the Easy to the Hard level (W=2 <= 8). This confirms that our difficulty design was effective, as players experienced a measurably higher level of mental and physical demand, effort, and challenge in the harder mode.
+
+**System Usability (SUS):** The average scores for both difficulty levels (78.25 and 78.50) are well above the industry average of 68. Statistical testing indicates no significant difference in usability between levels ($W=14 > 2$), suggesting that increasing the game's difficulty did not negatively impact the system's intuitiveness or ease of use.
+
+**Perceived Workload(NASA TLX):** There is a statistically significant increase in workload from the Easy to the Hard level ($W=2 \leq 8$). This confirms that our difficulty design was effective, as players experienced a measurably higher level of mental and physical demand, effort, and challenge in the harder mode.
 
 In summary, the results show that while the Hard level significantly increased the perceived challenge for players, the game maintained a consistently high standard of usability across both modes.
 
 ### Testing
-To ensure the stability and playability of our game, we implemented a multi-layered testing workflow throughout the development lifecycle:
-- **Pre-Merge Integration Testing:**
-Before merging new features into the main branch, we adopted a rigorous review and verification process. Every team member is required to conduct Functional Testing for their specific updates and a Full-flow Regression Test prior to submission. This protocol ensures that newly integrated code does not compromise existing game logic or disrupt the Core Loop.
-- **Developer Debug Interface:**
-To streamline testing, we developed a custom Developer Debug Interface that enables instant toggling of AI difficulty levels and behaviors, facilitating more efficient edge-case identification.
-- **Unit Testing:**
-We utilized the Jest framework to implement unit tests for core scoring and collision logic, ensuring functional correctness by decoupling these mathematical calculations from the p5.js rendering engine.
+To maintain a stable and playable experience, we established a multi-layered testing workflow throughout the development lifecycle. This began with a strict pre-merge process where every update required a Pull Request to be peer-reviewed, and fully tested. The specifics of this collaborative review process are detailed in the Process section. To further accelerate our cycle, we built a custom debug interface (Figure 22) that allowed for the instant toggling of difficulty, characters, and maps, making it much easier to isolate edge cases without playing through entire matches. Finally, we integrated automated unit testing with Jest to verify our scoring and collision logic. By decoupling these mathematical calculations from the p5.js rendering engine, we were able to ensure the game’s core rules remained accurate and functional, completely independent of the visuals.
 
-# Process 
-## **Team Organization and Project Management**
-Our team dynamic was built upon structured collaboration and regular communication. While we maintained a flat organizational structure, we assigned primary areas of responsibility to members based on their technical expertise (e.g., core physics, AI logic, UI design) and ensured that specific deliverables were allocated to each member on a weekly basis.
-
-We established a workflow combining synchronous and asynchronous communication. We held mandatory in-person meetings once a week (excluding academic holidays) to discuss high-level architectural changes, plan long-term development roadmaps, and resolve complex technical blockers. For rapid daily communication and routine issue reporting, we utilized **WhatsApp**, allowing for instantaneous decision-making and continuous synchronization.
-
-  <p align="center">
-  <b>Figure 12:</b>
-  <i>Team Meeting</i>
+<p align="center">
+  <b>Figure 22:</b>
+  <i>Demonstration of Debug Mode</i>
   <br>
-  <img src=""controls height="400"></img>
+  <img src="weekly-homeworks/assets/report-debug.png" width="300"></img>
 </p>
-  <p align="center">
-  <b>Figure 12:</b>
+
+# 7. Process 
+Our team dynamic focused on clear roles and consistent communication. While we worked as a flat organization, we divided responsibilities based on our individual strengths, such as core physics, AI logic, and UI design. To keep the project on track, we broke down our goals into specific weekly deliverables, ensuring everyone knew exactly what they were responsible for each week.
+
+We combined weekly in-person meetings with daily digital communication to stay organized. Our weekly sessions were reserved for deep-dive technical discussions and long-term planning, while **WhatsApp** (Figure 24) served as our hub for rapid decision-making and continuous updates. We also utilized **GitHub Issues** and **Pull Requests** to host more detailed technical conversations (Figure 25). Posting test results and logs directly on the platform allowed us to discuss changes in context and keep a clear record of why specific implementation choices were made. This multi-layered approach ensured that major blockers were resolved together while daily progress never stalled.
+
+<p align="center">
+  <b>Figure 23:</b>
+  <i>Weekly Team Meeting</i>
+  <br>
+  <img src="weekly-homeworks/assets/report-meeting.JPG" width="600"></img>
+</p>
+<p align="center">
+  <b>Figure 24:</b>
   <i>Whatsapp Communication</i>
   <br>
   <img src="weekly-homeworks/assets/report-whatsapp.PNG"controls height="400"></img>
 </p>
-
-
-To visualize our development progress and ensure task accountability, we utilized [**GitHub Projects**](https://github.com/orgs/UoB-COMSM0166/projects/165) as our centralized Kanban board. Issues were generated for every new feature, bug fix, or documentation task. These issues were tracked through a standardized pipeline: `Ready` &rarr; `In Progress` &rarr; `Testing` &rarr; `Done`. This visual workflow proved essential in managing Sprint progress and preventing critical tasks from being overlooked. Additionally, **Google Docs** was employed as our primary tool for collaboratively editing weekly academic documentation and the final report.
-
+<p align="center">
+  <b>Figure 25:</b>
+  <i>Peer review and technical discussion within a Pull Request</i>
+  <br>
+  <img src="weekly-homeworks/assets/report-pullrequest-discussion.png"controls height="400"></img>
 </p>
-  <p align="center">
-  <b>Figure 12:</b>
+
+To keep our development on track, we used [**GitHub Projects**](https://github.com/orgs/UoB-COMSM0166/projects/165) (Figure 26) as our centralized Kanban board. We created specific issues for every feature, bug fix, and documentation task, tracking them through a clear pipeline from `Ready` to `Done`. This visual workflow was crucial for managing our weekly progress and ensuring no critical tasks fell through the cracks. For writing and report drafting, we relied on **Google Docs** (Figure 27) as our primary space for real-time collaborative editing.
+
+<p align="center">
+  <b>Figure 26:</b>
   <i>GitHub Projects</i>
   <br>
-  <img src="weekly-homeworks/assets/report-githubproject.png"controls height="400"></img>
+  <img src="weekly-homeworks/assets/report-githubproject.png" width="800"></img>
 </p>
 
-</p>
-  <p align="center">
-  <b>Figure 12:</b>
+<p align="center">
+  <b>Figure 27:</b>
   <i>Goolge Docs</i>
   <br>
-  <img src="weekly-homeworks/assets/report-googledoc.png"controls height="400"></img>
+  <img src="weekly-homeworks/assets/report-googledoc.png" width="800"></img>
 </p>
 
-## **Workflow and Standardization**
-Managing a codebase with six contributors requires strict standardization to prevent integration chaos. Therefore, we established a rigorous technical workflow defined within a centralized [**`CONTRIBUTING.md`**](https://github.com/UoB-COMSM0166/2026-group-21/blob/main/docs/CONTRIBUTING.md) file, which served as our standard operating procedure. This document codified specific guidelines, including:
-* **Coding Conventions:** Standardizing variable and method naming using "CamelCase" to ensure code legibility across modules.
-* **Commit Message Format:** Ensuring that commit messages were descriptive and categorized to maintain a clear version history.
-* **Git Workflow:** We strictly enforced a "Feature Branching" strategy, prohibiting any member from pushing directly to the `main` branch. Development was confined to dedicated branches that were merged back to `main` only after rigorous validation.
+### **Workflow and Standardization**
+Managing a shared codebase with six contributors required clear standards to avoid integration issues. We established a technical workflow within a [**`CONTRIBUTING.md`**](https://github.com/UoB-COMSM0166/2026-group-21/blob/main/docs/CONTRIBUTING.md) file, which served as our primary guide for the team. This document outlined our core standards, such as using CamelCase for consistent naming and ensuring commit messages were descriptive enough to keep our version history readable. We strictly followed a 'Feature Branching' strategy (Figure 28), where development was restricted to dedicated branches. To protect our `main` branch, the cornerstone of our workflow was the mandatory Pull Request (PR) and Peer Review process (Figure 29). No code was merged until it had been reviewed and tested by another teammate, a practice that not only caught bugs early but also ensured that technical knowledge was shared across the entire group.
 
-The cornerstone of our quality assurance was the mandatory "Peer Review and Merge Request (Pull Request)" process. No code could be integrated into the `main` branch without being reviewed and tested by another team member. This not only ensured code quality and function stability but also facilitated mandatory knowledge sharing across the team, ensuring that everyone understood the implementation of distinct modules.
-
-</p>
-  <p align="center">
-  <b>Figure 12:</b>
+<p align="center">
+  <b>Figure 28:</b>
   <i>Branch</i>
   <br>
-  <img src=""controls height="400"></img>
+  <img src="weekly-homeworks/assets/report-branch.png" width="600"></img>
 </p>
 
-### **Reflection**
-While our established processes provided a solid framework, the implementation phase was not without significant challenges, and our ability to adapt was crucial to the project's success.
-
-In the early stages of development, many team members were inexperienced with collaborative Git workflows. While merge conflicts were not inherently severe, the team initially lacked the technical expertise to resolve them effectively when they arose. This uncertainty often led to bottlenecks and inconsistent practices regarding file naming and commit formatting. To mitigate this, we standardized our operations through a comprehensive `CONTRIBUTING.md` guide. This document served as a practical manual, providing clear operational protocols and step-by-step Git procedures. By establishing these guidelines, we empowered every member to resolve conflicts independently and with confidence, allowing the team to regain momentum and ensure consistency across the codebase.
-
-Another critical challenge was the disparity in team members' familiarity with p5.js and overall coding velocity. This discrepancy initially led to an uneven distribution of workload within the core development tasks. While we attempted to balance weekly task allocations, the reality was that some members contributed a higher volume of code due to their expertise. However, we managed this gap by ensuring every member was allocated distinct deliverables each week, maintaining team morale and consistent progress.
-
-Academic breaks, specifically Reading Week and Easter Holiday, created significant disruptions to our development flow. Adhering to the principle of ensuring holidays were a time for rest, we did not hold meetings during these periods. The lack of synchronized communication led to a noticeable drop in momentum and required substantial time and effort post-holiday to realign everyone’s progress and re-integrate the codebase, highlighting a need for better planning around major breaks in future projects.
-
-</p>
-  <p align="center">
-  <b>Figure 12:</b>
+<p align="center">
+  <b>Figure 29:</b>
   <i>GitHub Pull Request</i>
   <br>
   <img src="weekly-homeworks/assets/report-pullrequest.png"controls height="400"></img>
 </p>
 
-## **Supplementary Tools for Resource Acquisition**
-Owing to the absence of a specialized artistic specialist within our group, we heavily leveraged various Generative AI tools to create our game assets, which was essential to achieving our desired aesthetic within the limited time frame. We utilized **Gemini** and **Banana Pro** for generating core visual assets. To integrate these into the game, we used [**EZGIF**](https://ezgif.com/) to convert video animations into individual image frames, which were then imported into [**PISKEL**](https://www.piskelapp.com/) to be compiled into functional Sprite Sheets. Background music was generated using [**Suno**](https://suno.com/), while sound effects were created via [**Adobe Firefly**](https://firefly.adobe.com/). For generating diagrams to document our system architecture, we utilized [**drawio**](https://www.drawio.com/) and [**mermaid**](https://mermaid.ai/).
+### **Reflection**
+Implementing our workflow in practice wasn't always smooth, and our ability to adapt was key to our success. In the beginning, the team struggled with Git collaboration; while merge conflicts were expected, we initially lacked the confidence to resolve them effectively. This uncertainty often slowed us down and resulted in messy commit histories. We fixed this by centralizing our procedures in a `CONTRIBUTING.md` file. This guide acted as a roadmap for the team, providing clear instructions for Git operations. Once these guidelines were in place, members could resolve technical friction on their own, allowing us to move much faster and maintain a higher standard for our shared code.
 
-# Sustainability, ethics and accessibility
+A major challenge we faced was the varying levels of familiarity with p5.js among team members, which naturally affected our individual coding speeds. Initially, this led to an uneven workload in core development. While we tried to balance weekly tasks, the reality was that members with more technical experience often contributed a larger volume of code. We managed this gap by assigning each person clear, distinct deliverables that matched their strengths. This strategy ensured that everyone remained productive and motivated, keeping our progress consistent throughout the project.
 
-# Conclusion
+Balancing development with academic breaks like Reading Week and Easter proved to be a challenge. To ensure everyone could fully recharge, we paused our meeting schedule during these holidays. While this was important for morale, it did cause our momentum to stall. We found that getting everyone back on the same page and merging individual updates post-holiday required a significant 'catch-up' period. Moving forward, we realized that setting clearer milestones before major breaks would have made the re-integration process much smoother.
 
-# AI statement
-Following academic guidelines, we declare that Generative AI tools were utilized for technical and creative support during this project. Specifically, AI was used to generate base assets for character sprites, court backgrounds, and audio samples. These assets underwent basic post-processing by the team to ensure their seamless integration into our game engine. During the early design phase, AI also served as a consultative tool for brainstorming our project structure and class hierarchy, which helped establish the foundation for our physics and state-driven systems. Additionally, we used AI to help troubleshoot specific logic errors and identify edge cases in our core gameplay logic and physics calculations. Overall, the final implementation was manually reviewed and verified by the team to ensure that all technical and academic requirements were met.
+## **Game Assets and Production Tools**
+Due to the lack of a specialized artist in our group, we leveraged various Generative AI tools to create our game assets, which was essential to achieving our desired aesthetic within the limited time. We utilized **Gemini** and **Banana Pro** for generating core visual assets. Following a process of manual refinement, we used [**EZGIF**](https://ezgif.com/) to convert video animations into individual image frames, which were then imported into [**PISKEL**](https://www.piskelapp.com/) to be compiled into functional Sprite Sheets. Background music was produced using [**Suno**](https://suno.com/), while sound effects were created via [**Adobe Firefly**](https://firefly.adobe.com/). For system architecture documentation, we utilized [**drawio**](https://www.drawio.com/) and [**mermaid**](https://mermaid.ai/).
 
-# Contribution Statement
+# 8. Sustainability, ethics and accessibility
+
+# 9. Conclusion
+This project was a great practical exercise in managing the intersection of software engineering and game design. We learned firsthand that a working game requires much more than just clean code, it requires constant communication and alignment. By engaging in the early workshop exercises, we were able to set clear objectives for our game from the very beginning. This preparation was key in helping us integrate our separate contributions into a stable system, even as the game logic grew more complex over the term.
+
+### Challenges and Reflection  
+During the early stages of the project, we encountered minor Git merge conflicts due to overlapping edits in core modules. To keep our workflow smooth, we sequenced our tasks so that foundational logic was finalized before we moved on to dependent features.
+Reflecting on this experience, we realized that these overlaps were a result of our code structure having too much interdependency between game logic and rendering. While managing our task sequencing served as a helpful workflow adjustment, a more robust technical solution for future projects would be to implement design patterns such as Entity-Component-System (ECS) or Model-View-Controller (MVC) separation. By keeping the logic and graphics separate, we could have worked on different features at the same time without overlapping, which would have made the development process much smoother and less errors.
+
+Another significant learning point involves our testing strategy. While we successfully integrated the Jest framework to verify core mechanics like the ScoreManager and Ball physics, this was implemented during the final stages of development. Looking back, we realized that starting with a Test-Driven Development (TDD) approach would have made the code much more reliable and saved us a lot of time by catching bugs much earlier in the process.
+
+### Future Work  
+One of the things we struggled with was adding a fourth AI type called the 'Attacker'. We really wanted to make a personality that would play aggressively and put pressure on the player. However, we realized that since our current physics model uses a constant speed for the ball, we couldn't actually control how hard the ball was hit. This made it almost impossible to balance the Attacker's playstyle. In the end, we decided not to include it in the main game, but you can still try it out by pressing '9' in the Debug Panel.
+That’s why our next big goal is to replace the fixed-power system with a more dynamic 'Hit Force' mechanic. We want hit power to be determined by charge duration, requiring players to time their button press and hold it to unleash a stronger shot. This would add a lot more depth to the game’s strategy. Fixing this core physics part is the first step we need to take before we can finally get the Attacker AI working the way we originally imagined.
+
+If we were to take this project even further, our focus would be on adding a lot more variety and bringing the game online. We’d love to introduce a diverse roster of characters, each with their own unique stats, along with themed maps where surface friction, like grass or clay, actually changes how the ball behaves. The biggest goal, however, would be moving beyond local play. By implementing a client-server architecture with WebSockets, we could open the game up to global competition and real-time matchmaking.
+
+# 10. AI statement
+We declare that Generative AI tools were utilized for technical and creative support during this project. Specifically, AI was used to generate base assets for character sprites, court backgrounds, and audio samples. These assets underwent further refinement by the team to ensure their seamless integration into our game project. During the early design phase, AI also served as a consultative tool for brainstorming our project structure and class hierarchy, which helped establish the foundation for our physics and state-driven systems. Additionally, we used AI to help troubleshoot specific logic errors and identify edge cases in our core gameplay logic and physics calculations. Overall, the final implementation was manually reviewed and verified by the team to ensure that all technical and academic requirements were met.
+
+# 11. Contribution Statement
 <p align="center">
-     <b>Table 1x:</b>
-    <i>Contributions for Game Project</i>
+  <b>Table 30:</b>
+  <i>Contributions for Game Project</i>
 </p>
 
 <div align="center">
 
 | Contributor           | Contribution  | 
 | --------------------- | ------------- |
-| Xian Li               | 1.00 |
-| Yu-Han Sun            | 1.00 |
-| Yu-Chun Chen          | 1.00 |
-| Yujing Shen           | 1.00 |
-| Panarin Thipboonthong | 1.00 |
-| Koki Fushiya          | 1.00 |
+| Xian Li               | 1.00          |
+| Yu-Han Sun            | 1.00          |
+| Yu-Chun Chen          | 1.00          |
+| Yujing Shen           | 1.00          |
+| Panarin Thipboonthong | 1.00          |
+| Koki Fushiya          | 1.00          |
 
 </div>
+
+# 12. References (pending)
+Alexander, I. (2005). A Taxonomy of Stakeholders: Human Roles in System Development. International Journal of Technology and Human Interaction, 1(1), pp. 23-59.
+Agile Business Consortium (2014). The DSDM Agile Project Framework. [online] Available at: https://www.agilebusiness.org.
+Cohn, M. (2005). Agile Estimating and Planning. Upper Saddle River, NJ: Prentice Hall.
+Lewis, C.H. (1982). Using the "Think Aloud" Method in Cognitive Interface Design. IBM.
+Nielsen (1994)
+Brooke, J. (1996). SUS: A 'quick and dirty' usability scale. In: Jordan, P.W., Thomas, B., McClelland, I.L. and Weerdmeester, B. (eds.) Usability Evaluation in Industry. London: Taylor & Francis, pp. 189–194.
+Hart, S.G. and Staveland, L.E. (1988). Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research. Advances in Psychology, 52, pp. 139–183.
