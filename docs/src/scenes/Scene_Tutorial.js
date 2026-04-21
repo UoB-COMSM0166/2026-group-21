@@ -14,6 +14,7 @@ const Scene_Tutorial = {
     pendingSuccessPauseDuration: 0,
     isSkillReady: false,
     victorySoundPlayedInTutorial: false,
+    isDevMode: false,
 
     setup: function () {
         player.isAI = false;
@@ -74,7 +75,15 @@ const Scene_Tutorial = {
                 }
             },
             5: {
-                init: () => this.setupServeState({ role: 'OPPONENT', step: 5 }),
+                init: () => {
+                    if (typeof opponentAI !== 'undefined' && opponentAI) {
+                        opponentAI.speedMult = 0.45;
+                        opponentAI.reactionDelay = 18;
+                        opponentAI.errorRange = 55;
+                        opponentAI.prediction = 2;
+                    }
+                    this.setupServeState({ role: 'OPPONENT', step: 5 });
+                },
                 handle: () => this.handleScoringLogic(),
                 onSuccess: () => {
                     if (this.scoringMessage === "YOU SCORE!") {
@@ -117,8 +126,8 @@ const Scene_Tutorial = {
         const step = tutorialManager.currentStep;
         if (step >= 4) {
             Scene_Game.drawCircularSkillUI(
-                layout.VIRTUAL_W - 500, 
-                layout.VIRTUAL_H - 250, 
+                layout.courtRight + 180,
+                layout.courtBottom - 80,
                 player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100),
                 player.charName
             );
@@ -139,7 +148,11 @@ const Scene_Tutorial = {
             this.drawTargetZone(tutorialManager.targetX, tutorialManager.targetY);
         }
         this.handleSuccessPause();
-        
+
+        if (this.isDevMode) {
+            this.drawDevMenu();
+        }
+
         pop();
     },
 
@@ -244,6 +257,19 @@ const Scene_Tutorial = {
             this.isPausedForIntro = false;
             return;
         }
+        if (key === '9') {
+            this.isDevMode = !this.isDevMode;
+            if (soundManager) soundManager.play('select');
+            return;
+        }
+        if (this.isDevMode) {
+            const stepMap = { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 };
+            if (stepMap[key] !== undefined) {
+                this.jumpToStep(stepMap[key]);
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+        }
         if (this.successPauseTimer > 0) return;
         if (keyCode === ESCAPE) {
             pausedFromState = GAME_CONFIG.STATES.TUTORIAL;
@@ -251,6 +277,41 @@ const Scene_Tutorial = {
             return;
         }
         player.handleKeyPress(keyCode, ball);
+    },
+
+    jumpToStep: function (step) {
+        tutorialManager.currentStep = step;
+        tutorialManager.successCount = 0;
+        this.initializedStep = -1;
+        this.isPausedForIntro = true;
+        this.successPauseTimer = 0;
+        this.pendingSuccessDelay = 0;
+        this.ballResetTimer = 0;
+        this.hasHitBall = false;
+        this.needsReset = false;
+        this.skillTriggered = false;
+        this.scoringMessage = "";
+    },
+
+    drawDevMenu: function () {
+        push();
+        fill(...GAME_CONFIG.COLORS.DARK_GRAY);
+        noStroke();
+        rect(10, 10, 280, 130, 10);
+
+        fill(...GAME_CONFIG.COLORS.YELLOW);
+        textSize(GAME_CONFIG.UI.SIZE_SUB);
+        textAlign(LEFT, TOP);
+        text("TUTORIAL DEV MODE", 20, 20);
+
+        fill(255);
+        textSize(GAME_CONFIG.UI.DEV_MODE_TEXT);
+        text(`Current Step: ${tutorialManager.currentStep} / 5`, 20, 50);
+        text(`Success Count: ${tutorialManager.successCount} / ${tutorialManager.targetCount}`, 20, 75);
+        fill(200, 200, 200);
+        textSize(GAME_CONFIG.UI.HUD_SCORE_SUB);
+        text("Press '1'–'5' to jump to step  |  '9' to close", 20, 105);
+        pop();
     },
 
     resetBallFull: function () {
