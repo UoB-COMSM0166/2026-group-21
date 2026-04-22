@@ -77,10 +77,11 @@ const Scene_Tutorial = {
             5: {
                 init: () => {
                     if (typeof opponentAI !== 'undefined' && opponentAI) {
-                        opponentAI.speedMult = 0.45;
-                        opponentAI.reactionDelay = 18;
-                        opponentAI.errorRange = 55;
-                        opponentAI.prediction = 2;
+                        const t = GAME_CONFIG.TUTORIAL;
+                        opponentAI.speedMult = t.FINAL_STAGE_SPEED_MULT;
+                        opponentAI.reactionDelay = t.FINAL_STAGE_REACTION_DELAY;
+                        opponentAI.errorRange = t.FINAL_STAGE_ERROR_RANGE;
+                        opponentAI.prediction = t.FINAL_STAGE_PREDICTION;
                     }
                     this.setupServeState({ role: 'OPPONENT', step: 5 });
                 },

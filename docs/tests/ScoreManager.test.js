@@ -1,10 +1,10 @@
-global.GAME_CONFIG = require('../docs/src/config/constants.js');
+global.GAME_CONFIG = require('../src/config/constants.js');
 global.tutorialManager = { currentStep: 0 };
 global.soundManager = { play: jest.fn() };
 global.isMultiplayer = false;
 global.currentState = GAME_CONFIG.STATES.PLAYING;
 
-const ScoreManager = require('../docs/src/managers/ScoreManager.js');
+const ScoreManager = require('../src/managers/ScoreManager.js');
 
 describe('ScoreManager Core Logic', () => {
     let sm;

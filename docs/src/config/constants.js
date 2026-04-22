@@ -33,7 +33,12 @@ const GAME_CONFIG = {
         UI_TEXT_SIZE: 36,
         UI_BOX_W: 950,                 // width of the tutorial prompt text box
         UI_BOX_H: 300,
-        SUCCESS_TEXT_SIZE: 50
+        SUCCESS_TEXT_SIZE: 50,
+
+        FINAL_STAGE_SPEED_MULT: 0.45,   // ↑: AI moves faster in stage 5
+        FINAL_STAGE_REACTION_DELAY: 18, // ↓: AI reacts quicker in stage 5
+        FINAL_STAGE_ERROR_RANGE: 55,    // ↓: more accurate positioning in stage 5
+        FINAL_STAGE_PREDICTION: 2       // ↑: better at predicting ball in stage 5
     },
 
     COURT: {

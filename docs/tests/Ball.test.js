@@ -1,11 +1,11 @@
-global.GAME_CONFIG = require('../docs/src/config/constants.js');
+global.GAME_CONFIG = require('../src/config/constants.js');
 global.abs = Math.abs;
 global.random = () => 0.5; // Fixed random for predictable testing
 global.constrain = (n, low, high) => Math.max(Math.min(n, high), low);
 global.dist = (x1, y1, x2, y2) => Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
 global.SkillManager = { triggerHitSkill: jest.fn() };
 
-const Ball = require('../docs/src/entities/Ball.js');
+const Ball = require('../src/entities/Ball.js');
 
 describe('Ball Physics and Logic', () => {
     let ball;
@@ -93,7 +93,7 @@ describe('Ball Physics and Logic', () => {
         
         ball.x = 200;
         ball.y = 400;
-        ball.z = 20; // Within hittable Z range (bounds are typically 5 to 50)
+        ball.z = 20;
         
         ball.checkHit(mockPlayer);
         
