@@ -1,7 +1,6 @@
 const Scene_CharSelect = {
     charNames: ["Cat", "Dog", "Deer", "Bird", "?"],
     focusedIndex: 0,
-    menuYellow: [255, 188, 31],
 
     draw: function () {
         rectMode(CORNER);
@@ -19,10 +18,10 @@ const Scene_CharSelect = {
             image(bgImg, 0, 0, w, h);
         }
         else{
-            background(200);
+            background(GAME_CONFIG.COLORS.MENU_BG_DARK);
         }
         
-        fill(255, 150); 
+        fill(...GAME_CONFIG.COLORS.UI_PANEL_BG); 
         noStroke();
         rectMode(CORNER);
         rect(0, 0, w, h);
@@ -43,9 +42,9 @@ const Scene_CharSelect = {
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
         textSize(w * 0.045);
-        stroke(51, 44, 74); 
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK); 
         strokeWeight(w * 0.008); 
-        fill(this.menuYellow);
+        fill(...GAME_CONFIG.COLORS.GOLD);
         let promptText = (p1CharIndex === -1) ? "P1 : Character Selection" : "P2 : Character Selection";
         text(promptText, w * 0.5, h * 0.12);
         pop();
@@ -57,6 +56,7 @@ const Scene_CharSelect = {
         let p2X = w * 0.68;
         let panelY = h * 0.52;
 
+        // show the cursor on whichever player is currently selecting
         let p1DisplayIdx = (p1CharIndex === -1) ? this.focusedIndex : p1CharIndex;
         let p2DisplayIdx = (p1CharIndex !== -1 && p2CharIndex === -1) ? this.focusedIndex : p2CharIndex;
 
@@ -97,8 +97,8 @@ const Scene_CharSelect = {
         rectMode(CENTER);
         
         // Yellow
-        fill(this.menuYellow);
-        stroke(0);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(3);
         rect(x, y, pw + 15, ph + 15, 8); 
         
@@ -110,8 +110,9 @@ const Scene_CharSelect = {
         // Character picture zone
         let iconBoxSize = pw * 0.8;
         let iconY = y - ph * 0.13;
-        fill(255);
-        stroke(this.menuYellow[0], this.menuYellow[1], this.menuYellow[2], 120);
+        fill(...GAME_CONFIG.COLORS.WHITE);
+        let gold = GAME_CONFIG.COLORS.GOLD;
+        stroke(gold[0], gold[1], gold[2], 120);
         strokeWeight(15);
         rect(x, iconY, iconBoxSize, iconBoxSize, 2);
 
@@ -121,9 +122,9 @@ const Scene_CharSelect = {
             textAlign(CENTER, CENTER);
             textSize(iconBoxSize * 0.6);
             textStyle(BOLD);
-            stroke(0);
+            stroke(...GAME_CONFIG.COLORS.BLACK);
             strokeWeight(7);
-            fill(this.menuYellow);
+            fill(...GAME_CONFIG.COLORS.GOLD);
             text("?", x, iconY);
         }
         // Character Picture (front)
@@ -151,9 +152,9 @@ const Scene_CharSelect = {
             textAlign(CENTER, CENTER);
             textSize(pw * 0.14);
             textStyle(BOLD);
-            stroke(0);
+            stroke(...GAME_CONFIG.COLORS.BLACK);
             strokeWeight(w * 0.005);
-            fill(this.menuYellow);
+            fill(...GAME_CONFIG.COLORS.GOLD);
             text(this.charNames[charIdx].toUpperCase(), x, y + ph * 0.1);
             
             // Skill Description
@@ -163,9 +164,9 @@ const Scene_CharSelect = {
             let spacedSkill = rawSkill.replace('_', ' ');
             let skillDisplay = spacedSkill.charAt(0).toUpperCase() + spacedSkill.slice(1).toLowerCase();
 
-            stroke(0); 
+            stroke(...GAME_CONFIG.COLORS.BLACK); 
             strokeWeight(3.5);
-            fill(this.menuYellow); 
+            fill(...GAME_CONFIG.COLORS.GOLD); 
             textSize(pw * 0.08);
             textAlign(CENTER, CENTER);
             text("Skill: " + skillDisplay, x, y + ph * 0.28);
@@ -174,8 +175,8 @@ const Scene_CharSelect = {
         // Arrow
         if (isSelecting) {
             let blink = (frameCount % 60 < 30);
-            fill(this.menuYellow);
-            stroke(0);
+            fill(...GAME_CONFIG.COLORS.GOLD);
+            stroke(...GAME_CONFIG.COLORS.BLACK);
             strokeWeight(6);
             textSize(w * 0.016);
             if (blink) {
@@ -188,8 +189,8 @@ const Scene_CharSelect = {
         push();
         textAlign(CENTER, CENTER);
         textSize(w * 0.025);
-        fill(this.menuYellow);
-        stroke(0);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(6);
         textStyle(BOLD);
         text(playerTag, x - pw * 0.37, y - ph * 0.42);
@@ -242,6 +243,7 @@ const Scene_CharSelect = {
         if (soundManager) soundManager.play('confirm');
 
         let finalIndex = this.focusedIndex;
+        // index 4 is the "?" random slot
         if (finalIndex === 4) {
             finalIndex = floor(random(0, this.charNames.length - 1));
         }

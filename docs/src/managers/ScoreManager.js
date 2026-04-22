@@ -19,6 +19,7 @@ class ScoreManager {
         this.currentSide = GAME_CONFIG.MATCH.DEFAULT_SIDE;
         this.victorySoundPlayed = false;
     }
+
     // record a point for the winner and check the win condition
     recordPoint(winner) {
         this.gameWasJustReset = false;
@@ -52,6 +53,7 @@ class ScoreManager {
         
         return this.checkGameWin();
     }
+
     // switch the serve side between points
     prepareNextPoint() {
         if (typeof tutorialManager !== 'undefined' && tutorialManager.currentStep === 5) {
@@ -62,6 +64,7 @@ class ScoreManager {
             this.currentSide = (this.currentSide === 'LEFT') ? 'RIGHT' : 'LEFT';
         }
     }
+
     // win game at 4 points + lead by at least 2 points
     checkGameWin() {
         const { POINTS_TO_WIN, POINT_GAP, WINNING_GAMES } = GAME_CONFIG.MATCH;
@@ -94,6 +97,7 @@ class ScoreManager {
         }
         return gameWonThisTurn;
     }
+
     // resets points for a new game and rotates the server role
     resetPoints() {
         this.playerPoints = 0;
@@ -113,11 +117,11 @@ class ScoreManager {
             if (p > opp) return LABEL_AD;
             return LABEL_EMPTY;
         }
-        // Avoid hiding potential scoring bugs gracefully
+        // avoid hiding potential scoring bugs
         if (p < this.scoreMap.length) {
             return this.scoreMap[p];
         }
-        // Return raw point count with ERR prefix if it somehow exceeds normal rules
+        // return raw point count with ERR prefix if it somehow exceeds normal rules
         return `ERR(${p})`;
     }
 
@@ -140,27 +144,9 @@ class ScoreManager {
         text("Press 'R' to Restart", centerX, centerY + UI.RESTART_Y_OFFSET);
         pop();
     }
-    // the score HUD
-    display() {
-        const { UI, COLORS } = GAME_CONFIG;
-        const { centerX, courtTop } = layout;
 
-        push();
-        textAlign(CENTER, CENTER);
-        textSize(UI.SIZE_MAIN);
-        fill(COLORS.WHITE);
+}
 
-        const p1Str = this.getDisplayScore(this.playerPoints, this.opponentPoints);
-        const p2Str = this.getDisplayScore(this.opponentPoints, this.playerPoints);
-
-        // Ensure score doesn't go off-screen on short displays
-        const minScoreY = UI.GAMES_OFFSET_Y + UI.SIZE_SUB + UI.SCORE_MARGIN_TOP;
-        const scoreY = max(courtTop - UI.OFFSET_Y, minScoreY);
-        text(`${p2Str} : ${p1Str}`, centerX, scoreY);
-
-        textSize(UI.SIZE_SUB);
-        text(`Games: ${this.opponentGames} - ${this.playerGames}`,
-            centerX, scoreY - UI.GAMES_OFFSET_Y);
-        pop();
-    }
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ScoreManager;
 }

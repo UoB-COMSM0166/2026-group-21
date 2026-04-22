@@ -10,27 +10,54 @@ class TutorialManager {
     // Returns the big intro text shown at the start of each stage
     getStepIntro() {
         switch (this.currentStep) {
-            case 1: return {
-                title: "STAGE 1: MOVING",
-                desc: "Let's start with the basics.\n\nUse WASD keys to control your character.\nMove into the yellow zone to begin."
-            };
-            case 2: return { title: "STAGE 2: SERVING", desc: "Learn how to start the game.\n\nPress SPACE to toss, then wait for the ball to\nreach a hittable height before striking!" };
-            case 3: return { title: "STAGE 3: RETURNING", desc: "Defend your court.\nPosition yourself and time your swing to return the ball." };
-            case 4: return { title: "STAGE 4: SPECIAL SKILL", desc: "Unleash your power.\nWait for the opponent to serve, then press Q to use your SKILL!" };
-            case 5: return { title: "STAGE 5: MATCH RULES", desc: "Putting it all together.\n\n1. First bounce must land INSIDE the court.\n2. You score if the ball bounces TWICE on the AI's side.\n3. Score 3 points against the AI to graduate!" };
-            default: return { title: "CONGRATULATIONS", desc: "You have completed the tutorial!" };
+            case 1: 
+                return {
+                    title: "STAGE 1: MOVING",
+                    desc: "Let's start with the basics.\n\nUse WASD keys to control your character.\nMove into the yellow zone to begin."
+                };
+            case 2: 
+                return { 
+                    title: "STAGE 2: SERVING", 
+                    desc: "Learn how to start the game.\n\nPress SPACE to toss, then wait for the ball to\nreach a hittable height before striking!" 
+                };
+            case 3: 
+                return { 
+                    title: "STAGE 3: RETURNING", 
+                    desc: "Defend your court.\nPosition yourself and time your swing to return the ball." 
+                };
+            case 4: 
+                return { 
+                    title: "STAGE 4: SPECIAL SKILL", 
+                    desc: "Unleash your power.\nWait for the opponent to serve, then press Q to use your SKILL!" 
+                };
+            case 5: 
+                return { 
+                    title: "STAGE 5: MATCH RULES", 
+                    desc: "Putting it all together.\n\n1. First bounce must land INSIDE the court.\n2. You score if the ball bounces TWICE on the AI's side.\n3. Score 3 points against the AI to graduate!" 
+                };
+            default: 
+                return { 
+                    title: "CONGRATULATIONS", 
+                    desc: "You have completed the tutorial!" 
+                };
         }
     }
 
-    // Returns the small looping yellow text at the top of the screen
+    // Returns the small looping yellow text at the bottom of the screen
     getCurrentPrompt() {
         switch (this.currentStep) {
-            case 1: return "Use WASD to move to the yellow zone";
-            case 2: return `Press SPACE to toss, then press again to hit at the right height (${this.successCount}/${this.targetCount})`;
-            case 3: return `Press SPACE to return the AI's serve (${this.successCount}/${this.targetCount})`;
-            case 4: return `Wait for the serve, press Q to CHARGE, then HIT! (${this.successCount}/${this.targetCount})`;
-            case 5: return `Score 3 points (${this.successCount}/${this.targetCount})`;
-            default: return "";
+            case 1: 
+                return "Use WASD to move to the yellow zone";
+            case 2: 
+                return `Press SPACE to toss, then press again to hit at the right height (${this.successCount}/${this.targetCount})`;
+            case 3: 
+                return `Press SPACE to return the AI's serve (${this.successCount}/${this.targetCount})`;
+            case 4: 
+                return `Wait for the serve, press Q to CHARGE, then HIT! (${this.successCount}/${this.targetCount})`;
+            case 5: 
+                return `Score 3 points (${this.successCount}/${this.targetCount})`;
+            default: 
+                return "";
         }
     }
 

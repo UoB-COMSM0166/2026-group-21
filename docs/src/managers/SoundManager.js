@@ -3,8 +3,8 @@ class SoundManager {
         this.basePath = 'assets/sounds/';
         this.sounds = {};
         this.currentBGM = null; // which sound
-        this.targetVolume = 0.3;  //volume
-        this.sfxVolume = 0.5;
+        this.targetVolume = GAME_CONFIG.SOUND.TARGET_VOLUME_DEFAULT;  //volume
+        this.sfxVolume = GAME_CONFIG.SOUND.SFX_VOLUME_DEFAULT;
         this.isFading = false;
         this.fadeOutTimeouts = [];
         this.loopTimeouts = [];
@@ -17,7 +17,7 @@ class SoundManager {
                     this.needsMusicStateReset = true;
                     this.isFading = false;
                     if (this.currentBGM && this.currentBGM.isLoaded() && !this.currentBGM.isPlaying()) {
-                        this.playBGMWithFadeLoop(this.currentBGM, 1.5);
+                        this.playBGMWithFadeLoop(this.currentBGM, GAME_CONFIG.SOUND.FADE_TIME_DEFAULT);
                     }
                 });
             }
@@ -27,6 +27,7 @@ class SoundManager {
         window.addEventListener('mousedown', startAudio);
         window.addEventListener('keydown', startAudio);
     }
+
     loadSounds() {
         this.sounds.bgmGame = loadSound(this.basePath + 'bgm/bgm_game.mp3', () => {
             this.sounds.bgmGame.setVolume(0);
@@ -38,8 +39,8 @@ class SoundManager {
         const sfxPath = this.basePath + 'sfx/';
 
         const ballPath = sfxPath + 'ball_interaction/';
-        this.sounds.swing = loadSound(ballPath + 'fast_travel.wav'); // swing
-        this.sounds.hit = loadSound(ballPath + 'frame_hit.wav');      // hit
+        this.sounds.swing = loadSound(ballPath + 'fast_travel.wav');
+        this.sounds.hit = loadSound(ballPath + 'frame_hit.wav');
 
         const crowdPath = sfxPath + 'crowd_dynamics/';
         this.sounds.clap = loadSound(crowdPath + 'cheer.wav');
@@ -66,6 +67,7 @@ class SoundManager {
         }
     }
 
+    // smoothly switch from current BGM to a new one
     transitionTo(nextBGM) {
         if (!nextBGM || !nextBGM.isLoaded()) return;
         if (this.currentBGM === nextBGM && nextBGM.isPlaying()) return;
@@ -80,9 +82,9 @@ class SoundManager {
         this.loopTimeouts = [];
 
         this.isFading = true;
-        const fadeTime = 1.5;
+        const fadeTime = GAME_CONFIG.SOUND.FADE_TIME_DEFAULT;
         let oldBGM = this.currentBGM;
-
+        // fade out the old music
         if (oldBGM && oldBGM.isLoaded() && oldBGM.isPlaying()) {
             oldBGM.setVolume(0, fadeTime);
             let t1 = setTimeout(() => {
@@ -94,7 +96,7 @@ class SoundManager {
         }
 
         this.currentBGM = nextBGM;
-
+        // fade in the new music
         if (getAudioContext().state === 'running') {
             this.currentBGM.setVolume(0);
             let t2 = setTimeout(() => {
@@ -104,7 +106,7 @@ class SoundManager {
                     this.isFading = false;
                 }, fadeTime * 1000);
                 this.loopTimeouts.push(t3);
-            }, 100);
+            }, GAME_CONFIG.SOUND.BUFFER_MS);
             this.loopTimeouts.push(t2);
         } else {
             this.isFading = false;
@@ -114,26 +116,7 @@ class SoundManager {
         }
     }
 
-    startNewBGM(newBGM, fadeTime) {
-        if (newBGM && newBGM.isLoaded()) {
-            if (this.currentBGM && this.currentBGM.isLoaded() && this.currentBGM.isPlaying() && this.currentBGM !== newBGM) {
-                this.currentBGM.stop();
-            }
-            if (this.fadeOutTimeouts) {
-                this.fadeOutTimeouts.forEach(t => clearTimeout(t));
-            }
-            this.fadeOutTimeouts = [];
-            if (this.loopTimeouts) {
-                this.loopTimeouts.forEach(t => clearTimeout(t));
-            }
-            this.loopTimeouts = [];
-
-            this.currentBGM = newBGM;
-            this.playBGMWithFadeLoop(this.currentBGM, fadeTime);
-            this.isFading = false;
-        }
-    }
-
+    // plays BGM with a smooth fade-in and manual seamless looping
     playBGMWithFadeLoop(bgm, fadeTime) {
         if (!bgm || !bgm.isLoaded()) return;
 
@@ -144,19 +127,20 @@ class SoundManager {
         this.loopTimeouts = [];
 
         bgm.setVolume(0);
-
         bgm.play(0, 1, 0);
 
+        // slight delay before fading in to avoid audio pop at track start
         let tFadeIn = setTimeout(() => {
             if (this.currentBGM === bgm) {
                 bgm.setVolume(0);
                 bgm.setVolume(this.targetVolume, fadeTime);
             }
-        }, 100);
+        }, GAME_CONFIG.SOUND.BUFFER_MS);
         this.loopTimeouts.push(tFadeIn);
 
         let dur = bgm.duration();
-        if (dur > fadeTime * 2.5) {
+        // if track is long enough, manually cross-fade near the end and restart to avoid abrupt loop click
+        if (dur > fadeTime * GAME_CONFIG.SOUND.FADE_TIME_MULTIPLIER) {
             let fadeOutStart = (dur - fadeTime) * 1000;
             let loopTimeout = setTimeout(() => {
                 if (this.currentBGM === bgm && bgm.isPlaying()) {
@@ -181,33 +165,12 @@ class SoundManager {
         if (this.sounds[name]) {
             const now = millis();
 
-            const cooldownConfig = {
-                'success': 200,
-                'select': 50,
-                'confirm': 100,
-                'swing': 200,
-                'hit': 100,
-                'clap': 500,
-                'boo': 500
-            };
-
-            let minInterval = cooldownConfig[name] || 0;
+            let minInterval = GAME_CONFIG.SOUND.COOLDOWN[name] || 0;
             if (this.lastPlayTime[name] && (now - this.lastPlayTime[name] < minInterval)) {
                 return;
             }
 
-            const volumeConfig = {
-                'success': 2.0,
-                'victory': 0.8,
-                'select': 1.5,
-                'confirm': 0.6,
-                'swing': 2.0,
-                'hit': 0.3,
-                'clap': 0.5,
-                'boo': 0.4
-            };
-
-            let baseVol = volumeConfig[name] || 0.5;
+            let baseVol = GAME_CONFIG.SOUND.VOLUME[name] || 0.5;
             let finalVol = baseVol * this.sfxVolume;
 
             if (name === 'victory') {

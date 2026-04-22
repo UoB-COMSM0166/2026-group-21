@@ -6,10 +6,9 @@ class Player {
         this.h = GAME_CONFIG.PLAYER.HEIGHT;
         this.speed = GAME_CONFIG.PLAYER.SPEED;
         this.isBottom = isBottom; //true for bottom player, false for opponent
-        this.swingTimer = 0; //duration of the hit active window
-        this.resetPosition(x); //initialize position to the starting baseline
-        this.skillCooldown = this.maxCooldown;
+        this.swingTimer = 0;      //duration of the hit active window
         this.maxCooldown = GAME_CONFIG.PLAYER.SKILL_COOLDOWN;
+        this.resetPosition(x);    //initialize position to the starting baseline
         this.currentFrame = 0;
         this.totalFrames = GAME_CONFIG.PLAYER.TOTAL_FRAMES;
         this.animSpeed = GAME_CONFIG.PLAYER.ANIM_SPEED;
@@ -17,13 +16,14 @@ class Player {
         this.spriteH = GAME_CONFIG.PLAYER.SPRITE_HEIGHT;
         this.spriteCols = GAME_CONFIG.PLAYER.SPRITE_COLS;
         this.hasHit = false;
-        this.skillType = null; // This would be set after character selection
+        this.skillType = null;
         this.activeBuff = null;
         this.stunTimer = 0;
         this.isAI = false;
         this.feedbackText = "";
         this.feedbackTimer = 0;
         this.wasBallNearOnSwing = false;
+        this.shotModifier = null;
     }
 
     get isServer() {
@@ -95,6 +95,7 @@ class Player {
 
         pop();
     }
+
     // draw player swing animation sprite
     drawSprite() {
         let frameIdx = floor(this.currentFrame);
@@ -109,13 +110,12 @@ class Player {
         }
     }
 
-    //enable the hit detection for a short period
+    // enable the hit detection for a short period
     swing(ball) { 
         if (this.swingTimer > 0) return;
         this.swingTimer = GAME_CONFIG.PLAYER.SWING_DURATION; 
         this.hasHit = false;
         soundManager.play('swing');
-
 
         if (ball) {
             let d = dist(this.x, this.y, ball.x, ball.y);
@@ -124,8 +124,9 @@ class Player {
             this.wasBallNearOnSwing = false;
         }
     }
+
     // handle skill and swing button
-    // player skill key would be Q (which is keyCode 81) and opponent skill key: / (keyCode 191)
+    // player skill key is Q (keyCode 81) and opponent skill key: / (keyCode 191)
     handleKeyPress(keyCode, ball) {
         if (this.isAI) return;
         const { CONTROLS } = GAME_CONFIG;
@@ -164,6 +165,8 @@ class Player {
     handleInput() {
         if (this.isAI) return;
         if (this.stunTimer > 0) return;
+        if (typeof selectedMap !== 'undefined' && selectedMap === 0 &&
+            typeof currentState !== 'undefined' && currentState === GAME_CONFIG.STATES.PLAYING) return;
         // handle keyboard inputs based on player role
         // left, right, up, down arrows
         if (this.isBottom) {
@@ -179,6 +182,7 @@ class Player {
             if (keyIsDown(GAME_CONFIG.CONTROLS.OPPONENT_DOWN)) this.moveDown();
         }
     }
+
     // decrement hit window timer, skill cool down and calcu animation's frame
     updateTimers() {
         if (this.stunTimer > 0) {
@@ -211,6 +215,7 @@ class Player {
             this.feedbackText = "";
         }
     }
+
     //constraint player's position based on current state
     applyConstraints() {
         const { COURT, PLAYER } = GAME_CONFIG;
@@ -272,64 +277,42 @@ class Player {
             SkillManager.execute(this, ball);
         }
     }
-    // temporarily skillbar placeholder
-    displaySkillBar(x, y, w, h) {
-        push();
-        let progress = 1 - (this.skillCooldown / this.maxCooldown);
-        progress = constrain(progress, 0, 1);
 
-        noStroke();
-        fill(50, 50, 50, 200);
-        rectMode(CORNER);
-        rect(x, y, w, h, 5);
-
-        if (progress >= 1) {
-            fill(GAME_CONFIG.COLORS.PINK);
-            if (frameCount % 30 < 15) fill(255);
-        } else {
-            fill(100, 200, 255);
-        }
-        rect(x, y, w * progress, h, 5);
-        fill(255);
-        textSize(12);
-        textAlign(LEFT, CENTER);
-        text("SKILL", x + 5, y + h / 2);
-        pop();
-    }
-
+    // draw aura when the player active the skill
     drawBuffAura() {
         push();
-        let pulse = sin(frameCount * 0.15) * 15; 
-        let baseSize = max(this.w, this.h) + 10;
-        let auraSize = baseSize + pulse;
-
-        let r = 255, g = 255, b = 255;
+        // sine wave on frameCount makes the aura ring expand and contract smoothly
+        const { PLAYER } = GAME_CONFIG;
+        let pulse = sin(frameCount * PLAYER.AURA_PULSE_SPEED) * PLAYER.AURA_PULSE_AMP;
+        let auraSize = max(this.w, this.h) + PLAYER.AURA_BASE_PADDING + pulse;
 
         noFill();
-        
-        strokeWeight(6);
-        stroke(r, g, b, 80);
-        ellipse(0, 0, auraSize + 10, auraSize + 10);
-        
-        strokeWeight(3);
-        stroke(r, g, b, 200); 
+
+        strokeWeight(PLAYER.AURA_STROKE_WEIGHT_OUTER);
+        stroke(255, 255, 255, PLAYER.SKILL_AURA_STROKE_OUTER);
+        ellipse(0, 0, auraSize + PLAYER.AURA_OUTER_RING_GAP, auraSize + PLAYER.AURA_OUTER_RING_GAP);
+
+        strokeWeight(PLAYER.AURA_STROKE_WEIGHT_INNER);
+        stroke(255, 255, 255, PLAYER.SKILL_AURA_STROKE_INNER);
         ellipse(0, 0, auraSize, auraSize);
         
         pop();
     }
+
+    // draw stars when the player hit by dog's giga ball
     drawStunStars() {
         push();
-        translate(0, -this.h / 2 - 10); 
-        
-        let stars = 3;
+        translate(0, -this.h / 2 - GAME_CONFIG.PLAYER.STUN_HEAD_OFFSET);
+
+        let stars = GAME_CONFIG.PLAYER.STUN_STAR_COUNT;
         for (let i = 0; i < stars; i++) {
-            let angle = frameCount * 0.2 + (TWO_PI / stars) * i;
-            let sx = cos(angle) * 20;
-            let sy = sin(angle) * 5;
-            
-            fill(255, 255, 0);
+            let angle = frameCount * GAME_CONFIG.PLAYER.STUN_STAR_ROTATION_SPEED + (TWO_PI / stars) * i;
+            let sx = cos(angle) * GAME_CONFIG.PLAYER.STUN_STAR_ORBIT_X;
+            let sy = sin(angle) * GAME_CONFIG.PLAYER.STUN_STAR_ORBIT_Y;
+
+            fill(...GAME_CONFIG.COLORS.YELLOW);
             noStroke();
-            ellipse(sx, sy, 8, 8); 
+            ellipse(sx, sy, GAME_CONFIG.PLAYER.STUN_STAR_SIZE, GAME_CONFIG.PLAYER.STUN_STAR_SIZE);
         }
         pop();
     }

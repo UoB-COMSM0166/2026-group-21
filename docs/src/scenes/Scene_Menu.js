@@ -17,7 +17,7 @@ const Scene_Menu = {
             image(bgImg, 0, 0, w, h);
         }
         else {
-            background(250);
+            background(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
         }
 
         noSmooth();
@@ -33,20 +33,48 @@ const Scene_Menu = {
         textStyle(BOLD);
         textSize(titleSize);
 
-        stroke(56, 49, 78);
+        const textPart1 = "FUR";
+        const textPart2 = "HAND SMASH";
+        let p1W = textWidth(textPart1);
+        let pawImgSize = titleSize * 1.0;
+        
+        // layer 1: bottom shadow
+        push();
+        let ox1 = titleX + w * 0.005;
+        let oy1 = titleY + w * 0.005;
+        stroke(...GAME_CONFIG.COLORS.MENU_TEXT_SHADOW);
         strokeWeight(strokeSize);
-        fill(0);
-        text("TENNIS GAME", titleX + w * 0.005, titleY + w * 0.005);
+        fill(...GAME_CONFIG.COLORS.BLACK);
+        text(textPart1, ox1, oy1);
+        tint(...GAME_CONFIG.COLORS.MENU_TEXT_SHADOW);
+        image(pawImg, ox1 + p1W, oy1, pawImgSize, pawImgSize);
+        text(textPart2, ox1 + p1W + pawImgSize, oy1);
+        pop();
 
-        stroke(64, 57, 85);
+        // layer 2: middle shadow
+        push();
+        let ox2 = titleX + w * 0.002;
+        let oy2 = titleY + w * 0.002;
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_LIGHT);
         strokeWeight(strokeSize);
         fill(80);
-        text("TENNIS GAME", titleX + w * 0.002, titleY + w * 0.002);
+        text(textPart1, ox2, oy2);
+        tint(80); 
+        image(pawImg, ox2 + p1W, oy2, pawImgSize, pawImgSize);
+        text(textPart2, ox2 + p1W + pawImgSize, oy2);
+        pop();
 
-        stroke(51, 44, 74);
+        // layer 3: main text
+        push();
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
         strokeWeight(strokeSize);
-        fill(255, 188, 31);
-        text("TENNIS GAME", titleX, titleY);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        text(textPart1, titleX, titleY);
+        noTint();
+        image(pawImg, titleX + p1W, titleY, pawImgSize, pawImgSize);
+        text(textPart2, titleX + p1W + pawImgSize, titleY);
+        pop();
+
         pop();
 
         // Menu
@@ -77,16 +105,16 @@ const Scene_Menu = {
 
             if (i === this.selectedIndex && blink) {
                 textSize(menuFontSize * 0.5);
-                stroke(51, 44, 74);
+                stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
                 strokeWeight(w * 0.0075);
-                fill(250);
+                fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
                 text("▶", x - w * 0.04, y);
             }
 
             textSize(menuFontSize);
-            stroke(51, 44, 74);
+            stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
             strokeWeight(w * 0.009);
-            fill(250);
+            fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
             text(this.options[i].label.toUpperCase(), x, y);
         }
         pop();

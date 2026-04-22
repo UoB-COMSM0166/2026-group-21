@@ -5,9 +5,6 @@ const Scene_MapSelect = {
         "Egypt: Sandstorm obscures vision every 30s",
         "Wimbledon: Classic tournament rules"
     ],
-    iconW: 180,
-    iconH: 100,
-    spacing: 30,
 
     draw: function () {
         rectMode(CORNER);
@@ -26,7 +23,7 @@ const Scene_MapSelect = {
             image(bgImg, 0, 0, w, h);
         }
         rectMode(CORNER);
-        fill(255, 200);
+        fill(...GAME_CONFIG.COLORS.UI_PANEL_BG);
         noStroke();
         rect(0, 0, w, h);
 
@@ -43,8 +40,8 @@ const Scene_MapSelect = {
         // Title
         push();
         textAlign(CENTER, CENTER);
-        fill(255, 188, 31);
-        stroke(51, 44, 74);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        stroke(...GAME_CONFIG.COLORS.UI_STROKE_DARK);
         strokeWeight(w * 0.008);
         textStyle(BOLD);
         textSize(w * 0.045);
@@ -54,14 +51,15 @@ const Scene_MapSelect = {
         // Map preview area
         let pW = w * 0.4;
         let pH = h * 0.5;
-        let triSize = w * 0.012;
+        let triSize = w * 0.015;
         let yPos = centerY + h * 0.05;
         let currentHoverId = -1;
 
         let leftArrowX = centerX - pW / 2 - triSize * 3;
         let rightArrowX = centerX + pW / 2 + triSize * 3;
-        let arrowHitSize = triSize * 5;
+        let arrowHitSize = triSize * 5; // hit area is larger than visual triangle for easier clicking
 
+        // convert center-based arrow positions to top-left coords for UIManager.isMouseOver
         let leftArrowLeftX = leftArrowX - (arrowHitSize / 2);
         let rightArrowLeftX = rightArrowX - (arrowHitSize / 2);
         let boxLeftX = centerX - (pW / 2);
@@ -96,13 +94,13 @@ const Scene_MapSelect = {
 
         // Preview area
         noFill();
-        stroke(0);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(width * 0.013);
         rect(x, y, pW, pH, 15);
 
-        stroke(255, 188, 31);
+        stroke(...GAME_CONFIG.COLORS.GOLD);
         strokeWeight(width * 0.005);
-        fill(200, 30, 30);
+        fill(...GAME_CONFIG.COLORS.TEXT_ERROR);
         rect(x, y, pW, pH, 15);
 
         // Picture
@@ -110,9 +108,9 @@ const Scene_MapSelect = {
         let imgAreaH = pH * 0.58;
         let imgY = y - pH * 0.12;
 
-        stroke(220);
+        stroke(GAME_CONFIG.COLORS.MENU_BG_DARK);
         strokeWeight(1);
-        fill(245);
+        fill(GAME_CONFIG.COLORS.MENU_BG_LIGHT);
         rect(x, imgY, imgAreaW, imgAreaH, 5);
 
         if (typeof mapImages !== 'undefined' && mapImages[selectedMap]) {
@@ -129,14 +127,14 @@ const Scene_MapSelect = {
         push();
         rectMode(CENTER);
         noFill();
-        stroke(0);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(width * 0.003);
         rect(x, imgY, imgAreaW, imgAreaH, 5);
         pop();
 
         // Map Name
-        fill(255, 188, 31);
-        stroke(0);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(w * 0.005);
         textStyle(BOLD);
         textAlign(CENTER, CENTER);
@@ -144,8 +142,8 @@ const Scene_MapSelect = {
         text(this.mapNames[selectedMap], x, y + pH * 0.28);
 
         // Map Effects Description
-        fill(255, 188, 31);
-        stroke(0);
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(w * 0.002);
         textStyle(BOLD);
         textAlign(CENTER, CENTER);
@@ -160,14 +158,14 @@ const Scene_MapSelect = {
         let s = size * scaleFactor;
 
         push();
-        stroke(0);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(width * 0.004);
-        fill(0);
+        fill(...GAME_CONFIG.COLORS.BLACK);
         this.drawTriangleShape(x, y, direction, s);
 
-        stroke(0);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(width * 0.003);
-        fill(255, 188, 31);
+        fill(...GAME_CONFIG.COLORS.GOLD);
         this.drawTriangleShape(x, y, direction, s);
         pop();
     },

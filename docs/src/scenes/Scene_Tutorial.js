@@ -12,6 +12,9 @@ const Scene_Tutorial = {
     pendingSuccessDelay: 0,
     pendingSuccessMessage: "",
     pendingSuccessPauseDuration: 0,
+    isSkillReady: false,
+    victorySoundPlayedInTutorial: false,
+    isDevMode: false,
 
     setup: function () {
         player.isAI = false;
@@ -72,7 +75,16 @@ const Scene_Tutorial = {
                 }
             },
             5: {
-                init: () => this.setupServeState({ role: 'OPPONENT', step: 5 }),
+                init: () => {
+                    if (typeof opponentAI !== 'undefined' && opponentAI) {
+                        const t = GAME_CONFIG.TUTORIAL;
+                        opponentAI.speedMult = t.FINAL_STAGE_SPEED_MULT;
+                        opponentAI.reactionDelay = t.FINAL_STAGE_REACTION_DELAY;
+                        opponentAI.errorRange = t.FINAL_STAGE_ERROR_RANGE;
+                        opponentAI.prediction = t.FINAL_STAGE_PREDICTION;
+                    }
+                    this.setupServeState({ role: 'OPPONENT', step: 5 });
+                },
                 handle: () => this.handleScoringLogic(),
                 onSuccess: () => {
                     if (this.scoringMessage === "YOU SCORE!") {
@@ -87,8 +99,8 @@ const Scene_Tutorial = {
     },
 
     draw: function () {
-        strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT || 2);
-        stroke(0);
+        strokeWeight(GAME_CONFIG.VISUALS.BASE_STROKE_WEIGHT);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         background(backgroundImg);
         
         push();
@@ -115,8 +127,8 @@ const Scene_Tutorial = {
         const step = tutorialManager.currentStep;
         if (step >= 4) {
             Scene_Game.drawCircularSkillUI(
-                layout.VIRTUAL_W - 500, 
-                layout.VIRTUAL_H - 250, 
+                layout.courtRight + 180,
+                layout.courtBottom - 80,
                 player.skillCooldown === 0 ? 100 : map(player.skillCooldown, player.maxCooldown, 0, 0, 100),
                 player.charName
             );
@@ -137,7 +149,11 @@ const Scene_Tutorial = {
             this.drawTargetZone(tutorialManager.targetX, tutorialManager.targetY);
         }
         this.handleSuccessPause();
-        
+
+        if (this.isDevMode) {
+            this.drawDevMenu();
+        }
+
         pop();
     },
 
@@ -189,10 +205,10 @@ const Scene_Tutorial = {
         if (handler?.init) handler.init();
     },
 
-    updateFrozen: function (entity, updateArgs) {
+    updateFrozen: function (entity) {
         const tempX = entity.x;
         const tempY = entity.y;
-        entity.update(updateArgs);
+        entity.update();
         entity.x = tempX;
         entity.y = tempY;
     },
@@ -201,10 +217,10 @@ const Scene_Tutorial = {
     updateGameElements: function (hasOpponent = true, hasBall = true) {
         if (hasOpponent) {
             if (this.successPauseTimer > 0) {
-                this.updateFrozen(opponent, false);
+                this.updateFrozen(opponent);
             } else {
                 if (!this.needsReset) opponentAI.update(ball);
-                opponent.update(!this.needsReset);
+                opponent.update();
             }
             opponent.display();
         }
@@ -242,6 +258,19 @@ const Scene_Tutorial = {
             this.isPausedForIntro = false;
             return;
         }
+        if (key === '9') {
+            this.isDevMode = !this.isDevMode;
+            if (soundManager) soundManager.play('select');
+            return;
+        }
+        if (this.isDevMode) {
+            const stepMap = { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 };
+            if (stepMap[key] !== undefined) {
+                this.jumpToStep(stepMap[key]);
+                if (soundManager) soundManager.play('select');
+                return;
+            }
+        }
         if (this.successPauseTimer > 0) return;
         if (keyCode === ESCAPE) {
             pausedFromState = GAME_CONFIG.STATES.TUTORIAL;
@@ -251,28 +280,53 @@ const Scene_Tutorial = {
         player.handleKeyPress(keyCode, ball);
     },
 
+    jumpToStep: function (step) {
+        tutorialManager.currentStep = step;
+        tutorialManager.successCount = 0;
+        this.initializedStep = -1;
+        this.isPausedForIntro = true;
+        this.successPauseTimer = 0;
+        this.pendingSuccessDelay = 0;
+        this.ballResetTimer = 0;
+        this.hasHitBall = false;
+        this.needsReset = false;
+        this.skillTriggered = false;
+        this.scoringMessage = "";
+    },
+
+    drawDevMenu: function () {
+        push();
+        fill(...GAME_CONFIG.COLORS.DARK_GRAY);
+        noStroke();
+        rect(10, 10, 280, 130, 10);
+
+        fill(...GAME_CONFIG.COLORS.YELLOW);
+        textSize(GAME_CONFIG.UI.SIZE_SUB);
+        textAlign(LEFT, TOP);
+        text("TUTORIAL DEV MODE", 20, 20);
+
+        fill(255);
+        textSize(GAME_CONFIG.UI.DEV_MODE_TEXT);
+        text(`Current Step: ${tutorialManager.currentStep} / 5`, 20, 50);
+        text(`Success Count: ${tutorialManager.successCount} / ${tutorialManager.targetCount}`, 20, 75);
+        fill(200, 200, 200);
+        textSize(GAME_CONFIG.UI.HUD_SCORE_SUB);
+        text("Press '1'–'5' to jump to step  |  '9' to close", 20, 105);
+        pop();
+    },
+
     resetBallFull: function () {
         ball.reset(layout.sideRight,
             layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET, 'PLAYER');
-        ball.vx = 0;
-        ball.vy = 0;
-        ball.vz = 0;
         ball.isWaiting = false;
-        ball.isTossing = false;
     },
 
     resetBallForServe: function () {
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
         player.swingTimer = 0;
-        player.isSwinging = false;
 
         ball.reset(player.x, player.y, 'PLAYER');
-        ball.vx = 0;
-        ball.vy = 0;
-        ball.vz = 0;
-        ball.isWaiting = true;
-        ball.isTossing = false;
         this.ballResetTimer = 0;
         this.hasHitBall = false;
         this.needsReset = false;
@@ -287,28 +341,18 @@ const Scene_Tutorial = {
             scoreManager.currentSide = 'LEFT';
         }
 
-        let serveConfig = {
-            server: 'OPPONENT', side: 'LEFT', x: layout.sideLeft,
-            y: layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET, role: 'OPPONENT'
-        };
-
         player.x = layout.sideRight;
         player.y = layout.courtBottom - GAME_CONFIG.TUTORIAL.PLAYER_SERVE_Y_OFFSET;
         player.swingTimer = 0;
-        player.isSwinging = false;
-        
+
         if (opponentAI) {
-            opponentAI.resetServeState(); 
+            opponentAI.resetServeState();
         }
         opponent.x = layout.sideLeft;
         opponent.y = layout.courtTop + GAME_CONFIG.TUTORIAL.OPPONENT_START_Y_OFFSET;
         opponent.swingTimer = 0;
-        opponent.isSwinging = false;
 
-        ball.reset(serveConfig.x, serveConfig.y, serveConfig.role);
-        ball.vx = 0; ball.vy = 0; ball.vz = 0;
-        ball.isWaiting = true;
-        ball.isTossing = false;
+        ball.reset(opponent.x, opponent.y, 'OPPONENT');
 
         this.ballResetTimer = 0;
         this.hasHitBall = false;
@@ -363,7 +407,11 @@ const Scene_Tutorial = {
         }
 
         // Check if player hit the ball over the net successfully
-        if (this.hasHitBall && ball.z <= 0 && ball.y < layout.netY && this.pendingSuccessDelay === 0 && this.successPauseTimer === 0) {
+        if (this.hasHitBall && 
+            ball.z <= 0 && 
+            ball.y < layout.netY && 
+            this.pendingSuccessDelay === 0 && 
+            this.successPauseTimer === 0) {
             this.pendingSuccessMessage = "GREAT SERVE!";
             this.pendingSuccessPauseDuration = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
             this.pendingSuccessDelay = 30;
@@ -395,7 +443,10 @@ const Scene_Tutorial = {
         }
 
         // Check if player returned the ball over the net
-        if (this.hasHitBall && ball.y < layout.netY && this.pendingSuccessDelay === 0 && this.successPauseTimer === 0) {
+        if (this.hasHitBall && 
+            ball.y < layout.netY && 
+            this.pendingSuccessDelay === 0 && 
+            this.successPauseTimer === 0) {
             this.pendingSuccessMessage = "GREAT RETURN!";
             this.pendingSuccessPauseDuration = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
             this.pendingSuccessDelay = 20;
@@ -423,9 +474,14 @@ const Scene_Tutorial = {
         if (player.skillCooldown === 0) {
             this.isSkillReady = true;
         }
-        let hasJustFiredSkill = this.isSkillReady && (player.skillCooldown > player.maxCooldown - 5);
+        // when skill fires, cooldown resets to maxCooldown; detect that jump within a 5-frame window
+        let hasJustFiredSkill = this.isSkillReady && 
+            (player.skillCooldown > player.maxCooldown - GAME_CONFIG.TUTORIAL.SKILL_TRIGGER_MARGIN);
 
-        if (hasJustFiredSkill && !this.skillTriggered && this.pendingSuccessDelay === 0 && this.successPauseTimer === 0) {
+        if (hasJustFiredSkill && 
+            !this.skillTriggered && 
+            this.pendingSuccessDelay === 0 && 
+            this.successPauseTimer === 0) {
             this.pendingSuccessMessage = "AMAZING SKILL!";
             this.pendingSuccessPauseDuration = GAME_CONFIG.TUTORIAL.PAUSE_MINOR;
             this.pendingSuccessDelay = 30;
@@ -447,14 +503,14 @@ const Scene_Tutorial = {
 
     // Step 5: The final mock match with full score and win condition logic
     handleScoringLogic: function () {
-        // Did the player score a new point?
+        // player score a new point?
         if (scoreManager.playerPoints > this.lastPlayerScore) {
             this.scoringMessage = "YOU SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
             this.lastPlayerScore = scoreManager.playerPoints;
             return;
         }
-        // Did the AI score a new point?
+        // AI score a new point?
         if (scoreManager.opponentPoints > this.lastOpponentScore) {
             this.scoringMessage = "AI SCORE!";
             this.successPauseTimer = GAME_CONFIG.TUTORIAL.PAUSE_MAJOR;
@@ -490,6 +546,7 @@ const Scene_Tutorial = {
     },
 
     handleSuccessPause: function () {
+        // pendingSuccessDelay adds a short buffer before showing the message
         if (this.pendingSuccessDelay > 0) {
             this.pendingSuccessDelay--;
             if (this.pendingSuccessDelay === 0) {
@@ -498,29 +555,25 @@ const Scene_Tutorial = {
             }
         }
 
-        if (this.successPauseTimer <= 0) return false;
+        if (this.successPauseTimer <= 0) return;
         const { PAUSE_MINOR, PAUSE_MAJOR } = GAME_CONFIG.TUTORIAL;
-    
+
         // Only trigger sound on the exact initial frame we entered the success state
-        if (this.successPauseTimer === PAUSE_MINOR && this.scoringMessage !== "YOU SCORE!" && this.scoringMessage !== "AI SCORE!") {
-            if (soundManager) {
-                if (!this.scoringMessage.includes("AI")) {
-                    soundManager.play('success');
-                }
-            }
-        } else if (this.successPauseTimer === PAUSE_MAJOR) {
-            if (soundManager) {
-                if (!this.scoringMessage.includes("AI")) {
-                    soundManager.play('success');
-                }
+        const isAIMessage = this.scoringMessage.includes("AI");
+        if (!isAIMessage) {
+            if (this.successPauseTimer === PAUSE_MINOR &&
+                this.scoringMessage !== "YOU SCORE!") {
+                if (soundManager) soundManager.play('success');
+            } else if (this.successPauseTimer === PAUSE_MAJOR) {
+                if (soundManager) soundManager.play('success');
             }
         }
         this.successPauseTimer--;
         push();
         textAlign(CENTER, CENTER);
-        stroke(0); strokeWeight(6); textSize(50);
-        if (this.scoringMessage.includes("AI")) fill(255, 0, 0);
-        else if (this.scoringMessage.includes("GREAT")) fill(255, 255, 0);
+        stroke(...GAME_CONFIG.COLORS.BLACK); strokeWeight(6); textSize(GAME_CONFIG.TUTORIAL.SUCCESS_TEXT_SIZE);
+        if (this.scoringMessage.includes("AI")) fill(...GAME_CONFIG.COLORS.TEXT_ERROR);
+        else if (this.scoringMessage.includes("GREAT")) fill(...GAME_CONFIG.COLORS.YELLOW);
         else fill(0, 255, 0);
 
         text(this.scoringMessage, layout.VIRTUAL_W / 2, layout.VIRTUAL_H / 2);
@@ -530,44 +583,41 @@ const Scene_Tutorial = {
             const handler = this.stepHandlers[tutorialManager.currentStep];
             if (handler?.onSuccess) handler.onSuccess();
         }
-        return true;
     },
 
     displayTutorialUI: function (txt) {
-        const goldColor = color(255, 188, 31);
         push();
         textAlign(CENTER, TOP);
         textStyle(BOLD);
-        stroke(0);
+        stroke(...GAME_CONFIG.COLORS.BLACK);
         strokeWeight(4);
-        fill(goldColor);
-        textSize(36);
-        let boxW = 950;
-        let boxX = (layout.VIRTUAL_W - boxW) / 2;
+        fill(...GAME_CONFIG.COLORS.GOLD);
+        const { UI_TEXT_SIZE, UI_BOX_W, UI_BOX_H } = GAME_CONFIG.TUTORIAL;
+        textSize(UI_TEXT_SIZE);
+        let boxX = (layout.VIRTUAL_W - UI_BOX_W) / 2;
         let boxY = layout.VIRTUAL_H * 0.85;
 
-        text(txt, boxX, boxY, boxW, 300);
+        text(txt, boxX, boxY, UI_BOX_W, UI_BOX_H);
         pop();
     },
 
     drawTargetZone: function (x, y) {
-        const goldColor = [255, 188, 31];
         push();
+        const { TARGET_ZONE_W, TARGET_ZONE_H } = GAME_CONFIG.TUTORIAL;
         noFill();
-        stroke(goldColor);
+        stroke(...GAME_CONFIG.COLORS.GOLD);
         strokeWeight(5);
-        ellipse(x, y, 60, 30);
+        ellipse(x, y, TARGET_ZONE_W, TARGET_ZONE_H);
 
         if (frameCount % 60 < 30) {
-            fill(255, 255, 0, 50);
-            ellipse(x, y, 60, 30);
+            fill(...GAME_CONFIG.COLORS.TUTORIAL_TEXT_HIGHLIGHT);
+            ellipse(x, y, TARGET_ZONE_W, TARGET_ZONE_H);
         }
         pop();
     },
 
     drawTransitionOverlay: function () {
         let intro = tutorialManager.getStepIntro();
-        const goldColor = color(255, 188, 31);
 
         if (tutorialManager.currentStep > 5) {
             if (soundManager && !this.victorySoundPlayedInTutorial) {
@@ -577,65 +627,30 @@ const Scene_Tutorial = {
         }
 
         push();
-        fill(0, 0, 0, 200);
+        fill(...GAME_CONFIG.COLORS.BLACK, 200);
         rect(0, 0, layout.VIRTUAL_W, layout.VIRTUAL_H);
 
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
 
         // title
-        fill(goldColor);
+        fill(...GAME_CONFIG.COLORS.GOLD);
         textSize(64);
         text(intro.title, layout.VIRTUAL_W / 2, layout.VIRTUAL_H * 0.3);
 
-        fill(255);
+        fill(...GAME_CONFIG.COLORS.WHITE);
         textSize(32);
         let descW = 700;
         text(intro.desc, layout.VIRTUAL_W / 3.4, layout.VIRTUAL_H * 0.32, descW, 300);
 
-        fill(200);
+        fill(GAME_CONFIG.COLORS.MENU_BG_DARK);
         textSize(24);
         if (frameCount % 60 < 30) {
-            let actionText = tutorialManager.currentStep > 5 ? "Press ANY KEY to Return to Menu" : "Press ANY KEY to Start";
+            let actionText = tutorialManager.currentStep > 5 
+                ? "Press ANY KEY to Return to Menu" 
+                : "Press ANY KEY to Start";
             text(actionText, layout.VIRTUAL_W / 2, layout.VIRTUAL_H * 0.69);
         }
         pop();
-    },
-
-    /* drawCircularSkillUI: function(x, y, energy) {
-        const size = 80;         
-        const strokeW = 8;       
-        const progress = (energy || 0) / 100; 
-        const goldColor = color(255, 188, 31); 
-
-        push();
-        translate(x, y);
-        noStroke();
-        fill(40, 40, 45); 
-        circle(0, 0, size);
-
-        fill(goldColor);
-        beginShape();
-        vertex(5, -25); vertex(-12, 5); vertex(-2, 5); 
-        vertex(-5, 25); vertex(12, -5); vertex(2, -5); 
-        endShape(CLOSE);
-
-        noFill();
-        stroke(60, 60, 65, 150);
-        strokeWeight(strokeW);
-        ellipse(0, 0, size + strokeW + 4);
-
-        if (energy >= 100) {
-            stroke(255, 255, 200); 
-            drawingContext.shadowBlur = 15;
-            drawingContext.shadowColor = goldColor;
-        } else {
-            stroke(goldColor);
-        }
-        strokeWeight(strokeW);
-        strokeCap(ROUND);
-        let endAngle = map(progress, 0, 1, 0, TWO_PI);
-        arc(0, 0, size + strokeW + 4, size + strokeW + 4, -HALF_PI, -HALF_PI + endAngle);
-        pop();
-    } */
+    }
 };

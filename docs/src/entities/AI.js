@@ -12,6 +12,8 @@ class AI {
         this._prevHitStatus = false;
         this._skillUseTimer = -1;
         this.personality = 'basic';
+        this.vx = 0;
+        this.vy = 0;
         this._attackerYRepositionTimer = -1;
         this._attackerYTarget = null;
         
@@ -45,25 +47,31 @@ class AI {
         
         // Initialize with default wide values (will be overridden by setPersonality)
         const wideDefaults = GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
-        this.wideVxMin = wideDefaults.VX_MIN;
-        this.wideVxMax = wideDefaults.VX_MAX;
-        this.wideExtremeProb = wideDefaults.EXTREME_PROB;
         this.wideAimAwayProb = wideDefaults.AIM_AWAY_PROB;
         this.wideApplyProb = wideDefaults.APPLY_PROB;
+        this.wideSpreadMin = wideDefaults.SPREAD_RATIO_MIN;
+        this.wideSpreadMax = wideDefaults.SPREAD_RATIO_MAX;
         
+        // Initialize with default basic protection probability
+        this.basicProtectProb = GAME_CONFIG.AI_PERSONALITIES.BASIC.PROTECT_PROB.DEFAULT;
+
         // Initialize skill usage frames
         const initDefaults = GAME_CONFIG.AI_PERSONALITIES.DEFAULT_INIT;
         this.skillUseMinFrames = initDefaults.SKILL_USE_MIN_FRAMES;
         this.skillUseMaxFrames = initDefaults.SKILL_USE_MAX_FRAMES;
 
-        const defaultLevel = GAME_CONFIG.AI_LEVELS.NORMAL;
-        this.difficulty     = 'NORMAL';
+        const defaultLevel = GAME_CONFIG.AI_LEVELS.EASY;
+        this.difficulty     = 'EASY';
         this.speedMult      = defaultLevel.speedMult;
         this.reactionDelay  = defaultLevel.reactionDelay;
         this.errorRange     = defaultLevel.errorRange;
         this.prediction     = defaultLevel.prediction;
 
         this._reactionCounter = 0;
+
+        this.player.shotModifier = (ball) => {
+            this.applyPersonalityShotModifier(ball);
+        };
     }
 
     setPersonality(personality) {
@@ -72,18 +80,21 @@ class AI {
 
         const diff = (this.difficulty || 'NORMAL').toString().toUpperCase();
 
-        // Difficulty-based tuning for skill usage frequency
+        // Difficulty-based tuning for skill usage frequency and basic shot protection
         const skillConfig = GAME_CONFIG.AI_PERSONALITIES.BASIC;
         if (diff === 'EASY') {
             this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.EASY;
             this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.EASY;
+            this.basicProtectProb = skillConfig.PROTECT_PROB.EASY;
         } else if (diff === 'HARD') {
             this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.HARD;
             this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.HARD;
+            this.basicProtectProb = skillConfig.PROTECT_PROB.HARD;
         } else {
             // NORMAL
             this.skillUseMinFrames = skillConfig.SKILL_USE_MIN_FRAMES.NORMAL;
             this.skillUseMaxFrames = skillConfig.SKILL_USE_MAX_FRAMES.NORMAL;
+            this.basicProtectProb = skillConfig.PROTECT_PROB.NORMAL;
         }
 
         // Reset attacker state when switching
@@ -125,11 +136,10 @@ class AI {
         // Difficulty-based tuning for "wide" shot behavior
         if (p === 'wide') {
             const config = GAME_CONFIG.AI_PERSONALITIES.WIDE[diff] || GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
-            this.wideVxMin = config.VX_MIN;
-            this.wideVxMax = config.VX_MAX;
-            this.wideExtremeProb = config.EXTREME_PROB;
             this.wideAimAwayProb = config.AIM_AWAY_PROB;
             this.wideApplyProb = config.APPLY_PROB;
+            this.wideSpreadMin = config.SPREAD_RATIO_MIN;
+            this.wideSpreadMax = config.SPREAD_RATIO_MAX;
         }
     }
 
@@ -160,21 +170,28 @@ class AI {
                     let homeX = isPlayerOnRight ?
                         layout.courtLeft + (layout.COURT_W / GAME_CONFIG.AI.HOME_X_DIVISOR) :
                         layout.courtRight - (layout.COURT_W / GAME_CONFIG.AI.HOME_X_DIVISOR);
-                    let fidgetRange = layout.COURT_W / GAME_CONFIG.AI.FIDGET_RANGE_DIVISOR;
-                    let noiseValue = (noise(this.noiseOffset) - 0.5) * fidgetRange;
-                    this.noiseOffset += this.fidgetSpeed;
-                    this.targetX = homeX + noiseValue;
+                    this.targetX = homeX;
                 } else {
                     this.targetX = this.calculateServePosition();
                 }
                 this.targetY = null;
+            } else if (ball.lastHitter === this.player) {
+                // if AI just hit the ball over, retreat to center and wait
+                this.targetX = layout.centerX;
+                this.serveDelayTimer = -1;
+                this.serveTargetX = -1;
             } else {
-                // Use smooth noise instead of random jumping to prevent jitter
-                let error = (noise(frameCount * 0.05, this.noiseOffset) - 0.5) * 2 * this.errorRange;
+                let error = (
+                    noise(frameCount * GAME_CONFIG.AI.NOISE_TIME_SCALE, this.noiseOffset) - 0.5
+                    ) * 2 * this.errorRange;
+                this.noiseOffset += this.fidgetSpeed;
+                
                 if (this.personality === 'wall') {
                     // Wall keeps a central base and only shades toward the incoming ball.
                     const predictedX = ball.x + (ball.vx * this.prediction);
-                    const centerOffset = (noise(frameCount * 0.03, this.noiseOffset) - 0.5) * 2 * this.wallCenterJitter;
+                    const centerOffset = (
+                        noise(frameCount * GAME_CONFIG.AI.WALL_NOISE_TIME_SCALE, this.noiseOffset) - 0.5
+                        ) * 2 * this.wallCenterJitter;
                     this.targetX = layout.centerX + ((predictedX - layout.centerX) * this.wallTrackRatio) + centerOffset;
                 } else {
                     this.targetX = ball.x + (ball.vx * this.prediction) + error;
@@ -183,8 +200,9 @@ class AI {
                 this.serveTargetX = -1;
             }
         }
-
+        
         this.updateTargetY(ball);
+        this.updateAttackerY(ball);
         this.applySmoothMovement();
         this.handleActions(ball);
     }
@@ -253,7 +271,10 @@ class AI {
         const netFrontY = this.getAttackerFrontY();
         const baselineY = this.getBaselineY();
 
-        const preferNet = (Math.abs(ball.y - layout.netY) < GAME_CONFIG.AI.BOUNCE_DISTANCE * 0.45);
+        const preferNet = (
+            Math.abs(ball.y - layout.netY) < 
+            GAME_CONFIG.AI.BOUNCE_DISTANCE * GAME_CONFIG.AI.BOUNCE_POSITION_FACTOR
+        );
         const deepBall = (ball.y < layout.courtTop + layout.COURT_H * this.attackerDeepBallThreshold);
 
         const retreatProb = deepBall ? this.attackerBaselineWhenBallDeepProb : this.attackerChooseBaselineProb;
@@ -272,7 +293,9 @@ class AI {
     }
 
     updateTargetY(ball) {
-        const serveLineY = layout.courtTop + layout.COURT_H * GAME_CONFIG.AI.SERVE_LINE_RATIO;
+        const { SERVE_LINE_RATIO, RECEIVE_Y_THRESHOLD, BOUNCE_DISTANCE_FACTOR,
+                BOUNCE_DISTANCE, BOUNCE_POSITION_FACTOR, RECEIVE_Y_FACTOR } = GAME_CONFIG.AI;
+        const serveLineY = layout.courtTop + layout.COURT_H * SERVE_LINE_RATIO;
         const isServeReceive = this.isServeReceivePhase(ball);
 
         if (ball.roundEnding) {
@@ -287,17 +310,19 @@ class AI {
                 const speedFactor = ball.speedMultiplier !== undefined ? ball.speedMultiplier : 1.0;
                 // If it's a slow ball, reduce distance (but keep a small minimum to avoid standing on the ball)
                 const dynamicBounceDist = Math.max(
-                    GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * GAME_CONFIG.AI.BOUNCE_DISTANCE_FACTOR, 
-                    GAME_CONFIG.AI.BOUNCE_DISTANCE * speedFactor
+                    RECEIVE_Y_THRESHOLD * BOUNCE_DISTANCE_FACTOR,
+                    BOUNCE_DISTANCE * speedFactor
                 );
 
                 if (this.personality === 'attacker' && !isServeReceive) {
                     // Move up toward service line / net more aggressively
-                    const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * GAME_CONFIG.AI.BOUNCE_POSITION_FACTOR);
-                    this.targetY = preferNet ? this.getAttackerHitSafeY() : min(this.getServiceLineY(), this.getAttackerHitSafeY());
+                    const preferNet = (Math.abs(ball.y - layout.netY) < dynamicBounceDist * BOUNCE_POSITION_FACTOR);
+                    this.targetY = preferNet
+                        ? this.getAttackerHitSafeY()
+                        : min(this.getServiceLineY(), this.getAttackerHitSafeY());
 
                     // Force attacker to get close enough if ball is critically short
-                    if (this.targetY > ball.y - dynamicBounceDist + GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD * GAME_CONFIG.AI.RECEIVE_Y_FACTOR) {
+                    if (this.targetY > ball.y - dynamicBounceDist + RECEIVE_Y_THRESHOLD * RECEIVE_Y_FACTOR) {
                         this.targetY = min(this.getAttackerHitSafeY(), ball.y - dynamicBounceDist);
                     }
                 } else {
@@ -314,52 +339,92 @@ class AI {
     }
 
     applySmoothMovement() {
-        const AI = GAME_CONFIG.AI;
-        const baseline = layout.courtTop - GAME_CONFIG.PLAYER.SERVE_OFFSET - this.player.h / 2;
-        const isServeReceive = this.isServeReceivePhase(ball);
-        const isRoundEnding = !!ball.roundEnding;
+        const { MOVE_FRICTION, MOVE_ACC_FACTOR, VELOCITY_SNAP_THRESHOLD,
+                MOVE_DEADZONE, DEADZONE_BRAKE_MULT } = GAME_CONFIG.AI;
+        const { POLAR_FRICTION, POLAR_OPPONENT_VELOCITY } = GAME_CONFIG.MAP_PHYSICS;
 
-        if (this.personality === 'attacker' && !isServeReceive && !isRoundEnding) {
-            this.updateAttackerY(ball);
-        }
+        let isRoundEnding = (typeof ball !== 'undefined' && ball.roundEnding);
+        let isServeReceive = (typeof ball !== 'undefined' && this.isServeReceivePhase(ball));
 
-        // During point-end recovery, don't reserve a serve target yet.
-        // Otherwise attacker can carry a stale serveTargetX into the next point and never toss.
-        const targetX = isRoundEnding
-            ? this.player.x
-            : (this.personality === 'wall' && !ball.isWaiting && !ball.isTossing
-                ? this.targetX
-                : this.targetX);
-        let dx = targetX - this.player.x;
-        if (Math.abs(dx) >= AI.MOVE_DEADZONE) {
-            let lerpFactor = isRoundEnding
-                ? AI.LERP_FACTOR_SERVE
-                : ((scoreManager.currentServer === 'PLAYER' && !ball.isWaiting)
-                    ? AI.LERP_FACTOR_NORMAL
-                    : AI.LERP_FACTOR_SERVE);
-            let moveStep = dx * lerpFactor;
-            const maxSpeed = isRoundEnding
-                ? this.player.speed * this.speedMult * AI.SERVE_SPEED_MULT
-                : this.player.speed * this.speedMult;
-            moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
-            this.player.x += moveStep;
-        }
-
-
+        let baseline = this.getBaselineY();
+        let destX = (this.targetX !== null) ? this.targetX : layout.centerX;
         let destY = (this.targetY !== null) ? this.targetY : baseline;
-        if (this.personality === 'attacker' && !isServeReceive && !isRoundEnding && this.targetY == null && !ball.isWaiting && !ball.isTossing) {
+
+        if (this.personality === 'attacker' && !isServeReceive &&
+            !isRoundEnding && this.targetY == null &&
+            (typeof ball !== 'undefined' && !ball.isWaiting && !ball.isTossing)) {
             destY = this._attackerYTarget ?? destY;
         }
-        let dy = destY - this.player.y;
-        if (Math.abs(dy) >= AI.MOVE_DEADZONE) {
-            let lerpFactor = isRoundEnding ? AI.LERP_FACTOR_SERVE : AI.LERP_FACTOR_NORMAL;
-            let moveStep = dy * lerpFactor;
-            const maxSpeed = isRoundEnding
-                ? this.player.speed * this.speedMult * AI.SERVE_SPEED_MULT
-                : this.player.speed * this.speedMult;
-            moveStep = constrain(moveStep, -maxSpeed, maxSpeed);
-            this.player.y += moveStep;
+
+        if (isRoundEnding) {
+            // Rapidly halt progress when the point ends (ball goes out, scored, etc)
+            this.vx *= 0.5;
+            this.vy *= 0.5;
+            this.player.x += this.vx;
+            this.player.y += this.vy;
+            return;
         }
+
+        const isPolarIce = typeof selectedMap !== 'undefined' && selectedMap === 0 &&
+                           typeof currentState !== 'undefined' && currentState === GAME_CONFIG.STATES.PLAYING;
+
+        let friction = isPolarIce ? POLAR_FRICTION : MOVE_FRICTION;
+        let baseAcc = isPolarIce ? POLAR_OPPONENT_VELOCITY : this.player.speed * this.speedMult * MOVE_ACC_FACTOR;
+        let maxSpeed = this.player.speed * this.speedMult;
+
+        // X movement
+        let dx = destX - this.player.x;
+        let xFriction = friction;
+        if (isPolarIce) {
+            if (Math.abs(dx) < VELOCITY_SNAP_THRESHOLD && Math.abs(this.vx) < VELOCITY_SNAP_THRESHOLD) {
+                this.vx = 0;
+                this.player.x = destX;
+            } else {
+                let predictedX = this.player.x + this.vx * friction / (1 - friction);
+                let coastingX = (dx > 0 && predictedX >= destX) || (dx < 0 && predictedX <= destX);
+                if (!coastingX) {
+                    this.vx += (dx > 0) ? baseAcc : -baseAcc;
+                }
+            }
+        } else if (Math.abs(dx) >= MOVE_DEADZONE) {
+            this.vx += (dx > 0) ? baseAcc : -baseAcc;
+        } else {
+            xFriction *= DEADZONE_BRAKE_MULT;
+            if (Math.abs(this.vx) < VELOCITY_SNAP_THRESHOLD) {
+                this.vx = 0;
+                this.player.x = destX;
+            }
+        }
+        this.vx *= xFriction;
+        this.vx = constrain(this.vx, -maxSpeed, maxSpeed);
+        this.player.x += this.vx;
+
+        // Y movement
+        let dy = destY - this.player.y;
+        let yFriction = friction;
+        if (isPolarIce) {
+            if (Math.abs(dy) < VELOCITY_SNAP_THRESHOLD && Math.abs(this.vy) < VELOCITY_SNAP_THRESHOLD) {
+                this.vy = 0;
+                this.player.y = destY;
+            } else {
+                let predictedY = this.player.y + this.vy * friction / (1 - friction);
+                let coastingY = (dy > 0 && predictedY >= destY) || (dy < 0 && predictedY <= destY);
+                if (!coastingY) {
+                    this.vy += (dy > 0) ? baseAcc : -baseAcc;
+                }
+            }
+        } else if (Math.abs(dy) >= MOVE_DEADZONE) {
+            this.vy += (dy > 0) ? baseAcc : -baseAcc;
+        } else {
+            yFriction *= DEADZONE_BRAKE_MULT;
+            if (Math.abs(this.vy) < VELOCITY_SNAP_THRESHOLD) {
+                this.vy = 0;
+                this.player.y = destY;
+            }
+        }
+        this.vy *= yFriction;
+        this.vy = constrain(this.vy, -maxSpeed, maxSpeed);
+        this.player.y += this.vy;
     }
 
     calculateServePosition() {
@@ -375,16 +440,19 @@ class AI {
     }
 
     handleActions(ball) {
+        const { RECEIVE_X_THRESHOLD, RECEIVE_Y_THRESHOLD, MOVE_DEADZONE,
+                SERVE_DELAY_MIN, SERVE_DELAY_MAX, SERVE_DIST_THRESHOLD,
+                SERVE_SWING_Z_MIN, SERVE_SWING_Z_MAX } = GAME_CONFIG.AI;
+
         if (!ball.isWaiting && !ball.isTossing && ball.vy < 0) {
             let xDiff = Math.abs(this.player.x - ball.x);
             let yDiff = Math.abs(this.player.y - ball.y);
-            if (xDiff < GAME_CONFIG.AI.RECEIVE_X_THRESHOLD &&
-                yDiff < GAME_CONFIG.AI.RECEIVE_Y_THRESHOLD) {
+            if (xDiff < RECEIVE_X_THRESHOLD && yDiff < RECEIVE_Y_THRESHOLD) {
                 // Attacker can wait forward, but should step back to a safe hit line
                 // before swinging so fixed-power returns stay playable.
                 if (this.personality === 'attacker' &&
                     !this.isServeReceivePhase(ball) &&
-                    this.player.y > this.getAttackerHitSafeY() + GAME_CONFIG.AI.MOVE_DEADZONE) {
+                    this.player.y > this.getAttackerHitSafeY() + MOVE_DEADZONE) {
                     return;
                 }
                 // On serve receive, always wait for 1 bounce before returning.
@@ -411,37 +479,154 @@ class AI {
         }
         this._prevHitStatus = this.player.hasHit;
 
-        if (this.player.skillCooldown === 0 && this._skillUseTimer === -1) {
-            this._skillUseTimer = int(random(this.skillUseMinFrames, this.skillUseMaxFrames));
-        }
-        if (this._skillUseTimer > 0) {
-            this._skillUseTimer--;
-        } else if (this._skillUseTimer === 0 && !ball.isWaiting && !ball.isTossing) {
-            this.player.useSkill(ball);
-            this._skillUseTimer = -1;
+        let isTutorial = (typeof currentState !== 'undefined' && currentState === GAME_CONFIG.STATES.TUTORIAL);
+        if (!isTutorial) {
+            if (this.player.skillCooldown === 0 && this._skillUseTimer === -1) {
+                this._skillUseTimer = int(random(this.skillUseMinFrames, this.skillUseMaxFrames));
+            }
+            if (this._skillUseTimer > 0) {
+                this._skillUseTimer--;
+            } else if (this._skillUseTimer === 0 && !ball.isWaiting && !ball.isTossing) {
+                // shadow teleport only fires when it's actually useful; other skills fire immediately
+                const readyToUse = this.player.skillType !== 'SHADOW_TELEPORT' || this.shouldUseShadowTeleport(ball);
+                if (readyToUse) {
+                    this.player.useSkill(ball);
+                    this._skillUseTimer = -1;
+                }
+            }
         }
 
         if (scoreManager.currentServer === 'OPPONENT') {
             if (ball.isWaiting) {
                 this.serveSwung = false;
                 if (this.serveDelayTimer === -1) {
-                    this.serveDelayTimer = int(random(
-                        GAME_CONFIG.AI.SERVE_DELAY_MIN,
-                        GAME_CONFIG.AI.SERVE_DELAY_MAX));
+                    this.serveDelayTimer = int(random(SERVE_DELAY_MIN, SERVE_DELAY_MAX));
                 }
                 let distToTarget = Math.abs(this.player.x - this.serveTargetX);
-                if (distToTarget < GAME_CONFIG.AI.SERVE_DIST_THRESHOLD && this.serveDelayTimer > 0) {
+                if (distToTarget < SERVE_DIST_THRESHOLD && this.serveDelayTimer > 0) {
                     this.serveDelayTimer--;
                 } else if (this.serveDelayTimer === 0) {
                     ball.toss();
                     this.serveDelayTimer = -1;
                 }
-            } else if (ball.isTossing && !this.serveSwung &&
-                       ball.vz < 0 &&
-                       ball.z > GAME_CONFIG.AI.SERVE_SWING_Z_MIN &&
-                       ball.z < GAME_CONFIG.AI.SERVE_SWING_Z_MAX) {
+            } else if (ball.isTossing && !this.serveSwung && ball.vz < 0 &&
+                       ball.z > SERVE_SWING_Z_MIN && ball.z < SERVE_SWING_Z_MAX) {
                 this.player.swing(ball);
                 this.serveSwung = true;
+            }
+        }
+    }
+
+    // shadow teleport is only useful when ball is heading toward AI and AI is too far to reach it normally
+    shouldUseShadowTeleport(ball) {
+        if (ball.isWaiting || ball.isTossing) return false;
+        if (ball.vy >= 0) return false; // ball moving away from AI, no need to teleport
+        const distX = Math.abs(this.player.x - ball.x);
+        return distX > GAME_CONFIG.AI.RECEIVE_X_THRESHOLD;
+    }
+
+    // Calculate the total distance multiplier considering air resistance
+    flightSum() {
+        const { HIT_Z, GRAVITY, AIR_RESISTANCE } = GAME_CONFIG.BALL;
+        const { AIRTIME_CALC_MIN_FRAMES, GRAVITY_MIN, AIR_RESISTANCE_MIN } = GAME_CONFIG.BALL_HIT_BEHAVIOR;
+        const t = max(AIRTIME_CALC_MIN_FRAMES, floor((2 * HIT_Z) / max(GRAVITY_MIN, GRAVITY)));
+        return (1 - pow(AIR_RESISTANCE, t)) / max(AIR_RESISTANCE_MIN, (1 - AIR_RESISTANCE));
+    }
+
+    // calculate the vx needed to reach targetX, clamped so the ball lands inside court bounds
+    clampVxToTarget(ball, targetX, sum, safetyMargin, clampScale) {
+        const desiredVx = (targetX - ball.x) / sum;
+        const minX = layout.courtLeft + ball.r + safetyMargin;
+        const maxX = layout.courtRight - ball.r - safetyMargin;
+        const maxVxPos = (maxX - ball.x) / sum;
+        const maxVxNeg = (ball.x - minX) / sum;
+        const maxAbsForSign = (desiredVx >= 0) ? maxVxPos : maxVxNeg;
+        const safeAbs = max(0, maxAbsForSign * clampScale);
+        return constrain(desiredVx, -safeAbs, safeAbs);
+    }
+
+    applyPersonalityShotModifier(ball) {
+        if (ball.isTossing) return;
+        if (typeof isMultiplayer !== 'undefined' && isMultiplayer) return;
+
+        const { WALL_SAFETY_MARGIN, WALL_RETURN_SPREAD_DEFAULT, WALL_RETURN_CLAMP_DEFAULT,
+                MIN_VX_FOR_SIGN, ATTACKER_SAFETY_MARGIN, ATTACKER_MAX_ABS_SCALE,
+                WIDE_SAFETY_MARGIN, WIDE_LIMIT_SCALE } = GAME_CONFIG.BALL_HIT_BEHAVIOR;
+
+        // Single mode AI personality: "wall" returns deep through the center.
+        if (this.personality === 'wall') {
+            const sum = this.flightSum();
+            const spread = this.wallReturnSpread ?? WALL_RETURN_SPREAD_DEFAULT;
+            const targetX = layout.centerX + random(-spread, spread);
+            const clampScale = this.wallReturnClampScale ?? WALL_RETURN_CLAMP_DEFAULT;
+            ball.vx = this.clampVxToTarget(ball, targetX, sum, WALL_SAFETY_MARGIN, clampScale);
+        }
+
+        // Single mode AI personality: "attacker" adds only a mild angle bias.
+        if (this.personality === 'attacker') {
+            const attackerDefaults = GAME_CONFIG.AI_PERSONALITIES.ATTACKER.DEFAULT;
+            const minVx = this.attackerAngleVxMin ?? attackerDefaults.ANGLE_VX_MIN;
+            const maxVx = this.attackerAngleVxMax ?? attackerDefaults.ANGLE_VX_MAX;
+            const applyProb = this.attackerAngleApplyProb ?? attackerDefaults.ANGLE_APPLY_PROB;
+            const aimAwayProb = this.attackerAngleAimAwayProb ?? attackerDefaults.ANGLE_AIM_AWAY_PROB;
+
+            if (random(1) < applyProb) {
+                // aim away from opponent more often; fall back to continuing current direction
+                let sign;
+                if (random(1) < aimAwayProb && typeof player !== 'undefined') {
+                    sign = (player.x < ball.x) ? 1 : -1;
+                } else {
+                    sign = (ball.vx < 0) ? -1 : 1;
+                    if (Math.abs(ball.vx) < MIN_VX_FOR_SIGN) {
+                        sign = (random(1) < 0.5) ? -1 : 1;
+                    }
+                }
+                const sum = this.flightSum();
+                const minX = layout.courtLeft + ball.r + ATTACKER_SAFETY_MARGIN;
+                const maxX = layout.courtRight - ball.r - ATTACKER_SAFETY_MARGIN;
+                const maxAbsForSign = (sign > 0) ? (maxX - ball.x) / sum : (ball.x - minX) / sum;
+                const mag = random(minVx, maxVx);
+                const cappedMag = constrain(mag, 0, max(0, maxAbsForSign * ATTACKER_MAX_ABS_SCALE));
+                ball.vx = sign * max(Math.abs(ball.vx), cappedMag);
+            }
+        }
+
+        // Basic personality: occasionally clamp vx to prevent out-of-bounds shots
+        if (this.personality === 'basic' && random(1) < this.basicProtectProb) {
+            const sum = this.flightSum();
+            const minX = layout.courtLeft + ball.r + WALL_SAFETY_MARGIN;
+            const maxX = layout.courtRight - ball.r - WALL_SAFETY_MARGIN;
+            ball.vx = constrain(ball.vx, (minX - ball.x) / sum, (maxX - ball.x) / sum);
+        }
+
+        // Polar ice: AI position may be offset from target due to sliding, cap vx so ball stays in court
+        if (typeof selectedMap !== 'undefined' && selectedMap === 0) {
+            const sum = this.flightSum();
+            const minX = layout.courtLeft + ball.r + WALL_SAFETY_MARGIN;
+            const maxX = layout.courtRight - ball.r - WALL_SAFETY_MARGIN;
+            ball.vx = constrain(ball.vx, (minX - ball.x) / sum, (maxX - ball.x) / sum);
+        }
+
+        // Single mode AI personality: "wide" forces big left/right split shots.
+        if (this.personality === 'wide') {
+            const wideDefaults = GAME_CONFIG.AI_PERSONALITIES.WIDE.DEFAULT;
+            const aimAwayProb = this.wideAimAwayProb ?? wideDefaults.AIM_AWAY_PROB;
+            const applyProb = this.wideApplyProb ?? wideDefaults.APPLY_PROB;
+            const spreadMin = this.wideSpreadMin ?? wideDefaults.SPREAD_RATIO_MIN;
+            const spreadMax = this.wideSpreadMax ?? wideDefaults.SPREAD_RATIO_MAX;
+
+            if (random(1) < applyProb) {
+                // aim for the opposite side of the court to generate cross-court angles
+                let sideX;
+                if (random(1) < aimAwayProb && typeof player !== 'undefined') {
+                    sideX = (ball.x > layout.centerX) ? layout.courtLeft : layout.courtRight;
+                } else {
+                    sideX = (random(1) < 0.5) ? layout.courtLeft : layout.courtRight;
+                }
+
+                const targetX = lerp(layout.centerX, sideX, random(spreadMin, spreadMax));
+                const sum = this.flightSum();
+                ball.vx = this.clampVxToTarget(ball, targetX, sum, WIDE_SAFETY_MARGIN, WIDE_LIMIT_SCALE);
             }
         }
     }

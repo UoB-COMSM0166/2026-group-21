@@ -1,0 +1,26 @@
+{
+  "name": "2026-group-21",
+  "version": "1.0.0",
+  "description": "2026 COMSM0166 group 21",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UoB-COMSM0166/2026-group-21.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UoB-COMSM0166/2026-group-21/issues"
+  },
+  "homepage": "https://github.com/UoB-COMSM0166/2026-group-21#readme",
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
+}
