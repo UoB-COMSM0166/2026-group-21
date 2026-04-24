@@ -225,7 +225,12 @@ $$v_{z,t+\Delta t} = v_{z,t} - g \cdot \Delta t$$
 
 To render this on a 2D screen, we projected the 3D coordinates $(x, y, z)$ into 2D screen space $(x', y')$ by offsetting the vertical position:
 
-$$\begin{cases} x' = x \\ y' = y - z \end{cases}$$
+$$
+\begin{cases}
+x' = x \\
+y' = y - z
+\end{cases}
+$$
 
 This projection allows the ball to 'arc' through the air. We also implemented a dynamic shadow where its radius ($R_s$) decreases as the ball rises: $R_s(z) = \max(R_{base} - \alpha \cdot z, R_{min})$. This visual cue is essential for players to anticipate the landing point and timing.
 
