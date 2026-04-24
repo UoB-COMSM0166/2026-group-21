@@ -123,8 +123,7 @@ To better understand our project's scope, we mapped our stakeholders using Ian A
 <p align="center">
   <b>Figure 9:</b>
   <i>Onion Model for Stakeholders (Adapted from Alexander, 2005) </i><br>
-  <img src="weekly-homeworks/assets/week-04-onionmodel-1.svg" controls width="640" height="640" alt="Onion model stakeholder diagram">
-  </img>
+  <img src="weekly-homeworks/assets/week-04-onionmodel-1.svg" width="640" height="640" alt="Onion model stakeholder diagram">
 </p>
 
 ## User Stories
@@ -134,8 +133,7 @@ We started with plenty of [User Story ideas](https://docs.google.com/document/d/
   <b>Table 10:</b>
   <i>User Stories</i>
   <br>
-  <img src="weekly-homeworks/assets/week-04-userstory.svg" controls width="640" height="640" alt="User Stories table">
-  </img>
+  <img src="weekly-homeworks/assets/week-04-userstory.svg" width="640" height="640" alt="User Stories table">
 </p>
 
 ## Use-Case Diagram
@@ -145,8 +143,7 @@ After defining our User Stories, we developed a Use Case Diagram (Figure 11) to 
       <b>Figure 11:</b>
       <i>Use-Case Diagram </i>
       <br>
-      <img src="weekly-homeworks/assets/week-04-userdiagram.png" controls width="640" height="640" alt="Use Case Diagram">
-      </img>
+      <img src="weekly-homeworks/assets/week-04-userdiagram.png" width="640" height="640" alt="Use Case Diagram">
     </p>
 
 ## Reflection
@@ -173,7 +170,7 @@ Our system design evolved as we prioritised both gameplay functionality and long
 <p align="center">
   <b>Figure 12:</b>
   <i>Early Class Diagram</i><br>
-  <img src="weekly-homeworks/assets/week-05-earlyclassdiagram.png" alt="Early class diagram showing inheritance hierarchy"></img>
+  <img src="weekly-homeworks/assets/week-05-earlyclassdiagram.png" alt="Early class diagram showing inheritance hierarchy">
 </p>
 
 However, as gameplay grew in complexity, we realised this inheritance-heavy approach could lead to code duplication and a rigid structure. To address these challenges, we transitioned to a more modular architecture (Figure 13). This shift allowed us to decouple character logic from global game rules, significantly improving the system's extensibility.
@@ -189,7 +186,7 @@ However, as gameplay grew in complexity, we realised this inheritance-heavy appr
 <p align="center">
   <b>Figure 13:</b>
   <i>Final Class Diagram</i><br>
-  <img src="weekly-homeworks/assets/week-05-finalclassdiagram.svg" alt="Final class diagram showing modular architecture"></img>
+  <img src="weekly-homeworks/assets/week-05-finalclassdiagram.svg" alt="Final class diagram showing modular architecture">
 </p>
 
 ## Behavioural Diagrams
@@ -210,7 +207,7 @@ Finally, the system triggers the appropriate sound effects to provide immediate 
   <b>Figure 14:</b>
   <i>Sequence Diagram: Ball Hit Logic</i>
   <br>
-  <img src="weekly-homeworks/assets/week-05-behaviourdiagram.svg" controls height="640" alt="Sequence diagram showing ball hit detection logic"></img>
+  <img src="weekly-homeworks/assets/week-05-behaviourdiagram.svg" height="640" alt="Sequence diagram showing ball hit detection logic">
 </p>
 
 Employing UML diagrams was vital for organising our object-oriented ideas and establishing a shared architectural blueprint. To avoid the overhead of manual updates, we refined our documentation workflow from hand-drawn sketches to Mermaid. This transition to a text-to-diagram tool allowed our architectural models to evolve dynamically with the codebase. By treating documentation as a living component of our development, we ensured that these models remained both up-to-date and accessible, providing a clear technical reference for the game’s long-term maintenance.
@@ -312,7 +309,7 @@ During the workshop, we ran usability tests with three participants to see how t
   <b>Figure 19:</b>
   <i>Quadrant Diagram: Think Aloud</i>
   <br>
-  <img src="weekly-homeworks/assets/week-07-thinkaloud.svg" controls height="640" alt="Think Aloud prioritisation quadrant diagram"></img>
+  <img src="weekly-homeworks/assets/week-07-thinkaloud.svg" height="640" alt="Think Aloud prioritisation quadrant diagram">
 </p>
 
 ### Heuristic Evaluation
@@ -322,7 +319,7 @@ To complement the feedback we gathered from players, we also performed a Heurist
   <b>Table 20:</b>
   <i>Heuristic Evaluation</i>
   <br>
-  <img src="weekly-homeworks/assets/week-07-heuristic.svg" controls height="800" alt="Heuristic evaluation table"></img>
+  <img src="weekly-homeworks/assets/week-07-heuristic.svg" height="800" alt="Heuristic evaluation table">
 </p>
 
 ### Improvements and Implementation
@@ -367,14 +364,14 @@ After our iterative updates, we wanted to ensure the difficulty levels were prop
   <b>Table 22:</b>
   <i>System Usability Scale</i>
   <br>
-  <img src="weekly-homeworks/assets/week-08-sus.svg" controls height="400" alt="System Usability Scale results table"></img>
+  <img src="weekly-homeworks/assets/week-08-sus.svg" height="400" alt="System Usability Scale results table">
 </p>
 
 <p align="center">
   <b>Chart 23:</b>
   <i>System Usability Scale Bar Chart</i>
   <br>
-  <img src="weekly-homeworks/assets/report-susbarchart.png" controls height="400" alt="System Usability Scale bar chart"></img>
+  <img src="weekly-homeworks/assets/report-susbarchart.png" height="400" alt="System Usability Scale bar chart">
 </p>
 
 
@@ -384,7 +381,7 @@ After our iterative updates, we wanted to ensure the difficulty levels were prop
   <b>Table 24:</b>
   <i>NASA Task Load Index</i>
   <br>
-  <img src="weekly-homeworks/assets/week-08-nasa.svg" controls height="400" alt="NASA Task Load Index results table"></img>
+  <img src="weekly-homeworks/assets/week-08-nasa.svg" height="400" alt="NASA Task Load Index results table">
 </p>
 
 
@@ -392,7 +389,7 @@ After our iterative updates, we wanted to ensure the difficulty levels were prop
   <b>Chart 25:</b>
   <i>NASA Task Load Index Bar Chart</i>
   <br>
-  <img src="weekly-homeworks/assets/report-nasabarchart.png" controls height="400" alt="NASA Task Load Index bar chart"></img>
+  <img src="weekly-homeworks/assets/report-nasabarchart.png" height="400" alt="NASA Task Load Index bar chart">
 </p>
 
 ### Quantitative Findings
@@ -417,7 +414,7 @@ Finally, we integrated automated unit testing with Jest to verify our scoring an
   <b>Figure 26:</b>
   <i>Demonstration of Debug Mode</i>
   <br>
-  <img src="weekly-homeworks/assets/report-debug.png" width="300" alt="Debug mode interface showing developer controls"></img>
+  <img src="weekly-homeworks/assets/report-debug.png" width="300" alt="Debug mode interface showing developer controls">
 </p>
 
 # 7. Process 
@@ -429,19 +426,19 @@ We combined weekly in-person meetings (Figure 27) with daily digital communicati
   <b>Figure 27:</b>
   <i>Weekly Team Meeting</i>
   <br>
-  <img src="weekly-homeworks/assets/report-meeting.JPG" width="600" alt="Weekly team meeting photo"></img>
+  <img src="weekly-homeworks/assets/report-meeting.JPG" width="600" alt="Weekly team meeting photo">
 </p>
 <p align="center">
   <b>Figure 28:</b>
   <i>WhatsApp Communication</i>
   <br>
-  <img src="weekly-homeworks/assets/report-whatsapp.PNG" controls height="400" alt="WhatsApp team communication screenshot"></img>
+  <img src="weekly-homeworks/assets/report-whatsapp.PNG" height="400" alt="WhatsApp team communication screenshot">
 </p>
 <p align="center">
   <b>Figure 29:</b>
   <i>Peer review and technical discussion within a Pull Request</i>
   <br>
-  <img src="weekly-homeworks/assets/report-pullrequest-discussion.png" controls height="400" alt="Pull request peer review discussion"></img>
+  <img src="weekly-homeworks/assets/report-pullrequest-discussion.png" height="400" alt="Pull request peer review discussion">
 </p>
 
 To keep our development on track, we used [**GitHub Projects**](https://github.com/orgs/UoB-COMSM0166/projects/165) (Figure 30) as our centralised Kanban board. We created specific issues for every feature, bug fix, and documentation task, tracking them through a clear pipeline from `Ready` to `Done`. This visual workflow was crucial for managing our weekly progress and ensuring no critical tasks fell through the cracks. For writing and report drafting, we relied on **Google Docs** (Figure 31) as our primary space for real-time collaborative editing.
@@ -450,14 +447,14 @@ To keep our development on track, we used [**GitHub Projects**](https://github.c
   <b>Figure 30:</b>
   <i>GitHub Projects</i>
   <br>
-  <img src="weekly-homeworks/assets/report-githubproject.png" width="800" alt="GitHub Projects Kanban board"></img>
+  <img src="weekly-homeworks/assets/report-githubproject.png" width="800" alt="GitHub Projects Kanban board">
 </p>
 
 <p align="center">
   <b>Figure 31:</b>
   <i>Google Docs</i>
   <br>
-  <img src="weekly-homeworks/assets/report-googledoc.png" width="800" alt="Google Docs collaborative editing interface"></img>
+  <img src="weekly-homeworks/assets/report-googledoc.png" width="800" alt="Google Docs collaborative editing interface">
 </p>
 
 ### **Workflow and Standardisation**
@@ -469,14 +466,14 @@ We strictly followed a 'Feature Branching' strategy (Figure 32), where developme
   <b>Figure 32:</b>
   <i>Branch</i>
   <br>
-  <img src="weekly-homeworks/assets/report-branch.png" width="600" alt="Feature branching strategy diagram"></img>
+  <img src="weekly-homeworks/assets/report-branch.png" width="600" alt="Feature branching strategy diagram">
 </p>
 
 <p align="center">
   <b>Figure 33:</b>
   <i>GitHub Pull Request</i>
   <br>
-  <img src="weekly-homeworks/assets/report-pullrequest.png" controls height="400" alt="GitHub Pull Request example"></img>
+  <img src="weekly-homeworks/assets/report-pullrequest.png" height="400" alt="GitHub Pull Request example">
 </p>
 
 ### **Reflection**
