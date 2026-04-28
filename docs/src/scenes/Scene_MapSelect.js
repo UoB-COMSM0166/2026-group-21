@@ -1,8 +1,8 @@
 const Scene_MapSelect = {
     mapNames: ["Polar", "Egypt", "Wimbledon"],
     mapEffects: [
-        "Polar: Characters frozen every 30s",
-        "Egypt: Sandstorm obscures vision every 30s",
+        "Polar: Slippery ice floor",
+        "Egypt: Random sandstorm blows the ball",
         "Wimbledon: Classic tournament rules"
     ],
 
