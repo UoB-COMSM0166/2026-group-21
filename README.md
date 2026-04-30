@@ -1,10 +1,12 @@
 <p align="center">
   <img src="weekly-homeworks/assets/report-banner.png" width="800" alt="Game Banner">
   <br>
-  <a href="https://uob-comsm0166.github.io/2026-group-21/" target="_blank">CLICK HERE TO PLAY FUR-HAND SMASH</a><br>
+  <a href="https://uob-comsm0166.github.io/2026-group-21/" target="_blank"><b>🎮 CLICK HERE TO PLAY FUR-HAND SMASH 🎮</b></a><br>
 </p>
 
-# Video Demonstration
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=aB3WzAM6GVw" target="_blank"><b>🎾 CLICK HERE TO WATCH DEMO VIDEO 🎾</b></a><br>
+</p>
 
 # Table of Contents
 - [1. Development Team](#1-development-team)
@@ -33,14 +35,14 @@
   <i>Team Member Description</i>
   <br>
 
-| NAME                  | EMAIL                 | ROLE                 |
-| --------------------- | --------------------- | -------------------- |
-| Xian Li               | yd25988@bristol.ac.uk |Core Developer        |
-| Yu-Han Sun            | qv25088@bristol.ac.uk |Art & Sound Developer |
-| Yu-Chun Chen          | df25142@bristol.ac.uk |UI/UX Developer       |
-| Yujing Shen           | pf25516@bristol.ac.uk |Gameplay Developer    |
-| Panarin Thipboonthong | uk25559@bristol.ac.uk |Gameplay Developer    |
-| Koki Fushiya          | bz25385@bristol.ac.uk |AI Developer & Testing|
+| NAME                  | EMAIL                 | ROLE                             |
+| --------------------- | --------------------- | -------------------------------- |
+| Xian Li               | yd25988@bristol.ac.uk |Lead Architect & Physics Developer|
+| Yu-Han Sun            | qv25088@bristol.ac.uk |Art & Sound Developer             |
+| Yu-Chun Chen          | df25142@bristol.ac.uk |UI/UX Developer                   |
+| Yujing Shen           | pf25516@bristol.ac.uk |Gameplay Developer                |
+| Panarin Thipboonthong | uk25559@bristol.ac.uk |Gameplay Developer                |
+| Koki Fushiya          | bz25385@bristol.ac.uk |AI Developer & Testing            |
 
 </div>
 
@@ -58,12 +60,12 @@ Everything runs on a custom physics system we built to find a sweet spot between
   <i>Character Skill Sets Overview</i>
 </p>
 
-|Character|Image|Skill|Description|
-|:-|:-|:-|:-|
-|**Cat**|<img src="docs/assets/images/player_cat_front.png" width="80" alt="Cat character sprite">|Shadow Teleport|Instantly teleports the character directly in front of the ball.|
-|**Dog**|<img src="docs/assets/images/player_dog_front.png" width="80" alt="Dog character sprite">|Giga Ball|Hits a massive ball that increases the hit area and stuns the opponent.|
-|**Deer**|<img src="docs/assets/images/player_deer_front.png" width="80" alt="Deer character sprite">|Forest Zen|Launches a slow-speed ball to disrupt the opponent's timing.|
-|**Bird**|<img src="docs/assets/images/player_bird_front.png" width="80" alt="Bird character sprite">|Feather Storm|Shrinks the ball while significantly increasing its velocity.|
+|Character|Image|Skill|Skill Icon|Description|
+|:-|:-|:-|:-|:-|
+|**Cat**|<img src="docs/assets/images/player_cat_front.png" width="80" alt="Cat character sprite">|Shadow Teleport|<img src="docs/assets/images/skill_cat.png" width="80" alt="Cat character sprite">|Instantly teleports the character directly in front of the ball.|
+|**Dog**|<img src="docs/assets/images/player_dog_front.png" width="80" alt="Dog character sprite">|Giga Ball|<img src="docs/assets/images/skill_dog.png" width="80" alt="Cat character sprite">|Hits a massive ball that increases the hit area and stuns the opponent.|
+|**Deer**|<img src="docs/assets/images/player_deer_front.png" width="80" alt="Deer character sprite">|Forest Zen|<img src="docs/assets/images/skill_deer.png" width="80" alt="Cat character sprite">|Launches a slow-speed ball to disrupt the opponent's timing.|
+|**Bird**|<img src="docs/assets/images/player_bird_front.png" width="80" alt="Bird character sprite">|Feather Storm|<img src="docs/assets/images/skill_bird.png" width="80" alt="Cat character sprite">|Shrinks the ball while significantly increasing its velocity.|
 
 <p align="center">
   <b>Figure 4:</b>
@@ -188,6 +190,241 @@ However, as gameplay grew in complexity, we realised this inheritance-heavy appr
   <i>Final Class Diagram</i><br>
   <img src="weekly-homeworks/assets/week-05-finalclassdiagram.svg" alt="Final class diagram showing modular architecture">
 </p>
+
+<details>
+<summary>View interactive diagram</summary>
+
+```mermaid
+classDiagram
+    class Game {
+        +player : Player
+        +opponent : Player
+        +ball : Ball
+        +opponentAI : AI
+        +scoreManager : ScoreManager
+        +layout : LayoutManager
+        +soundManager : SoundManager
+        +currentState : String
+        +preload() : void
+        +setup() : void
+        +draw() : void
+        +keyPressed() : void
+        +mousePressed() : void
+        +windowResized() : void
+    }
+
+    class Player {
+        +x : Number
+        +y : Number
+        +speed : Number
+        +swingTimer : Number
+        +skillCooldown : Number
+        +isBottom : Boolean
+        +isAI : Boolean
+        +skillType : String
+        +shotModifier : Function
+        +update() : void
+        +display() : void
+        +swing() : void
+        +handleInput() : void
+        +handleKeyPress(keyCode : Number, ball : Ball) : void
+        +applyConstraints() : void
+        +useSkill(ball : Ball) : void
+    }
+
+    class Ball {
+        +x : Number
+        +y : Number
+        +z : Number
+        +vx : Number
+        +vy : Number
+        +vz : Number
+        +lastHitter : Player
+        +isWaiting : Boolean
+        +isTossing : Boolean
+        +update() : void
+        +display() : void
+        +toss() : void
+        +checkHit(p : Player) : void
+        +terminateRound(winner : String) : void
+        +applyPhysics() : void
+    }
+
+    class AI {
+        +player : Player
+        +personality : String
+        +difficulty : String
+        +speedMult : Number
+        +reactionDelay : Number
+        +errorRange : Number
+        +prediction : Number
+        +vx : Number
+        +vy : Number
+        +update(ball : Ball) : void
+        +setPersonality(personality : String) : void
+        +applySmoothMovement() : void
+        +handleActions(ball : Ball) : void
+        +updateTargetY(ball : Ball) : void
+        +applyPersonalityShotModifier(ball : Ball) : void
+    }
+
+    class ScoreManager {
+        +playerPoints : Number
+        +opponentPoints : Number
+        +playerGames : Number
+        +opponentGames : Number
+        +isMatchOver : Boolean
+        +currentServer : String
+        +init() : void
+        +recordPoint(winner : String) : Boolean
+        +prepareNextPoint() : void
+        +checkGameWin() : Boolean
+        +getDisplayScore() : String
+        +displayGameOver() : void
+    }
+
+    class LayoutManager {
+        +VIRTUAL_W : Number
+        +VIRTUAL_H : Number
+        +scaleFactor : Number
+        +courtLeft : Number
+        +courtRight : Number
+        +courtTop : Number
+        +courtBottom : Number
+        +netY : Number
+        +update() : void
+    }
+
+    class SkillManager {
+        <<static>>
+        +execute(p : Player, ball : Ball) : void
+        +triggerHitSkill(p : Player, ball : Ball) : void
+        +shadowTeleport(p : Player, ball : Ball) : void
+        +gigaBall(ball : Ball) : void
+        +featherStorm(ball : Ball) : void
+        +forestZen(ball : Ball) : void
+    }
+
+    class MapManager {
+        +windForce : Number
+        +currentWindActive : Number
+        +p1Vel : Object
+        +p2Vel : Object
+        +update(player : Player, opponent : Player, ball : Ball) : void
+        +handleEgyptWind(ball : Ball) : void
+        +handlePolarIce(p1 : Player, p2 : Player) : void
+        +draw() : void
+        +reset() : void
+    }
+
+    class SoundManager {
+        +sounds : Object
+        +sfxVolume : Number
+        +loadSounds() : void
+        +updateBGM(state : String) : void
+        +play(soundName : String) : void
+        +setMasterVolume(vol : Number) : void
+        +transitionTo(bgmKey : String) : void
+    }
+
+    class TutorialManager {
+        +currentStep : Number
+        +successCount : Number
+        +targetCount : Number
+        +targetX : Number
+        +targetY : Number
+        +getStepIntro() : Object
+        +getCurrentPrompt() : String
+        +registerSuccess() : void
+        +nextStep() : void
+        +hasTarget() : Boolean
+    }
+
+    class Scene_Game {
+        <<singleton>>
+        +setup() : void
+        +draw() : void
+        +handleInput() : void
+        +restartGame() : void
+        +nextRound() : void
+        +drawCircularSkillUI() : void
+    }
+
+    class Scene_Menu {
+        <<singleton>>
+        +draw() : void
+        +handleInput() : void
+        +handleMouse() : void
+    }
+
+    class Scene_CharSelect {
+        <<singleton>>
+        +draw() : void
+        +handleInput() : void
+        +handleMouse() : void
+    }
+
+    class Scene_DifficultySelect {
+        <<singleton>>
+        +draw() : void
+        +handleInput() : void
+        +handleMouse() : void
+    }
+
+    class Scene_MapSelect {
+        <<singleton>>
+        +draw() : void
+        +handleInput() : void
+        +handleMouse() : void
+    }
+
+    class Scene_Pause {
+        <<singleton>>
+        +draw() : void
+        +handleInput() : void
+        +handleMouse() : void
+    }
+
+    class Scene_Tutorial {
+        <<singleton>>
+        +isDevMode : Boolean
+        +setup() : void
+        +draw() : void
+        +handleInput() : void
+        +jumpToStep(step : Number) : void
+        +drawDevMenu() : void
+    }
+
+    Game "1" --> "2" Player
+    Game "1" --> "1" Ball
+    Game "1" --> "0..1" AI
+    Game "1" --> "1" ScoreManager
+    Game "1" --> "1" LayoutManager
+    Game "1" --> "1" SoundManager
+
+    Game "1" ..> "1" Scene_Game
+    Game "1" ..> "1" Scene_Menu
+    Game "1" ..> "1" Scene_CharSelect
+    Game "1" ..> "1" Scene_DifficultySelect
+    Game "1" ..> "1" Scene_MapSelect
+    Game "1" ..> "1" Scene_Pause
+    Game "1" ..> "1" Scene_Tutorial
+
+    AI "1" --> "1" Player
+    Ball "1" --> "0..1" Player
+
+    Scene_Game "1" ..> "2" Player
+    Scene_Game "1" ..> "1" Ball
+    Scene_Game "1" ..> "1" ScoreManager
+    Scene_Game "1" ..> "1" MapManager
+    Scene_Game "1" ..> "1" SoundManager
+
+    Scene_Tutorial "1" --> "1" TutorialManager
+
+    Player "1" ..> "1" SkillManager
+```
+
+</details>
 
 ## Behavioural Diagrams
 To illustrate the game's logic flow, we analysed the 'Ball Hit Detection' scenario (Figure 14), which is critical for the gameplay feel.
@@ -411,9 +648,9 @@ To maintain a stable and playable experience, we established a multi-layered tes
 
 This began with a strict pre-merge process where every update required a Pull Request to be peer-reviewed, and fully tested. The specifics of this collaborative review process are detailed in the Process section. 
 
-To further accelerate our cycle, we built a custom debug interface (Figure 26) that allowed for the instant toggling of difficulty, characters, and maps, making it much easier to isolate edge cases without playing through entire matches. 
+To further accelerate our cycle, we built a custom debug interface (Figure 26) for manual black-box testing. It allowed for the instant toggling of difficulty, characters, and maps, making it much easier to isolate edge cases without playing through entire matches. 
 
-Finally, we integrated automated unit testing with Jest to verify our scoring and collision logic. By decoupling these mathematical calculations from the p5.js rendering engine, we were able to ensure the game’s core rules remained accurate and functional, completely independent of the visuals.
+Finally, we integrated automated white-box testing with Jest to verify our scoring and collision logic. By decoupling these mathematical calculations from the p5.js rendering engine, we were able to ensure the game’s core rules remained accurate and functional, completely independent of the visuals.
 
 <p align="center">
   <b>Figure 26:</b>
@@ -488,8 +725,8 @@ A major challenge we faced was the varying levels of familiarity with p5.js amon
 
 Balancing development with academic breaks like Reading Week and Easter proved to be a challenge. To ensure everyone could fully recharge, we paused our meeting schedule during these holidays. While this was important for morale, it did cause our momentum to stall. We found that getting everyone back on the same page and merging individual updates post-holiday required a significant 'catch-up' period. Moving forward, we realised that setting clearer milestones before major breaks would have made the re-integration process much smoother.
 
-## **Game Assets and Production Tools**
-Due to the lack of a specialised artist in our group, we leveraged various Generative AI tools to create our game assets, which was essential to achieving our desired aesthetic within the limited time. We utilised **Gemini** and **Banana Pro** for generating core visual assets. Following a process of manual refinement, we used [**EZGIF**](https://ezgif.com/) to convert video animations into individual image frames, which were then imported into [**PISKEL**](https://www.piskelapp.com/) to be compiled into functional Sprite Sheets. Background music was produced using [**Suno**](https://suno.com/), while sound effects were created via [**Adobe Firefly**](https://firefly.adobe.com/). For system architecture documentation, we utilised [**drawio**](https://www.drawio.com/) and [**mermaid**](https://mermaid.ai/).
+## **Production Tools**
+Due to the lack of a specialised artist in our group, we leveraged Generative AI tools to create our game assets, which was essential to achieving our desired aesthetic within the limited time. We utilised **Gemini** and **Banana Pro** for generating core visual assets. Following a process of manual refinement, we used [**EZGIF**](https://ezgif.com/) to convert video animations into individual image frames, which were then imported into [**PISKEL**](https://www.piskelapp.com/) to be compiled into functional Sprite Sheets. Background music was produced using [**Suno**](https://suno.com/), while sound effects were created via [**Adobe Firefly**](https://firefly.adobe.com/). For system architecture documentation, we utilised [**drawio**](https://www.drawio.com/) and [**mermaid**](https://mermaid.live/).
 
 # 8. Sustainability, ethics and accessibility
 This section explores the broader implications of our project, detailing how technical decisions align with environmental responsibility, inclusive design, and ethical social impact.
@@ -572,9 +809,9 @@ This project was a great practical exercise in managing the intersection of soft
 ### Challenges and Reflection  
 During the early stages of the project, we encountered minor Git merge conflicts due to overlapping edits in core modules. To keep our workflow smooth, we sequenced our tasks so that foundational logic was finalised before we moved on to dependent features.
 
-Reflecting on this experience, we realised that these overlaps were a result of our code structure having too much interdependency between game logic and rendering. While managing our task sequencing served as a helpful workflow adjustment, a more robust technical solution for future projects would be to implement design patterns such as Entity-Component-System (ECS) or Model-View-Controller (MVC) separation. By keeping the logic and graphics separate, we could have worked on different features at the same time without overlapping, which would have made the development process much smoother and resulted in fewer errors.
+Reflecting on this experience, we realised that these overlaps were a result of our code structure having too much interdependency between game logic and rendering. While managing our task sequencing served as a helpful workflow adjustment, a more robust technical solution for future projects would be to implement design patterns such as Entity-Component-System (ECS) or Model-View-Controller (MVC) separation. Separating logic from graphics allows for parallel development without overlapping. This approach ensures a smoother process and significantly reduces potential errors.
 
-Another significant learning point involves our testing strategy. While we successfully integrated the Jest framework to verify core mechanics like the ScoreManager and Ball physics, this was implemented during the final stages of development. Looking back, we realised that starting with a Test-Driven Development (TDD) approach would have made the code much more reliable and saved us a lot of time by catching bugs much earlier in the process.
+Another significant learning point involves our testing strategy. While we successfully integrated the Jest framework to verify core mechanics like the `ScoreManager` and `Ball` physics, this was implemented during the final stages of development. Looking back, we realised that starting with a Test-Driven Development (TDD) approach would have made the code much more reliable and saved us a lot of time by catching bugs much earlier in the process.
 
 ### Future Work  
 One of the things we struggled with was adding a fourth AI type called the 'Attacker'. We really wanted to make a personality that would play aggressively and put pressure on the player. However, we realised that since our current physics model uses a constant speed for the ball, we couldn't actually control how hard the ball was hit. This made it almost impossible to balance the Attacker's playstyle. In the end, we decided not to include it in the main game, but you can still try it out by pressing '9' in the Debug Panel.
@@ -584,7 +821,7 @@ That’s why our next big goal is to replace the fixed-power system with a more 
 If we were to take this project even further, our focus would be on adding a lot more variety and bringing the game online. We’d love to introduce a diverse roster of characters, each with their own unique stats, along with themed maps where surface friction, like grass or clay, actually changes how the ball behaves. The biggest goal, however, would be moving beyond local play. By implementing a client-server architecture with WebSockets, we could open the game up to global competition and real-time matchmaking.
 
 # 10. AI statement
-We declare that Generative AI tools were utilised for technical and creative support during this project. Specifically, AI was used to generate base assets for character sprites, court backgrounds, and audio samples. These assets underwent further refinement by the team to ensure their seamless integration into our game project. During the early design phase, AI also served as a consultative tool for brainstorming our project structure and class hierarchy, which helped establish the foundation for our physics and state-driven systems. Additionally, we used AI to help troubleshoot specific logic errors and identify edge cases in our core gameplay logic and physics calculations. Overall, the final implementation was manually reviewed and verified by the team to ensure that all technical and academic requirements were met.
+Generative AI tools were utilised for technical and creative support during this project. Specifically, AI was used to generate base assets for character sprites, court backgrounds, and audio samples. These assets underwent further refinement by the team to ensure their seamless integration into our game project. Beyond assets, AI served as a technical consultant. For instance, it facilitated our initial learning of p5.js and assisted in troubleshooting specific logic errors, which accelerated our development process. Overall, every AI-generated component was manually reviewed and refined by the team.
 
 # 11. Contribution Statement
 <p align="center">
