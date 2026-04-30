@@ -659,41 +659,62 @@ Finally, we integrated automated white-box testing with Jest to verify our scori
   <img src="weekly-homeworks/assets/report-debug.png" width="300" alt="Debug mode interface showing developer controls">
 </p>
 
+The following table summarises our testing coverage and the verification results across different game modules:
+
+<div align="center">
+  <b>Table 27:</b>
+  <i>Testing Coverage Summary</i>
+  <br>
+
+| Category | Verification Target | Expected Result | Status |
+| -------- | ------------------- | --------------- | ------ |
+| Menu Flow | Main menu, Character/Map selection, Difficulty, Pause/Resume | Seamless transitions; game state correctly suspends and resumes | Passed |
+| Tutorial | Step-by-step guidance, completion triggers | Correct progression; returns to menu upon completion | Passed |
+| Game Modes | Single-player, multi-player | AI opponent behaves correctly in single-player; both players independently controllable in multiplayer | Passed |
+|Input Control | Keyboard responsiveness, Key mapping (P1/P2)|Zero perceptible input lag; independent control for both players| Passed |
+| Physics | Trajectory, In/Out bounds, Second bounce | Matches tennis rules; logic correctly determines scoring | Passed |
+| Skill System | Unique character skills, Cooldowns | Skills trigger their respective effects correctly; cooldown timers function as intended | Passed |
+| Map Effects | Polar (Low friction), Egypt (Wind) | Environment effects accurately influence ball physics | Passed |
+| Audio | SFX, BGM fade in/out, Volume adjustment | Sound triggers correctly; volume levels respond accurately to settings | Passed |
+| UI Scaling | Window resizing| Elements scale proportionally; gameplay remains unaffected | Passed |
+
+</div>
+
 # 7. Process 
 Our team dynamic focused on clear roles and consistent communication. While we worked as a flat organisation, we divided responsibilities based on our individual strengths, such as core physics, AI logic, and UI design. To keep the project on track, we broke down our goals into specific weekly deliverables, ensuring everyone knew exactly what they were responsible for each week.
 
-We combined weekly in-person meetings (Figure 27) with daily digital communication to stay organised. Our weekly sessions were reserved for deep-dive technical discussions and long-term planning, while **WhatsApp** (Figure 28) served as our hub for rapid decision-making and continuous updates. We also utilised **GitHub Issues** and **Pull Requests** to host more detailed technical conversations (Figure 29). Posting test results and logs directly on the platform allowed us to discuss changes in context and keep a clear record of why specific implementation choices were made. This multi-layered approach ensured that major blockers were resolved together while daily progress never stalled.
+We combined weekly in-person meetings (Figure 28) with daily digital communication to stay organised. Our weekly sessions were reserved for deep-dive technical discussions and long-term planning, while **WhatsApp** (Figure 29) served as our hub for rapid decision-making and continuous updates. We also utilised **GitHub Issues** and **Pull Requests** to host more detailed technical conversations (Figure 30). Posting test results and logs directly on the platform allowed us to discuss changes in context and keep a clear record of why specific implementation choices were made. This multi-layered approach ensured that major blockers were resolved together while daily progress never stalled.
 
 <p align="center">
-  <b>Figure 27:</b>
+  <b>Figure 28:</b>
   <i>Weekly Team Meeting</i>
   <br>
   <img src="weekly-homeworks/assets/report-meeting.JPG" width="600" alt="Weekly team meeting photo">
 </p>
 <p align="center">
-  <b>Figure 28:</b>
+  <b>Figure 29:</b>
   <i>WhatsApp Communication</i>
   <br>
   <img src="weekly-homeworks/assets/report-whatsapp.PNG" height="400" alt="WhatsApp team communication screenshot">
 </p>
 <p align="center">
-  <b>Figure 29:</b>
+  <b>Figure 30:</b>
   <i>Peer review and technical discussion within a Pull Request</i>
   <br>
   <img src="weekly-homeworks/assets/report-pullrequest-discussion.png" height="400" alt="Pull request peer review discussion">
 </p>
 
-To keep our development on track, we used [**GitHub Projects**](https://github.com/orgs/UoB-COMSM0166/projects/165) (Figure 30) as our centralised Kanban board. We created specific issues for every feature, bug fix, and documentation task, tracking them through a clear pipeline from `Ready` to `Done`. This visual workflow was crucial for managing our weekly progress and ensuring no critical tasks fell through the cracks. For writing and report drafting, we relied on **Google Docs** (Figure 31) as our primary space for real-time collaborative editing.
+To keep our development on track, we used [**GitHub Projects**](https://github.com/orgs/UoB-COMSM0166/projects/165) (Figure 31) as our centralised Kanban board. We created specific issues for every feature, bug fix, and documentation task, tracking them through a clear pipeline from `Ready` to `Done`. This visual workflow was crucial for managing our weekly progress and ensuring no critical tasks fell through the cracks. For writing and report drafting, we relied on **Google Docs** (Figure 32) as our primary space for real-time collaborative editing.
 
 <p align="center">
-  <b>Figure 30:</b>
+  <b>Figure 31:</b>
   <i>GitHub Projects</i>
   <br>
   <img src="weekly-homeworks/assets/report-githubproject.png" width="800" alt="GitHub Projects Kanban board">
 </p>
 
 <p align="center">
-  <b>Figure 31:</b>
+  <b>Figure 32:</b>
   <i>Google Docs</i>
   <br>
   <img src="weekly-homeworks/assets/report-googledoc.png" width="800" alt="Google Docs collaborative editing interface">
@@ -702,17 +723,17 @@ To keep our development on track, we used [**GitHub Projects**](https://github.c
 ### **Workflow and Standardisation**
 Managing a shared codebase with six contributors required clear standards to avoid integration issues. We established a technical workflow within a [**`CONTRIBUTING.md`**](docs/CONTRIBUTING.md) file, which served as our primary guide for the team. This document outlined our core standards, such as using CamelCase for consistent naming and ensuring commit messages were descriptive enough to keep our version history readable. 
 
-We strictly followed a 'Feature Branching' strategy (Figure 32), where development was restricted to dedicated branches. To protect our `main` branch, the cornerstone of our workflow was the mandatory Pull Request (PR) and Peer Review process (Figure 33). No code was merged until it had been reviewed and tested by another teammate, a practice that not only caught bugs early but also ensured that technical knowledge was shared across the entire group.
+We strictly followed a 'Feature Branching' strategy (Figure 33), where development was restricted to dedicated branches. To protect our `main` branch, the cornerstone of our workflow was the mandatory Pull Request (PR) and Peer Review process (Figure 34). No code was merged until it had been reviewed and tested by another teammate, a practice that not only caught bugs early but also ensured that technical knowledge was shared across the entire group.
 
 <p align="center">
-  <b>Figure 32:</b>
+  <b>Figure 33:</b>
   <i>Branch</i>
   <br>
   <img src="weekly-homeworks/assets/report-branch.png" width="600" alt="Feature branching strategy diagram">
 </p>
 
 <p align="center">
-  <b>Figure 33:</b>
+  <b>Figure 34:</b>
   <i>GitHub Pull Request</i>
   <br>
   <img src="weekly-homeworks/assets/report-pullrequest.png" height="400" alt="GitHub Pull Request example">
@@ -731,7 +752,7 @@ Due to the lack of a specialised artist in our group, we leveraged Generative AI
 # 8. Sustainability, ethics and accessibility
 This section explores the broader implications of our project, detailing how technical decisions align with environmental responsibility, inclusive design, and ethical social impact.
 <p align="center">
-  <b>Figure 34:</b>
+  <b>Figure 35:</b>
   <i>Sustainability Pentagon</i>
   <br>
   <img src="weekly-homeworks/assets/report-sus.svg" width="600" alt="Sustainability pentagon diagram">
@@ -747,10 +768,10 @@ We specifically set `pixelDensity(1)` to manage how the game renders on high-res
 Compared to video formats (GIF/MP4) that require continuous decoding, we used Sprite Sheets to handle animations. This significantly reduces the processing load on the CPU and GPU. Additionally, using a single consolidated image file minimises HTTP requests compared to loading individual animation frames. Furthermore, every asset was manually scaled to its minimum required resolution, ensuring no redundant pixels are transmitted.
 
 #### Carbon Audit
-Using the [Carbonalyser tool](https://addons.mozilla.org/fr/firefox/addon/carbonalyser/), we audited a 3-minute active gameplay session, which recorded a data payload of 48MB (Figure 35). This confirms that once assets are cached, the game operates with minimal bandwidth. The resulting carbon intensity was exceptionally low, comparable to a single smartphone charge, validating our lightweight architectural choices.
+Using the [Carbonalyser tool](https://addons.mozilla.org/fr/firefox/addon/carbonalyser/), we audited a 3-minute active gameplay session, which recorded a data payload of 48MB (Figure 36). This confirms that once assets are cached, the game operates with minimal bandwidth. The resulting carbon intensity was exceptionally low, comparable to a single smartphone charge, validating our lightweight architectural choices.
 
 <p align="center">
-  <b>Figure 35:</b>
+  <b>Figure 36:</b>
   <i>Comparative Carbon Audit: Initial Load (Left) vs. 3-Minute Gameplay (Right)</i>
 </p>
 
@@ -759,12 +780,12 @@ Using the [Carbonalyser tool](https://addons.mozilla.org/fr/firefox/addon/carbon
     <td align="center" style="border: none; padding: 10px;">
       <img src="weekly-homeworks/assets/report-carbon0.png" alt="Initial Load" width="350">
       <br>
-      <small>Initial Load</small>
+      <small>Figure 36a: Initial Load</small>
     </td>
     <td align="center" style="border: none; padding: 10px;">
       <img src="weekly-homeworks/assets/report-carbon3.png" alt="3-Minute Gameplay" width="350">
       <br>
-      <small>3-Minute Gameplay</small>
+      <small>Figure 36b: 3-Minute Gameplay</small>
     </td>
   </tr>
 </table>
@@ -794,10 +815,10 @@ To accommodate diverse motor skills and hardware setups, all game menus and cata
 The UI utilises high-contrast colour palettes and oversized typography to accommodate players with visual impairments or age-related sight decline. This ensures that critical game states, such as score and skill cooldowns, are instantly recognisable.
 
 #### Social Connectivity
-The game is designed to encourage local social bonding. During our User Testing sessions (as seen in Figure 36), we observed participants engaging in high-spirited interaction and laughter while playing together. This qualitative evidence supports our goal of creating a 'safe social space' that fosters real-world connectivity.
+The game is designed to encourage local social bonding. During our User Testing sessions (as seen in Figure 37), we observed participants engaging in high-spirited interaction and laughter while playing together. This qualitative evidence supports our goal of creating a 'safe social space' that fosters real-world connectivity.
 
 <p align="center">
-  <b>Figure 36:</b>
+  <b>Figure 37:</b>
   <i>User Testing Footage (Explicit informed consent obtained)</i>
   <br>
   <img src="weekly-homeworks/assets/report-usertesting.gif" alt="Footage of user actively engaging with the game during playtesting" width="400">
@@ -825,7 +846,7 @@ Generative AI tools were utilised for technical and creative support during this
 
 # 11. Contribution Statement
 <p align="center">
-  <b>Table 37:</b>
+  <b>Table 38:</b>
   <i>Contributions for Game Project</i>
 </p>
 
